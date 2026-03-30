@@ -14,6 +14,8 @@ import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb } from 'lucide-react';
 
+const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar'] as const;
+
 export default function Index() {
   const { t } = useI18n();
   const [data, setData] = useState<Record<string, any>[]>([]);
@@ -22,25 +24,29 @@ export default function Index() {
   const [suggestions, setSuggestions] = useState<ChartSuggestion[]>([]);
   const [dashboardItems, setDashboardItems] = useState<DashboardItem[]>([]);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [addedChartIds, setAddedChartIds] = useState<Set<string>>(new Set());
 
   const handleDataLoaded = useCallback((newData: Record<string, any>[], name: string) => {
     setData(newData);
     setFileName(name);
     setFilters({});
+    setAddedChartIds(new Set());
     const cols = analyzeColumns(newData);
     setColumns(cols);
     const charts = generateChartSuggestions(newData, cols);
     setSuggestions(charts);
-    setDashboardItems(charts.slice(0, 4).map(c => ({
+    // Default dashboard: first 4 charts with varied types and themes
+    setDashboardItems(charts.slice(0, 4).map((c, i) => ({
       id: c.id,
       title: c.title,
       description: c.description,
-      type: c.type,
+      type: CHART_TYPE_ROTATION[i % CHART_TYPE_ROTATION.length],
       data: c.data,
       dataKeys: c.dataKeys,
       xKey: c.xKey,
-      theme: chartThemes[0],
+      theme: chartThemes[i % chartThemes.length],
     })));
+    setAddedChartIds(new Set(charts.slice(0, 4).map(c => c.id)));
   }, []);
 
   const filteredData = useMemo(() => {
@@ -59,6 +65,12 @@ export default function Index() {
     if (!Object.keys(filters).length) return suggestions;
     return generateChartSuggestions(filteredData, filteredColumns);
   }, [filteredData, filteredColumns, filters, suggestions]);
+
+  // Auto Charts minus ones already on dashboard
+  const availableSuggestions = useMemo(() =>
+    filteredSuggestions.filter(s => !addedChartIds.has(s.id)),
+    [filteredSuggestions, addedChartIds]
+  );
 
   const handleMerge = useCallback((col1: string, col2: string, newName: string, separator: string) => {
     const merged = mergeColumns(data, col1, col2, newName, separator);
@@ -81,6 +93,59 @@ export default function Index() {
       xKey: s.xKey,
       theme: chartThemes[0],
     }]);
+    setAddedChartIds(prev => new Set(prev).add(s.id));
+  }, []);
+
+  const addInsightToDashboard = useCallback((card: { title: string; content: any; type: 'insight' }) => {
+    // Convert insight data into a bar chart for the dashboard
+    const content = card.content;
+    let chartData: any[] = [];
+    let dataKeys: string[] = ['value'];
+    let xKey = 'name';
+
+    if (content && content.topValues) {
+      // Repeating column insight
+      chartData = content.topValues.map((v: any) => ({ name: v.value, value: v.count }));
+    } else if (Array.isArray(content) && content.length > 0) {
+      if (content[0]?.stats) {
+        // Numeric stats
+        chartData = content.map((c: any) => ({ name: c.name, value: c.stats.mean }));
+        dataKeys = ['value'];
+      } else if (content[0]?.completeness !== undefined) {
+        // Data quality
+        chartData = content.map((c: any) => ({ name: c.name, value: c.completeness }));
+        dataKeys = ['value'];
+      }
+    }
+
+    if (chartData.length === 0) return;
+
+    setDashboardItems(prev => [...prev, {
+      id: `insight-${Date.now()}`,
+      title: card.title,
+      description: '',
+      type: 'bar',
+      data: chartData,
+      dataKeys,
+      xKey,
+      theme: chartThemes[4] || chartThemes[0],
+    }]);
+  }, []);
+
+  const handleRemoveFromDashboard = useCallback((id: string) => {
+    setDashboardItems(prev => prev.filter(i => i.id !== id));
+    // Allow chart back in Auto Charts
+    setAddedChartIds(prev => {
+      const next = new Set(prev);
+      // The dashboard id may have a timestamp suffix, find the base id
+      for (const baseId of next) {
+        if (id.startsWith(baseId)) {
+          next.delete(baseId);
+          break;
+        }
+      }
+      return next;
+    });
   }, []);
 
   if (!data.length) {
@@ -151,14 +216,14 @@ export default function Index() {
             <TabsTrigger value="explore" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <BarChart3 className="h-4 w-4 mr-1" /> {t('explore')}
             </TabsTrigger>
-            <TabsTrigger value="filter" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Filter className="h-4 w-4 mr-1" /> {t('filter')}
-            </TabsTrigger>
             <TabsTrigger value="insights" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Lightbulb className="h-4 w-4 mr-1" /> {t('insights')}
             </TabsTrigger>
             <TabsTrigger value="build" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Wrench className="h-4 w-4 mr-1" /> {t('build')}
+            </TabsTrigger>
+            <TabsTrigger value="filter" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Filter className="h-4 w-4 mr-1" /> {t('filter')}
             </TabsTrigger>
             <TabsTrigger value="data" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Database className="h-4 w-4 mr-1" /> {t('data')}
@@ -169,33 +234,57 @@ export default function Index() {
             <DashboardGrid
               items={dashboardItems}
               onReorder={setDashboardItems}
-              onRemove={(id) => setDashboardItems(prev => prev.filter(i => i.id !== id))}
+              onRemove={handleRemoveFromDashboard}
               onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
             />
           </TabsContent>
 
           <TabsContent value="explore" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {filteredSuggestions.map(s => (
-                <div key={s.id} className="relative group">
-                  <DynamicChart
-                    title={s.title}
-                    description={s.description}
-                    type={s.type}
-                    data={s.data}
-                    dataKeys={s.dataKeys}
-                    xKey={s.xKey}
-                    theme={chartThemes[0]}
-                    showControls={false}
-                  />
-                  <button
-                    onClick={() => addSuggestionToDashboard(s)}
-                    className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90"
-                  >
-                    {t('addToDashboard')}
-                  </button>
-                </div>
-              ))}
+            {availableSuggestions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <BarChart3 className="h-8 w-8 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">{t('allChartsAdded')}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {availableSuggestions.map(s => (
+                  <div key={s.id} className="relative group">
+                    <DynamicChart
+                      title={s.title}
+                      description={s.description}
+                      type={s.type}
+                      data={s.data}
+                      dataKeys={s.dataKeys}
+                      xKey={s.xKey}
+                      theme={chartThemes[0]}
+                      showControls={false}
+                    />
+                    <button
+                      onClick={() => addSuggestionToDashboard(s)}
+                      className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90"
+                    >
+                      {t('addToDashboard')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-4">
+            <div className="glass-card rounded-xl p-5">
+              <SmartInsights columns={filteredColumns} data={filteredData} onAddToDashboard={addInsightToDashboard} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="build" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="glass-card rounded-xl p-5">
+                <ManualChartBuilder data={filteredData} columns={filteredColumns} onAddToDashboard={addToDashboard} />
+              </div>
+              <div className="glass-card rounded-xl p-5">
+                <ColumnMerger columns={columns} onMerge={handleMerge} />
+              </div>
             </div>
           </TabsContent>
 
@@ -220,23 +309,6 @@ export default function Index() {
                 ))}
               </div>
             )}
-          </TabsContent>
-
-          <TabsContent value="insights" className="space-y-4">
-            <div className="glass-card rounded-xl p-5">
-              <SmartInsights columns={filteredColumns} data={filteredData} />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="build" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="glass-card rounded-xl p-5">
-                <ManualChartBuilder data={filteredData} columns={filteredColumns} onAddToDashboard={addToDashboard} />
-              </div>
-              <div className="glass-card rounded-xl p-5">
-                <ColumnMerger columns={columns} onMerge={handleMerge} />
-              </div>
-            </div>
           </TabsContent>
 
           <TabsContent value="data" className="space-y-4">
