@@ -1,4 +1,5 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
+import { useTheme } from '@/lib/theme';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   AreaChart, Area, ScatterChart, Scatter, RadarChart, Radar,
@@ -29,11 +30,25 @@ export function DynamicChart({
   theme = chartThemes[0], onChangeType, onChangeTheme, showControls = true,
 }: DynamicChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
+  const { theme: appTheme } = useTheme();
+
+  const adaptedTheme = useMemo(() => {
+    if (appTheme === 'light') {
+      return {
+        ...theme,
+        textColor: '#475569',
+        gridColor: '#e2e8f0',
+        tooltipBg: '#ffffff',
+        tooltipText: '#1e293b',
+      };
+    }
+    return theme;
+  }, [theme, appTheme]);
 
   const handleExport = async () => {
     if (!chartRef.current) return;
     try {
-      const url = await toPng(chartRef.current, { backgroundColor: '#0f172a', pixelRatio: 2 });
+      const url = await toPng(chartRef.current, { backgroundColor: appTheme === 'dark' ? '#0f172a' : '#ffffff', pixelRatio: 2 });
       const link = document.createElement('a');
       link.download = `${title.replace(/\s+/g, '_')}.png`;
       link.href = url;
@@ -44,10 +59,10 @@ export function DynamicChart({
   };
 
   const tooltipStyle = {
-    backgroundColor: theme.tooltipBg,
-    border: `1px solid ${theme.gridColor}`,
+    backgroundColor: adaptedTheme.tooltipBg,
+    border: `1px solid ${adaptedTheme.gridColor}`,
     borderRadius: '8px',
-    color: theme.tooltipText,
+    color: adaptedTheme.tooltipText,
     fontSize: '12px',
   };
 
@@ -56,26 +71,26 @@ export function DynamicChart({
       case 'bar':
         return (
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={theme.gridColor} />
-            <XAxis dataKey={xKey} stroke={theme.textColor} tick={{ fontSize: 11 }} angle={-25} textAnchor="end" height={60} />
-            <YAxis stroke={theme.textColor} tick={{ fontSize: 11 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke={adaptedTheme.gridColor} />
+            <XAxis dataKey={xKey} stroke={adaptedTheme.textColor} tick={{ fontSize: 11 }} angle={-25} textAnchor="end" height={60} />
+            <YAxis stroke={adaptedTheme.textColor} tick={{ fontSize: 11 }} />
             <Tooltip contentStyle={tooltipStyle} />
-            <Legend wrapperStyle={{ color: theme.textColor, fontSize: 12 }} />
+            <Legend wrapperStyle={{ color: adaptedTheme.textColor, fontSize: 12 }} />
             {dataKeys.map((key, i) => (
-              <Bar key={key} dataKey={key} fill={theme.colors[i % theme.colors.length]} radius={[4, 4, 0, 0]} />
+              <Bar key={key} dataKey={key} fill={adaptedTheme.colors[i % adaptedTheme.colors.length]} radius={[4, 4, 0, 0]} />
             ))}
           </BarChart>
         );
       case 'line':
         return (
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={theme.gridColor} />
-            <XAxis dataKey={xKey} stroke={theme.textColor} tick={{ fontSize: 11 }} />
-            <YAxis stroke={theme.textColor} tick={{ fontSize: 11 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke={adaptedTheme.gridColor} />
+            <XAxis dataKey={xKey} stroke={adaptedTheme.textColor} tick={{ fontSize: 11 }} />
+            <YAxis stroke={adaptedTheme.textColor} tick={{ fontSize: 11 }} />
             <Tooltip contentStyle={tooltipStyle} />
-            <Legend wrapperStyle={{ color: theme.textColor, fontSize: 12 }} />
+            <Legend wrapperStyle={{ color: adaptedTheme.textColor, fontSize: 12 }} />
             {dataKeys.map((key, i) => (
-              <Line key={key} type="monotone" dataKey={key} stroke={theme.colors[i % theme.colors.length]} strokeWidth={2} dot={{ fill: theme.colors[i % theme.colors.length], r: 3 }} />
+              <Line key={key} type="monotone" dataKey={key} stroke={adaptedTheme.colors[i % adaptedTheme.colors.length]} strokeWidth={2} dot={{ fill: adaptedTheme.colors[i % adaptedTheme.colors.length], r: 3 }} />
             ))}
           </LineChart>
         );
@@ -85,43 +100,43 @@ export function DynamicChart({
             <defs>
               {dataKeys.map((key, i) => (
                 <linearGradient key={key} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={theme.colors[i % theme.colors.length]} stopOpacity={0.4} />
-                  <stop offset="95%" stopColor={theme.colors[i % theme.colors.length]} stopOpacity={0} />
+                  <stop offset="5%" stopColor={adaptedTheme.colors[i % adaptedTheme.colors.length]} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={adaptedTheme.colors[i % adaptedTheme.colors.length]} stopOpacity={0} />
                 </linearGradient>
               ))}
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke={theme.gridColor} />
-            <XAxis dataKey={xKey} stroke={theme.textColor} tick={{ fontSize: 11 }} />
-            <YAxis stroke={theme.textColor} tick={{ fontSize: 11 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke={adaptedTheme.gridColor} />
+            <XAxis dataKey={xKey} stroke={adaptedTheme.textColor} tick={{ fontSize: 11 }} />
+            <YAxis stroke={adaptedTheme.textColor} tick={{ fontSize: 11 }} />
             <Tooltip contentStyle={tooltipStyle} />
-            <Legend wrapperStyle={{ color: theme.textColor, fontSize: 12 }} />
+            <Legend wrapperStyle={{ color: adaptedTheme.textColor, fontSize: 12 }} />
             {dataKeys.map((key, i) => (
-              <Area key={key} type="monotone" dataKey={key} stroke={theme.colors[i % theme.colors.length]} fill={`url(#grad-${key})`} strokeWidth={2} />
+              <Area key={key} type="monotone" dataKey={key} stroke={adaptedTheme.colors[i % adaptedTheme.colors.length]} fill={`url(#grad-${key})`} strokeWidth={2} />
             ))}
           </AreaChart>
         );
       case 'pie':
         return (
           <PieChart>
-            <Pie data={data} dataKey={dataKeys[0]} nameKey={xKey} cx="50%" cy="50%" outerRadius="75%" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={{ stroke: theme.textColor }}>
+            <Pie data={data} dataKey={dataKeys[0]} nameKey={xKey} cx="50%" cy="50%" outerRadius="75%" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={{ stroke: adaptedTheme.textColor }}>
               {data.map((_, i) => (
-                <Cell key={i} fill={theme.colors[i % theme.colors.length]} />
+                <Cell key={i} fill={adaptedTheme.colors[i % adaptedTheme.colors.length]} />
               ))}
             </Pie>
             <Tooltip contentStyle={tooltipStyle} />
-            <Legend wrapperStyle={{ color: theme.textColor, fontSize: 12 }} />
+            <Legend wrapperStyle={{ color: adaptedTheme.textColor, fontSize: 12 }} />
           </PieChart>
         );
       case 'scatter':
         return (
           <ScatterChart>
-            <CartesianGrid strokeDasharray="3 3" stroke={theme.gridColor} />
-            <XAxis dataKey={dataKeys[0] || xKey} stroke={theme.textColor} tick={{ fontSize: 11 }} name={xKey} />
-            <YAxis dataKey={dataKeys[0]} stroke={theme.textColor} tick={{ fontSize: 11 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke={adaptedTheme.gridColor} />
+            <XAxis dataKey={dataKeys[0] || xKey} stroke={adaptedTheme.textColor} tick={{ fontSize: 11 }} name={xKey} />
+            <YAxis dataKey={dataKeys[0]} stroke={adaptedTheme.textColor} tick={{ fontSize: 11 }} />
             <Tooltip contentStyle={tooltipStyle} />
-            <Scatter data={data} fill={theme.colors[0]}>
+            <Scatter data={data} fill={adaptedTheme.colors[0]}>
               {data.map((_, i) => (
-                <Cell key={i} fill={theme.colors[i % theme.colors.length]} />
+                <Cell key={i} fill={adaptedTheme.colors[i % adaptedTheme.colors.length]} />
               ))}
             </Scatter>
           </ScatterChart>
@@ -129,14 +144,14 @@ export function DynamicChart({
       case 'radar':
         return (
           <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
-            <PolarGrid stroke={theme.gridColor} />
-            <PolarAngleAxis dataKey={xKey} stroke={theme.textColor} tick={{ fontSize: 10 }} />
-            <PolarRadiusAxis stroke={theme.gridColor} />
+            <PolarGrid stroke={adaptedTheme.gridColor} />
+            <PolarAngleAxis dataKey={xKey} stroke={adaptedTheme.textColor} tick={{ fontSize: 10 }} />
+            <PolarRadiusAxis stroke={adaptedTheme.gridColor} />
             {dataKeys.map((key, i) => (
-              <Radar key={key} dataKey={key} stroke={theme.colors[i % theme.colors.length]} fill={theme.colors[i % theme.colors.length]} fillOpacity={0.25} />
+              <Radar key={key} dataKey={key} stroke={adaptedTheme.colors[i % adaptedTheme.colors.length]} fill={adaptedTheme.colors[i % adaptedTheme.colors.length]} fillOpacity={0.25} />
             ))}
             <Tooltip contentStyle={tooltipStyle} />
-            <Legend wrapperStyle={{ color: theme.textColor, fontSize: 12 }} />
+            <Legend wrapperStyle={{ color: adaptedTheme.textColor, fontSize: 12 }} />
           </RadarChart>
         );
       default:
