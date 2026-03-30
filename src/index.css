@@ -6,6 +6,69 @@
 
 @layer base {
   :root {
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 93%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 199 89% 48%;
+
+    --radius: 0.75rem;
+
+    --chart-1: 199 89% 48%;
+    --chart-2: 262 83% 58%;
+    --chart-3: 142 71% 45%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 0 72% 51%;
+    --chart-6: 316 72% 51%;
+    --chart-7: 172 66% 50%;
+    --chart-8: 25 95% 53%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 11%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(199, 89%, 48%), hsl(262, 83%, 58%));
+    --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%), hsl(210, 20%, 97%));
+    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(199, 89%, 48%, 0.1), transparent 60%);
+    --shadow-glow: 0 0 20px -5px hsl(199, 89%, 48%, 0.2);
+    --shadow-card: 0 4px 24px -4px hsl(222, 47%, 80%, 0.3);
+
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 93%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 20% 88%;
+    --sidebar-ring: 199 89% 48%;
+  }
+
+  .dark {
     --background: 222 47% 6%;
     --foreground: 210 40% 96%;
 
@@ -33,8 +96,6 @@
     --border: 222 30% 16%;
     --input: 222 30% 16%;
     --ring: 199 89% 48%;
-
-    --radius: 0.75rem;
 
     --chart-1: 199 89% 48%;
     --chart-2: 262 83% 58%;
