@@ -30,6 +30,20 @@ export function DynamicChart({
   theme = chartThemes[0], onChangeType, onChangeTheme, showControls = true,
 }: DynamicChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
+  const { theme: appTheme } = useTheme();
+
+  const adaptedTheme = useMemo(() => {
+    if (appTheme === 'light') {
+      return {
+        ...theme,
+        textColor: '#475569',
+        gridColor: '#e2e8f0',
+        tooltipBg: '#ffffff',
+        tooltipText: '#1e293b',
+      };
+    }
+    return theme;
+  }, [theme, appTheme]);
 
   const handleExport = async () => {
     if (!chartRef.current) return;
