@@ -99,6 +99,7 @@ export const translations = {
     language: 'Language',
     english: 'English',
     hindi: 'हिन्दी',
+    allChartsAdded: 'All charts have been added to the dashboard',
   },
   hi: {
     appName: 'DataLens',
