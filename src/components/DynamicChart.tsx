@@ -1,4 +1,5 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
+import { useTheme } from '@/lib/theme';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   AreaChart, Area, ScatterChart, Scatter, RadarChart, Radar,
