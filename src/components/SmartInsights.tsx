@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
-import { AlertTriangle, BarChart3, CheckCircle2, Repeat2 } from 'lucide-react';
+import { AlertTriangle, BarChart3, CheckCircle2, Repeat2, Plus } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
+import { Button } from '@/components/ui/button';
 
 interface SmartInsightsProps {
   columns: ColumnMeta[];
   data: Record<string, any>[];
+  onAddToDashboard?: (card: { title: string; content: React.ReactNode; type: 'insight' }) => void;
 }
 
 interface RepeatingColumn {
@@ -16,7 +18,7 @@ interface RepeatingColumn {
   topValues: { value: string; count: number; percentage: number }[];
 }
 
-export function SmartInsights({ columns, data }: SmartInsightsProps) {
+export function SmartInsights({ columns, data, onAddToDashboard }: SmartInsightsProps) {
   const { t } = useI18n();
 
   const repeatingColumns = useMemo(() => {
@@ -64,6 +66,43 @@ export function SmartInsights({ columns, data }: SmartInsightsProps) {
     [columns]
   );
 
+  const handleAddRepeatingCard = (col: RepeatingColumn) => {
+    if (!onAddToDashboard) return;
+    // Convert repeating values to a bar chart for the dashboard
+    onAddToDashboard({
+      title: `${col.name} — ${t('repeatingValues')}`,
+      content: undefined as any, // We'll pass chart-compatible data instead
+      type: 'insight',
+    });
+  };
+
+  const addRepeatingAsDashboardChart = (col: RepeatingColumn) => {
+    if (!onAddToDashboard) return;
+    onAddToDashboard({
+      title: `${col.name} — ${t('repeatingValues')}`,
+      type: 'insight',
+      content: col as any,
+    });
+  };
+
+  const addStatsAsDashboardChart = () => {
+    if (!onAddToDashboard) return;
+    onAddToDashboard({
+      title: t('columnStats'),
+      type: 'insight',
+      content: numericInsights as any,
+    });
+  };
+
+  const addQualityAsDashboardChart = () => {
+    if (!onAddToDashboard) return;
+    onAddToDashboard({
+      title: t('dataQuality'),
+      type: 'insight',
+      content: dataQuality as any,
+    });
+  };
+
   return (
     <div className="space-y-6">
       <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -80,12 +119,25 @@ export function SmartInsights({ columns, data }: SmartInsightsProps) {
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {repeatingColumns.map(col => (
-              <div key={col.name} className="glass-card rounded-lg p-3 space-y-2">
+              <div key={col.name} className="glass-card rounded-lg p-3 space-y-2 relative group">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">{col.name}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/20 text-accent">
-                    {t('highRepetition')} ({Math.round(col.repetitionRatio * 100)}%)
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/20 text-accent">
+                      {t('highRepetition')} ({Math.round(col.repetitionRatio * 100)}%)
+                    </span>
+                    {onAddToDashboard && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => addRepeatingAsDashboardChart(col)}
+                        title={t('addToDashboard')}
+                      >
+                        <Plus className="h-3.5 w-3.5 text-primary" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {col.uniqueCount} {t('uniqueValues')} / {col.totalCount} {t('rows')}
@@ -114,10 +166,17 @@ export function SmartInsights({ columns, data }: SmartInsightsProps) {
       {/* Numeric Column Stats */}
       {numericInsights.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-xs font-semibold text-info flex items-center gap-2">
-            <BarChart3 className="h-3.5 w-3.5" />
-            {t('columnStats')}
-          </h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-semibold text-info flex items-center gap-2">
+              <BarChart3 className="h-3.5 w-3.5" />
+              {t('columnStats')}
+            </h4>
+            {onAddToDashboard && (
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addStatsAsDashboardChart}>
+                <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
+              </Button>
+            )}
+          </div>
           <div className="overflow-auto">
             <table className="w-full text-xs">
               <thead>
@@ -150,10 +209,17 @@ export function SmartInsights({ columns, data }: SmartInsightsProps) {
       {/* Data Quality */}
       {dataQuality.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-xs font-semibold text-warning flex items-center gap-2">
-            <AlertTriangle className="h-3.5 w-3.5" />
-            {t('dataQuality')}
-          </h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-semibold text-warning flex items-center gap-2">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {t('dataQuality')}
+            </h4>
+            {onAddToDashboard && (
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addQualityAsDashboardChart}>
+                <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
+              </Button>
+            )}
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {dataQuality.map(col => (
               <div key={col.name} className="flex items-center gap-3 rounded-lg bg-secondary/50 px-3 py-2">
