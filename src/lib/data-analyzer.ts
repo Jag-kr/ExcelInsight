@@ -25,7 +25,7 @@ export interface NumericStats {
 export interface ChartSuggestion {
   id: string;
   title: string;
-  type: 'bar' | 'line' | 'pie' | 'area' | 'scatter' | 'histogram' | 'radar';
+  type: 'bar' | 'line' | 'pie' | 'area' | 'scatter' | 'radar';
   xKey?: string;
   yKey?: string;
   dataKeys: string[];
