@@ -187,6 +187,7 @@ export const translations = {
     language: 'भाषा',
     english: 'English',
     hindi: 'हिन्दी',
+    allChartsAdded: 'सभी चार्ट डैशबोर्ड में जोड़ दिए गए हैं',
   },
 } as const;
 
