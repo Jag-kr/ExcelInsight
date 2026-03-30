@@ -48,7 +48,7 @@ export function DynamicChart({
   const handleExport = async () => {
     if (!chartRef.current) return;
     try {
-      const url = await toPng(chartRef.current, { backgroundColor: '#0f172a', pixelRatio: 2 });
+      const url = await toPng(chartRef.current, { backgroundColor: appTheme === 'dark' ? '#0f172a' : '#ffffff', pixelRatio: 2 });
       const link = document.createElement('a');
       link.download = `${title.replace(/\s+/g, '_')}.png`;
       link.href = url;
