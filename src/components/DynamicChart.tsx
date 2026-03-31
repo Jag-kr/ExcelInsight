@@ -48,7 +48,11 @@ export function DynamicChart({
   const handleExport = async () => {
     if (!chartRef.current) return;
     try {
+      // Hide controls before export
+      const controls = chartRef.current.querySelectorAll('[data-export-hide]');
+      controls.forEach(el => (el as HTMLElement).style.display = 'none');
       const url = await toPng(chartRef.current, { backgroundColor: appTheme === 'dark' ? '#0f172a' : '#ffffff', pixelRatio: 2 });
+      controls.forEach(el => (el as HTMLElement).style.display = '');
       const link = document.createElement('a');
       link.download = `${title.replace(/\s+/g, '_')}.png`;
       link.href = url;
