@@ -97,24 +97,18 @@ export default function Index() {
   }, []);
 
   const addInsightToDashboard = useCallback((card: { title: string; content: any; type: 'insight' }) => {
-    // Convert insight data into a bar chart for the dashboard
     const content = card.content;
     let chartData: any[] = [];
     let dataKeys: string[] = ['value'];
     let xKey = 'name';
 
     if (content && content.topValues) {
-      // Repeating column insight
       chartData = content.topValues.map((v: any) => ({ name: v.value, value: v.count }));
     } else if (Array.isArray(content) && content.length > 0) {
       if (content[0]?.stats) {
-        // Numeric stats
         chartData = content.map((c: any) => ({ name: c.name, value: c.stats.mean }));
-        dataKeys = ['value'];
       } else if (content[0]?.completeness !== undefined) {
-        // Data quality
         chartData = content.map((c: any) => ({ name: c.name, value: c.completeness }));
-        dataKeys = ['value'];
       }
     }
 
@@ -129,6 +123,20 @@ export default function Index() {
       dataKeys,
       xKey,
       theme: chartThemes[4] || chartThemes[0],
+    }]);
+  }, []);
+
+  const addTableToDashboard = useCallback((card: { title: string; data: any[]; columns: string[] }) => {
+    setDashboardItems(prev => [...prev, {
+      id: `table-${Date.now()}`,
+      title: card.title,
+      description: '',
+      type: 'bar',
+      data: card.data,
+      dataKeys: [],
+      xKey: '',
+      displayAs: 'table',
+      tableColumns: card.columns,
     }]);
   }, []);
 
