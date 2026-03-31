@@ -98,7 +98,7 @@ export default function Index() {
     setAddedChartIds(prev => new Set(prev).add(s.id));
   }, []);
 
-  const addInsightToDashboard = useCallback((card: { title: string; content: any; type: 'insight' }) => {
+  const addInsightToDashboard = useCallback((card: { id: string; title: string; content: any; type: 'insight' }) => {
     const content = card.content;
     let chartData: any[] = [];
     let dataKeys: string[] = ['value'];
@@ -117,7 +117,7 @@ export default function Index() {
     if (chartData.length === 0) return;
 
     setDashboardItems(prev => [...prev, {
-      id: `insight-${Date.now()}`,
+      id: card.id,
       title: card.title,
       description: '',
       type: 'bar',
@@ -126,11 +126,12 @@ export default function Index() {
       xKey,
       theme: chartThemes[4] || chartThemes[0],
     }]);
+    setAddedInsightIds(prev => new Set(prev).add(card.id));
   }, []);
 
-  const addTableToDashboard = useCallback((card: { title: string; data: any[]; columns: string[] }) => {
+  const addTableToDashboard = useCallback((card: { id: string; title: string; data: any[]; columns: string[] }) => {
     setDashboardItems(prev => [...prev, {
-      id: `table-${Date.now()}`,
+      id: card.id,
       title: card.title,
       description: '',
       type: 'bar',
@@ -140,6 +141,7 @@ export default function Index() {
       displayAs: 'table',
       tableColumns: card.columns,
     }]);
+    setAddedInsightIds(prev => new Set(prev).add(card.id));
   }, []);
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
