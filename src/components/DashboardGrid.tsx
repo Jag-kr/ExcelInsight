@@ -20,6 +20,8 @@ export interface DashboardItem {
   dataKeys: string[];
   xKey?: string;
   theme?: ChartTheme;
+  displayAs?: 'chart' | 'table';
+  tableColumns?: string[];
 }
 
 interface DashboardGridProps {
@@ -29,7 +31,36 @@ interface DashboardGridProps {
   onUpdateItem: (id: string, updates: Partial<DashboardItem>) => void;
 }
 
-function SortableChartCard({ item, onRemove, onUpdateItem }: {
+function DashboardTable({ item }: { item: DashboardItem }) {
+  const cols = item.tableColumns || (item.data.length > 0 ? Object.keys(item.data[0]) : []);
+  return (
+    <div className="glass-card rounded-xl p-4 animate-fade-in">
+      <h3 className="text-sm font-semibold text-foreground mb-3 truncate">{item.title}</h3>
+      <div className="overflow-auto max-h-[280px]">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-border">
+              {cols.map(c => (
+                <th key={c} className="text-left p-2 text-muted-foreground font-medium">{c}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {item.data.map((row, i) => (
+              <tr key={i} className="border-b border-border/30 hover:bg-secondary/30">
+                {cols.map(c => (
+                  <td key={c} className="p-2 text-foreground truncate max-w-[150px]">{String(row[c] ?? '')}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function SortableCard({ item, onRemove, onUpdateItem }: {
   item: DashboardItem;
   onRemove: () => void;
   onUpdateItem: (updates: Partial<DashboardItem>) => void;
@@ -53,17 +84,21 @@ function SortableChartCard({ item, onRemove, onUpdateItem }: {
           <Trash2 className="h-3.5 w-3.5 text-destructive" />
         </Button>
       </div>
-      <DynamicChart
-        title={item.title}
-        description={item.description}
-        type={item.type}
-        data={item.data}
-        dataKeys={item.dataKeys}
-        xKey={item.xKey}
-        theme={item.theme || chartThemes[0]}
-        onChangeType={(type) => onUpdateItem({ type })}
-        onChangeTheme={(theme) => onUpdateItem({ theme })}
-      />
+      {item.displayAs === 'table' ? (
+        <DashboardTable item={item} />
+      ) : (
+        <DynamicChart
+          title={item.title}
+          description={item.description}
+          type={item.type}
+          data={item.data}
+          dataKeys={item.dataKeys}
+          xKey={item.xKey}
+          theme={item.theme || chartThemes[0]}
+          onChangeType={(type) => onUpdateItem({ type })}
+          onChangeTheme={(theme) => onUpdateItem({ theme })}
+        />
+      )}
     </div>
   );
 }
@@ -97,7 +132,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem }: Dash
       <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {items.map(item => (
-            <SortableChartCard
+            <SortableCard
               key={item.id}
               item={item}
               onRemove={() => onRemove(item.id)}
