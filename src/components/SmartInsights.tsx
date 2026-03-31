@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
-import { AlertTriangle, BarChart3, CheckCircle2, Repeat2, Plus } from 'lucide-react';
+import { AlertTriangle, BarChart3, CheckCircle2, Repeat2, Plus, TableIcon } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 
