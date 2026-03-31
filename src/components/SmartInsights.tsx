@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
-import { AlertTriangle, BarChart3, CheckCircle2, Repeat2, Plus } from 'lucide-react';
+import { AlertTriangle, BarChart3, CheckCircle2, Repeat2, Plus, TableIcon } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 
 interface SmartInsightsProps {
   columns: ColumnMeta[];
   data: Record<string, any>[];
-  onAddToDashboard?: (card: { title: string; content: React.ReactNode; type: 'insight' }) => void;
+  onAddToDashboard?: (card: { title: string; content: any; type: 'insight' }) => void;
+  onAddTableToDashboard?: (card: { title: string; data: any[]; columns: string[] }) => void;
 }
 
 interface RepeatingColumn {
@@ -18,7 +19,7 @@ interface RepeatingColumn {
   topValues: { value: string; count: number; percentage: number }[];
 }
 
-export function SmartInsights({ columns, data, onAddToDashboard }: SmartInsightsProps) {
+export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDashboard }: SmartInsightsProps) {
   const { t } = useI18n();
 
   const repeatingColumns = useMemo(() => {
@@ -94,12 +95,54 @@ export function SmartInsights({ columns, data, onAddToDashboard }: SmartInsights
     });
   };
 
+  const addStatsAsTable = () => {
+    if (!onAddTableToDashboard) return;
+    onAddTableToDashboard({
+      title: t('columnStats'),
+      data: numericInsights.map(c => ({
+        [t('columns')]: c.name,
+        [t('min')]: c.stats!.min.toFixed(1),
+        [t('max')]: c.stats!.max.toFixed(1),
+        [t('mean')]: c.stats!.mean.toFixed(2),
+        [t('median')]: c.stats!.median.toFixed(1),
+        [t('stdDev')]: c.stats!.stdDev.toFixed(2),
+      })),
+      columns: [t('columns'), t('min'), t('max'), t('mean'), t('median'), t('stdDev')],
+    });
+  };
+
   const addQualityAsDashboardChart = () => {
     if (!onAddToDashboard) return;
     onAddToDashboard({
       title: t('dataQuality'),
       type: 'insight',
       content: dataQuality as any,
+    });
+  };
+
+  const addQualityAsTable = () => {
+    if (!onAddTableToDashboard) return;
+    onAddTableToDashboard({
+      title: t('dataQuality'),
+      data: dataQuality.map(c => ({
+        [t('columns')]: c.name,
+        [`${t('complete')} %`]: `${c.completeness}%`,
+        'Nulls': c.nullCount,
+      })),
+      columns: [t('columns'), `${t('complete')} %`, 'Nulls'],
+    });
+  };
+
+  const addRepeatingAsTable = (col: RepeatingColumn) => {
+    if (!onAddTableToDashboard) return;
+    onAddTableToDashboard({
+      title: `${col.name} — ${t('repeatingValues')}`,
+      data: col.topValues.map(v => ({
+        [t('topValues')]: v.value,
+        Count: v.count,
+        '%': `${v.percentage}%`,
+      })),
+      columns: [t('topValues'), 'Count', '%'],
     });
   };
 
@@ -137,6 +180,17 @@ export function SmartInsights({ columns, data, onAddToDashboard }: SmartInsights
                         <Plus className="h-3.5 w-3.5 text-primary" />
                       </Button>
                     )}
+                    {onAddTableToDashboard && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => addRepeatingAsTable(col)}
+                        title="Add as Table"
+                      >
+                        <TableIcon className="h-3.5 w-3.5 text-primary" />
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -171,11 +225,18 @@ export function SmartInsights({ columns, data, onAddToDashboard }: SmartInsights
               <BarChart3 className="h-3.5 w-3.5" />
               {t('columnStats')}
             </h4>
-            {onAddToDashboard && (
-              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addStatsAsDashboardChart}>
-                <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {onAddToDashboard && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addStatsAsDashboardChart}>
+                  <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
+                </Button>
+              )}
+              {onAddTableToDashboard && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addStatsAsTable}>
+                  <TableIcon className="h-3 w-3 mr-1" /> Table
+                </Button>
+              )}
+            </div>
           </div>
           <div className="overflow-auto">
             <table className="w-full text-xs">
@@ -214,11 +275,18 @@ export function SmartInsights({ columns, data, onAddToDashboard }: SmartInsights
               <AlertTriangle className="h-3.5 w-3.5" />
               {t('dataQuality')}
             </h4>
-            {onAddToDashboard && (
-              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addQualityAsDashboardChart}>
-                <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {onAddToDashboard && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addQualityAsDashboardChart}>
+                  <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
+                </Button>
+              )}
+              {onAddTableToDashboard && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addQualityAsTable}>
+                  <TableIcon className="h-3 w-3 mr-1" /> Table
+                </Button>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {dataQuality.map(col => (
