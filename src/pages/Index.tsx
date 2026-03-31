@@ -149,13 +149,18 @@ export default function Index() {
     // Allow chart back in Auto Charts
     setAddedChartIds(prev => {
       const next = new Set(prev);
-      // The dashboard id may have a timestamp suffix, find the base id
       for (const baseId of next) {
         if (id.startsWith(baseId)) {
           next.delete(baseId);
           break;
         }
       }
+      return next;
+    });
+    // Allow insight back
+    setAddedInsightIds(prev => {
+      const next = new Set(prev);
+      next.delete(id);
       return next;
     });
   }, []);
