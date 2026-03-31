@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 interface SmartInsightsProps {
   columns: ColumnMeta[];
   data: Record<string, any>[];
-  onAddToDashboard?: (card: { title: string; content: React.ReactNode; type: 'insight' }) => void;
+  onAddToDashboard?: (card: { title: string; content: any; type: 'insight' }) => void;
+  onAddTableToDashboard?: (card: { title: string; data: any[]; columns: string[] }) => void;
 }
 
 interface RepeatingColumn {
