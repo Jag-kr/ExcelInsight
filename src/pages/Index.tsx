@@ -25,6 +25,7 @@ export default function Index() {
   const [dashboardItems, setDashboardItems] = useState<DashboardItem[]>([]);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [addedChartIds, setAddedChartIds] = useState<Set<string>>(new Set());
+  const [addedInsightIds, setAddedInsightIds] = useState<Set<string>>(new Set());
 
   const handleDataLoaded = useCallback((newData: Record<string, any>[], name: string) => {
     setData(newData);
