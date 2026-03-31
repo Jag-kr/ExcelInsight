@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
-import { AlertTriangle, BarChart3, CheckCircle2, Repeat2, Plus, TableIcon } from 'lucide-react';
+import { AlertTriangle, BarChart3, CheckCircle2, Repeat2, Plus, TableIcon, Check } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 
 interface SmartInsightsProps {
   columns: ColumnMeta[];
   data: Record<string, any>[];
-  onAddToDashboard?: (card: { title: string; content: any; type: 'insight' }) => void;
-  onAddTableToDashboard?: (card: { title: string; data: any[]; columns: string[] }) => void;
+  onAddToDashboard?: (card: { id: string; title: string; content: any; type: 'insight' }) => void;
+  onAddTableToDashboard?: (card: { id: string; title: string; data: any[]; columns: string[] }) => void;
+  addedInsightIds?: Set<string>;
 }
 
 interface RepeatingColumn {
@@ -19,7 +20,7 @@ interface RepeatingColumn {
   topValues: { value: string; count: number; percentage: number }[];
 }
 
-export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDashboard }: SmartInsightsProps) {
+export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDashboard, addedInsightIds = new Set() }: SmartInsightsProps) {
   const { t } = useI18n();
 
   const repeatingColumns = useMemo(() => {
@@ -67,37 +68,42 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
     [columns]
   );
 
-  const handleAddRepeatingCard = (col: RepeatingColumn) => {
-    if (!onAddToDashboard) return;
-    // Convert repeating values to a bar chart for the dashboard
-    onAddToDashboard({
-      title: `${col.name} — ${t('repeatingValues')}`,
-      content: undefined as any, // We'll pass chart-compatible data instead
-      type: 'insight',
-    });
-  };
+  const isAdded = (id: string) => addedInsightIds.has(id);
+
+  const AddedBadge = () => (
+    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-success/20 text-success">
+      <Check className="h-3 w-3" /> {t('addToDashboard')}
+    </span>
+  );
 
   const addRepeatingAsDashboardChart = (col: RepeatingColumn) => {
-    if (!onAddToDashboard) return;
-    onAddToDashboard({
+    const id = `insight-repeat-chart-${col.name}`;
+    if (!onAddToDashboard || isAdded(id)) return;
+    onAddToDashboard({ id, title: `${col.name} — ${t('repeatingValues')}`, type: 'insight', content: col as any });
+  };
+
+  const addRepeatingAsTable = (col: RepeatingColumn) => {
+    const id = `insight-repeat-table-${col.name}`;
+    if (!onAddTableToDashboard || isAdded(id)) return;
+    onAddTableToDashboard({
+      id,
       title: `${col.name} — ${t('repeatingValues')}`,
-      type: 'insight',
-      content: col as any,
+      data: col.topValues.map(v => ({ [t('topValues')]: v.value, Count: v.count, '%': `${v.percentage}%` })),
+      columns: [t('topValues'), 'Count', '%'],
     });
   };
 
   const addStatsAsDashboardChart = () => {
-    if (!onAddToDashboard) return;
-    onAddToDashboard({
-      title: t('columnStats'),
-      type: 'insight',
-      content: numericInsights as any,
-    });
+    const id = 'insight-stats-chart';
+    if (!onAddToDashboard || isAdded(id)) return;
+    onAddToDashboard({ id, title: t('columnStats'), type: 'insight', content: numericInsights as any });
   };
 
   const addStatsAsTable = () => {
-    if (!onAddTableToDashboard) return;
+    const id = 'insight-stats-table';
+    if (!onAddTableToDashboard || isAdded(id)) return;
     onAddTableToDashboard({
+      id,
       title: t('columnStats'),
       data: numericInsights.map(c => ({
         [t('columns')]: c.name,
@@ -112,17 +118,16 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
   };
 
   const addQualityAsDashboardChart = () => {
-    if (!onAddToDashboard) return;
-    onAddToDashboard({
-      title: t('dataQuality'),
-      type: 'insight',
-      content: dataQuality as any,
-    });
+    const id = 'insight-quality-chart';
+    if (!onAddToDashboard || isAdded(id)) return;
+    onAddToDashboard({ id, title: t('dataQuality'), type: 'insight', content: dataQuality as any });
   };
 
   const addQualityAsTable = () => {
-    if (!onAddTableToDashboard) return;
+    const id = 'insight-quality-table';
+    if (!onAddTableToDashboard || isAdded(id)) return;
     onAddTableToDashboard({
+      id,
       title: t('dataQuality'),
       data: dataQuality.map(c => ({
         [t('columns')]: c.name,
@@ -130,19 +135,6 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
         'Nulls': c.nullCount,
       })),
       columns: [t('columns'), `${t('complete')} %`, 'Nulls'],
-    });
-  };
-
-  const addRepeatingAsTable = (col: RepeatingColumn) => {
-    if (!onAddTableToDashboard) return;
-    onAddTableToDashboard({
-      title: `${col.name} — ${t('repeatingValues')}`,
-      data: col.topValues.map(v => ({
-        [t('topValues')]: v.value,
-        Count: v.count,
-        '%': `${v.percentage}%`,
-      })),
-      columns: [t('topValues'), 'Count', '%'],
     });
   };
 
@@ -161,58 +153,47 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
             {t('repeatingValues')}
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {repeatingColumns.map(col => (
-              <div key={col.name} className="glass-card rounded-lg p-3 space-y-2 relative group">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">{col.name}</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/20 text-accent">
-                      {t('highRepetition')} ({Math.round(col.repetitionRatio * 100)}%)
-                    </span>
-                    {onAddToDashboard && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => addRepeatingAsDashboardChart(col)}
-                        title={t('addToDashboard')}
-                      >
-                        <Plus className="h-3.5 w-3.5 text-primary" />
-                      </Button>
-                    )}
-                    {onAddTableToDashboard && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => addRepeatingAsTable(col)}
-                        title="Add as Table"
-                      >
-                        <TableIcon className="h-3.5 w-3.5 text-primary" />
-                      </Button>
-                    )}
+            {repeatingColumns.map(col => {
+              const chartId = `insight-repeat-chart-${col.name}`;
+              const tableId = `insight-repeat-table-${col.name}`;
+              return (
+                <div key={col.name} className="glass-card rounded-lg p-3 space-y-2 relative group">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">{col.name}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/20 text-accent">
+                        {t('highRepetition')} ({Math.round(col.repetitionRatio * 100)}%)
+                      </span>
+                      {isAdded(chartId) ? <AddedBadge /> : onAddToDashboard && (
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => addRepeatingAsDashboardChart(col)} title={t('addToDashboard')}>
+                          <Plus className="h-3.5 w-3.5 text-primary" />
+                        </Button>
+                      )}
+                      {isAdded(tableId) ? <AddedBadge /> : onAddTableToDashboard && (
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => addRepeatingAsTable(col)} title="Add as Table">
+                          <TableIcon className="h-3.5 w-3.5 text-primary" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {col.uniqueCount} {t('uniqueValues')} / {col.totalCount} {t('rows')}
+                  </p>
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-muted-foreground font-medium">{t('topValues')}:</p>
+                    {col.topValues.map(v => (
+                      <div key={v.value} className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+                          <div className="h-full rounded-full bg-primary/70" style={{ width: `${v.percentage}%` }} />
+                        </div>
+                        <span className="text-[10px] text-foreground min-w-[60px] truncate">{v.value}</span>
+                        <span className="text-[10px] text-muted-foreground shrink-0">{v.count} ({v.percentage}%)</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {col.uniqueCount} {t('uniqueValues')} / {col.totalCount} {t('rows')}
-                </p>
-                <div className="space-y-1">
-                  <p className="text-[10px] text-muted-foreground font-medium">{t('topValues')}:</p>
-                  {col.topValues.map(v => (
-                    <div key={v.value} className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-primary/70"
-                          style={{ width: `${v.percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-[10px] text-foreground min-w-[60px] truncate">{v.value}</span>
-                      <span className="text-[10px] text-muted-foreground shrink-0">{v.count} ({v.percentage}%)</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -226,12 +207,12 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
               {t('columnStats')}
             </h4>
             <div className="flex items-center gap-1">
-              {onAddToDashboard && (
+              {isAdded('insight-stats-chart') ? <AddedBadge /> : onAddToDashboard && (
                 <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addStatsAsDashboardChart}>
                   <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
                 </Button>
               )}
-              {onAddTableToDashboard && (
+              {isAdded('insight-stats-table') ? <AddedBadge /> : onAddTableToDashboard && (
                 <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addStatsAsTable}>
                   <TableIcon className="h-3 w-3 mr-1" /> Table
                 </Button>
@@ -276,12 +257,12 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
               {t('dataQuality')}
             </h4>
             <div className="flex items-center gap-1">
-              {onAddToDashboard && (
+              {isAdded('insight-quality-chart') ? <AddedBadge /> : onAddToDashboard && (
                 <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addQualityAsDashboardChart}>
                   <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
                 </Button>
               )}
-              {onAddTableToDashboard && (
+              {isAdded('insight-quality-table') ? <AddedBadge /> : onAddTableToDashboard && (
                 <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addQualityAsTable}>
                   <TableIcon className="h-3 w-3 mr-1" /> Table
                 </Button>

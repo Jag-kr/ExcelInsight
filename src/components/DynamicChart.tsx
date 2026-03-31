@@ -85,6 +85,19 @@ export function DynamicChart({
             ))}
           </BarChart>
         );
+      case 'horizontalBar':
+        return (
+          <BarChart data={data} layout="vertical">
+            <CartesianGrid strokeDasharray="3 3" stroke={adaptedTheme.gridColor} />
+            <XAxis type="number" stroke={adaptedTheme.textColor} tick={{ fontSize: 11 }} />
+            <YAxis dataKey={xKey} type="category" stroke={adaptedTheme.textColor} tick={{ fontSize: 11 }} width={80} />
+            <Tooltip contentStyle={tooltipStyle} />
+            <Legend wrapperStyle={{ color: adaptedTheme.textColor, fontSize: 12 }} />
+            {dataKeys.map((key, i) => (
+              <Bar key={key} dataKey={key} fill={adaptedTheme.colors[i % adaptedTheme.colors.length]} radius={[0, 4, 4, 0]} />
+            ))}
+          </BarChart>
+        );
       case 'line':
         return (
           <LineChart data={data}>
