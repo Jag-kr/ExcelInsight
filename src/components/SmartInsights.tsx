@@ -95,12 +95,54 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
     });
   };
 
+  const addStatsAsTable = () => {
+    if (!onAddTableToDashboard) return;
+    onAddTableToDashboard({
+      title: t('columnStats'),
+      data: numericInsights.map(c => ({
+        [t('columns')]: c.name,
+        [t('min')]: c.stats!.min.toFixed(1),
+        [t('max')]: c.stats!.max.toFixed(1),
+        [t('mean')]: c.stats!.mean.toFixed(2),
+        [t('median')]: c.stats!.median.toFixed(1),
+        [t('stdDev')]: c.stats!.stdDev.toFixed(2),
+      })),
+      columns: [t('columns'), t('min'), t('max'), t('mean'), t('median'), t('stdDev')],
+    });
+  };
+
   const addQualityAsDashboardChart = () => {
     if (!onAddToDashboard) return;
     onAddToDashboard({
       title: t('dataQuality'),
       type: 'insight',
       content: dataQuality as any,
+    });
+  };
+
+  const addQualityAsTable = () => {
+    if (!onAddTableToDashboard) return;
+    onAddTableToDashboard({
+      title: t('dataQuality'),
+      data: dataQuality.map(c => ({
+        [t('columns')]: c.name,
+        [`${t('complete')} %`]: `${c.completeness}%`,
+        'Nulls': c.nullCount,
+      })),
+      columns: [t('columns'), `${t('complete')} %`, 'Nulls'],
+    });
+  };
+
+  const addRepeatingAsTable = (col: RepeatingColumn) => {
+    if (!onAddTableToDashboard) return;
+    onAddTableToDashboard({
+      title: `${col.name} — ${t('repeatingValues')}`,
+      data: col.topValues.map(v => ({
+        [t('topValues')]: v.value,
+        Count: v.count,
+        '%': `${v.percentage}%`,
+      })),
+      columns: [t('topValues'), 'Count', '%'],
     });
   };
 
