@@ -180,6 +180,17 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
                         <Plus className="h-3.5 w-3.5 text-primary" />
                       </Button>
                     )}
+                    {onAddTableToDashboard && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => addRepeatingAsTable(col)}
+                        title="Add as Table"
+                      >
+                        <TableIcon className="h-3.5 w-3.5 text-primary" />
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
