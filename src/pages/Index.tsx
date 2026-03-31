@@ -32,6 +32,7 @@ export default function Index() {
     setFileName(name);
     setFilters({});
     setAddedChartIds(new Set());
+    setAddedInsightIds(new Set());
     const cols = analyzeColumns(newData);
     setColumns(cols);
     const charts = generateChartSuggestions(newData, cols);
