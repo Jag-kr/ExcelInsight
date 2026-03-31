@@ -275,11 +275,18 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
               <AlertTriangle className="h-3.5 w-3.5" />
               {t('dataQuality')}
             </h4>
-            {onAddToDashboard && (
-              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addQualityAsDashboardChart}>
-                <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {onAddToDashboard && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addQualityAsDashboardChart}>
+                  <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
+                </Button>
+              )}
+              {onAddTableToDashboard && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addQualityAsTable}>
+                  <TableIcon className="h-3 w-3 mr-1" /> Table
+                </Button>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {dataQuality.map(col => (
