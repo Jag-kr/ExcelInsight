@@ -19,7 +19,7 @@ interface RepeatingColumn {
   topValues: { value: string; count: number; percentage: number }[];
 }
 
-export function SmartInsights({ columns, data, onAddToDashboard }: SmartInsightsProps) {
+export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDashboard }: SmartInsightsProps) {
   const { t } = useI18n();
 
   const repeatingColumns = useMemo(() => {
