@@ -72,10 +72,11 @@ export const chartThemes: ChartTheme[] = [
   },
 ];
 
-export type ChartType = 'bar' | 'line' | 'pie' | 'area' | 'scatter' | 'radar';
+export type ChartType = 'bar' | 'horizontalBar' | 'line' | 'pie' | 'area' | 'scatter' | 'radar';
 
 export const chartTypeOptions: { value: ChartType; label: string }[] = [
   { value: 'bar', label: 'Bar Chart' },
+  { value: 'horizontalBar', label: 'Horizontal Bar' },
   { value: 'line', label: 'Line Chart' },
   { value: 'area', label: 'Area Chart' },
   { value: 'pie', label: 'Pie Chart' },
