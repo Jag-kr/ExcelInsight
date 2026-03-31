@@ -281,7 +281,7 @@ export default function Index() {
 
           <TabsContent value="insights" className="space-y-4">
             <div className="glass-card rounded-xl p-5">
-              <SmartInsights columns={filteredColumns} data={filteredData} onAddToDashboard={addInsightToDashboard} />
+              <SmartInsights columns={filteredColumns} data={filteredData} onAddToDashboard={addInsightToDashboard} onAddTableToDashboard={addTableToDashboard} />
             </div>
           </TabsContent>
 
