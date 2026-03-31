@@ -225,11 +225,18 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
               <BarChart3 className="h-3.5 w-3.5" />
               {t('columnStats')}
             </h4>
-            {onAddToDashboard && (
-              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addStatsAsDashboardChart}>
-                <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {onAddToDashboard && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addStatsAsDashboardChart}>
+                  <Plus className="h-3 w-3 mr-1" /> {t('addToDashboard')}
+                </Button>
+              )}
+              {onAddTableToDashboard && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addStatsAsTable}>
+                  <TableIcon className="h-3 w-3 mr-1" /> Table
+                </Button>
+              )}
+            </div>
           </div>
           <div className="overflow-auto">
             <table className="w-full text-xs">
