@@ -5,7 +5,7 @@ export type Language = 'en' | 'hi';
 export const translations = {
   en: {
     // App
-    appName: 'DataLens',
+    appName: 'ExcelInsight',
     analyticsEngine: 'Analytics Engine',
     uploadSubtitle: 'Upload any Excel file • Instant analytics • Custom dashboards',
     smartDetection: 'Smart Detection',

@@ -13,8 +13,9 @@ import { chartThemes } from '@/lib/chart-themes';
 import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb } from 'lucide-react';
+import logo from '@/assets/ExcelInsight_Logo.png';
 
-const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar'] as const;
+const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
 
 export default function Index() {
   const { t } = useI18n();
@@ -37,18 +38,107 @@ export default function Index() {
     setColumns(cols);
     const charts = generateChartSuggestions(newData, cols);
     setSuggestions(charts);
-    // Default dashboard: first 4 charts with varied types and themes
-    setDashboardItems(charts.slice(0, 4).map((c, i) => ({
-      id: c.id,
-      title: c.title,
-      description: c.description,
-      type: CHART_TYPE_ROTATION[i % CHART_TYPE_ROTATION.length],
-      data: c.data,
-      dataKeys: c.dataKeys,
-      xKey: c.xKey,
-      theme: chartThemes[i % chartThemes.length],
-    })));
-    setAddedChartIds(new Set(charts.slice(0, 4).map(c => c.id)));
+
+    // Build a rich default dashboard with mixed content
+    const items: DashboardItem[] = [];
+    const usedChartIds = new Set<string>();
+
+    // Add first 3 chart suggestions with varied types & themes
+    charts.slice(0, 3).forEach((c, i) => {
+      items.push({
+        id: c.id,
+        title: c.title,
+        description: c.description,
+        type: CHART_TYPE_ROTATION[i % CHART_TYPE_ROTATION.length],
+        data: c.data,
+        dataKeys: c.dataKeys,
+        xKey: c.xKey,
+        theme: chartThemes[i % chartThemes.length],
+        size: i === 0 ? 'lg' : 'md',
+      });
+      usedChartIds.add(c.id);
+    });
+
+    // Auto-generate stats insight if numeric columns exist
+    const numericCols = cols.filter(c => (c.type === 'numeric' || c.type === 'range') && c.stats);
+    if (numericCols.length > 0) {
+      const statsId = 'insight-stats-chart';
+      items.push({
+        id: statsId,
+        title: 'Column Statistics',
+        description: '',
+        type: 'bar',
+        data: [],
+        dataKeys: [],
+        xKey: '',
+        displayAs: 'insight',
+        insightType: 'stats',
+        insightContent: numericCols,
+        size: 'lg',
+      });
+    }
+
+    // Auto-generate repeating value insights
+    const repeating: any[] = [];
+    cols.forEach(col => {
+      if (col.type === 'id') return;
+      const counts: Record<string, number> = {};
+      newData.forEach(row => {
+        const v = row[col.name];
+        if (v !== null && v !== undefined && v !== '') counts[String(v)] = (counts[String(v)] || 0) + 1;
+      });
+      const entries = Object.entries(counts);
+      const uniqueCount = entries.length;
+      const totalCount = newData.length;
+      const repetitionRatio = 1 - (uniqueCount / Math.max(totalCount, 1));
+      if (repetitionRatio > 0.3 && uniqueCount <= 50 && uniqueCount >= 2) {
+        repeating.push({
+          name: col.name, uniqueCount, totalCount, repetitionRatio,
+          topValues: entries.sort((a, b) => b[1] - a[1]).slice(0, 8).map(([value, count]) => ({
+            value, count, percentage: Math.round((count / totalCount) * 100),
+          })),
+        });
+      }
+    });
+    repeating.sort((a, b) => b.repetitionRatio - a.repetitionRatio);
+    repeating.slice(0, 2).forEach(col => {
+      const id = `insight-repeat-chart-${col.name}`;
+      items.push({
+        id, title: `${col.name} — Repeating Values`, description: '',
+        type: 'bar', data: [], dataKeys: [], xKey: '',
+        displayAs: 'insight', insightType: 'repeating', insightContent: col,
+      });
+    });
+
+    // Data quality insight
+    const quality = cols.map(c => ({
+      name: c.name,
+      completeness: Math.round(((c.totalCount - c.nullCount) / c.totalCount) * 100),
+      nullCount: c.nullCount,
+    })).filter(c => c.nullCount > 0);
+    if (quality.length > 0) {
+      items.push({
+        id: 'insight-quality-chart', title: 'Data Quality', description: '',
+        type: 'bar', data: [], dataKeys: [], xKey: '',
+        displayAs: 'insight', insightType: 'quality', insightContent: quality,
+      });
+    }
+
+    // Add 4th chart if available
+    if (charts.length > 3) {
+      const c = charts[3];
+      items.push({
+        id: c.id, title: c.title, description: c.description,
+        type: CHART_TYPE_ROTATION[3 % CHART_TYPE_ROTATION.length],
+        data: c.data, dataKeys: c.dataKeys, xKey: c.xKey,
+        theme: chartThemes[3 % chartThemes.length],
+      });
+      usedChartIds.add(c.id);
+    }
+
+    setDashboardItems(items);
+    setAddedChartIds(usedChartIds);
+    setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
   }, []);
 
   const filteredData = useMemo(() => {
@@ -68,7 +158,6 @@ export default function Index() {
     return generateChartSuggestions(filteredData, filteredColumns);
   }, [filteredData, filteredColumns, filters, suggestions]);
 
-  // Auto Charts minus ones already on dashboard
   const availableSuggestions = useMemo(() =>
     filteredSuggestions.filter(s => !addedChartIds.has(s.id)),
     [filteredSuggestions, addedChartIds]
@@ -100,31 +189,30 @@ export default function Index() {
 
   const addInsightToDashboard = useCallback((card: { id: string; title: string; content: any; type: 'insight' }) => {
     const content = card.content;
-    let chartData: any[] = [];
-    let dataKeys: string[] = ['value'];
-    let xKey = 'name';
 
-    if (content && content.topValues) {
-      chartData = content.topValues.map((v: any) => ({ name: v.value, value: v.count }));
+    // Determine insight type
+    let insightType: 'repeating' | 'stats' | 'quality' = 'stats';
+    if (content && content.topValues && content.repetitionRatio !== undefined) {
+      insightType = 'repeating';
     } else if (Array.isArray(content) && content.length > 0) {
-      if (content[0]?.stats) {
-        chartData = content.map((c: any) => ({ name: c.name, value: c.stats.mean }));
-      } else if (content[0]?.completeness !== undefined) {
-        chartData = content.map((c: any) => ({ name: c.name, value: c.completeness }));
+      if (content[0]?.completeness !== undefined) {
+        insightType = 'quality';
+      } else if (content[0]?.stats) {
+        insightType = 'stats';
       }
     }
-
-    if (chartData.length === 0) return;
 
     setDashboardItems(prev => [...prev, {
       id: card.id,
       title: card.title,
       description: '',
       type: 'bar',
-      data: chartData,
-      dataKeys,
-      xKey,
-      theme: chartThemes[4] || chartThemes[0],
+      data: [],
+      dataKeys: [],
+      xKey: '',
+      displayAs: 'insight',
+      insightType,
+      insightContent: content,
     }]);
     setAddedInsightIds(prev => new Set(prev).add(card.id));
   }, []);
@@ -146,18 +234,13 @@ export default function Index() {
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
     setDashboardItems(prev => prev.filter(i => i.id !== id));
-    // Allow chart back in Auto Charts
     setAddedChartIds(prev => {
       const next = new Set(prev);
       for (const baseId of next) {
-        if (id.startsWith(baseId)) {
-          next.delete(baseId);
-          break;
-        }
+        if (id.startsWith(baseId)) { next.delete(baseId); break; }
       }
       return next;
     });
-    // Allow insight back
     setAddedInsightIds(prev => {
       const next = new Set(prev);
       next.delete(id);
@@ -176,6 +259,7 @@ export default function Index() {
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary mb-4">
               <BarChart3 className="h-4 w-4" /> {t('analyticsEngine')}
             </div>
+            <img src={logo} alt="ExcelInsight" className="h-16 mx-auto mb-2" />
             <h1 className="text-4xl font-bold gradient-text">{t('appName')}</h1>
             <p className="text-muted-foreground">{t('uploadSubtitle')}</p>
           </div>
@@ -203,7 +287,7 @@ export default function Index() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-3">
-            <BarChart3 className="h-5 w-5 text-primary" />
+            <img src={logo} alt="ExcelInsight" className="h-6" />
             <span className="font-bold gradient-text">{t('appName')}</span>
             <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">{fileName}</span>
           </div>
