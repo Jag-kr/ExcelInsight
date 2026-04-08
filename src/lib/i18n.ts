@@ -102,7 +102,7 @@ export const translations = {
     allChartsAdded: 'All charts have been added to the dashboard',
   },
   hi: {
-    appName: 'DataLens',
+    appName: 'ExcelInsight',
     analyticsEngine: 'एनालिटिक्स इंजन',
     uploadSubtitle: 'कोई भी एक्सेल फ़ाइल अपलोड करें • तुरंत विश्लेषण • कस्टम डैशबोर्ड',
     smartDetection: 'स्मार्ट पहचान',
