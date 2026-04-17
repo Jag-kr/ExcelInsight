@@ -57,6 +57,9 @@ export function LandingContent() {
         </div>
       </section>
 
+      {/* Ad slot — between Features and How it works */}
+      <AdSlot slot="" label="Sponsored" />
+
       {/* How it works */}
       <section aria-labelledby="how-heading">
         <div className="text-center mb-10">
