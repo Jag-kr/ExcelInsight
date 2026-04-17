@@ -1,5 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download } from 'lucide-react';
+import { AdSlot } from '@/components/AdSlot';
 
 const features = [
   { icon: FileSpreadsheet, title: 'Excel & CSV Support', desc: 'Upload .xlsx, .xls, or .csv files of any size and instantly turn rows into insights.' },
