@@ -104,6 +104,9 @@ export function LandingContent() {
         </div>
       </section>
 
+      {/* Ad slot — between Use Cases and FAQ */}
+      <AdSlot slot="" label="Sponsored" />
+
       {/* FAQ */}
       <section aria-labelledby="faq-heading">
         <div className="text-center mb-10">
