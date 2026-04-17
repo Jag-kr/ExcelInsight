@@ -1,6 +1,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
+import { Link } from 'react-router-dom';
 
 const features = [
   { icon: FileSpreadsheet, title: 'Excel & CSV Support', desc: 'Upload .xlsx, .xls, or .csv files of any size and instantly turn rows into insights.' },
@@ -130,7 +131,12 @@ export function LandingContent() {
       </section>
 
       {/* Footer */}
-      <footer className="text-center pt-10 border-t border-border">
+      <footer className="text-center pt-10 border-t border-border space-y-3">
+        <nav className="flex items-center justify-center gap-4 text-sm">
+          <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link>
+          <span className="text-border">•</span>
+          <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
+        </nav>
         <p className="text-sm text-muted-foreground">
           © {new Date().getFullYear()} ExcelInsight — Free Excel analytics & dashboard builder. Made for analysts, students, and small businesses.
         </p>
