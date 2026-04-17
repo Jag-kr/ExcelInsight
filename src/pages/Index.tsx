@@ -8,6 +8,7 @@ import { DashboardGrid, DashboardItem } from '@/components/DashboardGrid';
 import { DataFilter } from '@/components/DataFilter';
 import { SmartInsights } from '@/components/SmartInsights';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
+import { LandingContent } from '@/components/LandingContent';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { chartThemes } from '@/lib/chart-themes';
 import { useI18n } from '@/lib/i18n';
@@ -250,16 +251,16 @@ export default function Index() {
 
   if (!data.length) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: 'var(--gradient-glow)' }}>
-        <div className="absolute top-4 right-4">
+      <div className="min-h-screen" style={{ background: 'var(--gradient-glow)' }}>
+        <div className="absolute top-4 right-4 z-10">
           <ThemeLangSwitcher />
         </div>
-        <div className="w-full max-w-xl space-y-6 animate-fade-in">
+        <section className="w-full max-w-xl mx-auto px-6 pt-16 pb-12 space-y-6 animate-fade-in">
           <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary mb-4">
               <BarChart3 className="h-4 w-4" /> {t('analyticsEngine')}
             </div>
-            <img src={logo} alt="ExcelInsight" className="h-16 mx-auto mb-2" />
+            <img src={logo} alt="ExcelInsight logo" className="h-16 mx-auto mb-2" />
             <h1 className="text-4xl font-bold gradient-text">{t('appName')}</h1>
             <p className="text-muted-foreground">{t('uploadSubtitle')}</p>
           </div>
@@ -277,7 +278,8 @@ export default function Index() {
               </div>
             ))}
           </div>
-        </div>
+        </section>
+        <LandingContent />
       </div>
     );
   }
