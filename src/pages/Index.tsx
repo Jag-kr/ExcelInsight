@@ -9,6 +9,7 @@ import { DataFilter } from '@/components/DataFilter';
 import { SmartInsights } from '@/components/SmartInsights';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { LandingContent } from '@/components/LandingContent';
+import { AdSlot } from '@/components/AdSlot';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { chartThemes } from '@/lib/chart-themes';
 import { useI18n } from '@/lib/i18n';
