@@ -1,5 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download } from 'lucide-react';
+import { AdSlot } from '@/components/AdSlot';
 
 const features = [
   { icon: FileSpreadsheet, title: 'Excel & CSV Support', desc: 'Upload .xlsx, .xls, or .csv files of any size and instantly turn rows into insights.' },
@@ -56,6 +57,9 @@ export function LandingContent() {
         </div>
       </section>
 
+      {/* Ad slot — between Features and How it works */}
+      <AdSlot slot="" label="Sponsored" />
+
       {/* How it works */}
       <section aria-labelledby="how-heading">
         <div className="text-center mb-10">
@@ -99,6 +103,9 @@ export function LandingContent() {
           </div>
         </div>
       </section>
+
+      {/* Ad slot — between Use Cases and FAQ */}
+      <AdSlot slot="" label="Sponsored" />
 
       {/* FAQ */}
       <section aria-labelledby="faq-heading">

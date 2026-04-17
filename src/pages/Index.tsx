@@ -9,6 +9,7 @@ import { DataFilter } from '@/components/DataFilter';
 import { SmartInsights } from '@/components/SmartInsights';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { LandingContent } from '@/components/LandingContent';
+import { AdSlot } from '@/components/AdSlot';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { chartThemes } from '@/lib/chart-themes';
 import { useI18n } from '@/lib/i18n';
@@ -340,6 +341,7 @@ export default function Index() {
               onRemove={handleRemoveFromDashboard}
               onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
             />
+            <AdSlot slot="" label="Sponsored" />
           </TabsContent>
 
           <TabsContent value="explore" className="space-y-4">
