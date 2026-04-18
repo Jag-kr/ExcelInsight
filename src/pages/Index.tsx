@@ -391,12 +391,63 @@ export default function Index() {
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-4">
-            <DashboardGrid
-              items={dashboardItems}
-              onReorder={setDashboardItems}
-              onRemove={handleRemoveFromDashboard}
-              onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
-            />
+            <div className="flex flex-wrap items-center justify-between gap-3 glass-card rounded-xl p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => setActiveTab('build')} className="gap-1.5">
+                  <Plus className="h-3.5 w-3.5" /> {t('addChart')}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setActiveTab('insights')} className="gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5" /> {t('addInsight')}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={handleResetLayout} className="gap-1.5">
+                  <RotateCcw className="h-3.5 w-3.5" /> {t('resetLayout')}
+                </Button>
+                {dashboardItems.length > 0 && (
+                  <Button size="sm" variant="ghost" onClick={handleClearAll} className="gap-1.5 text-destructive hover:text-destructive">
+                    <Trash2 className="h-3.5 w-3.5" /> {t('clearAll')}
+                  </Button>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground hidden sm:inline">
+                  {dashboardItems.length} {t('cards')} ·{' '}
+                  {dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length} {t('charts')} ·{' '}
+                  {dashboardItems.filter(i => i.displayAs === 'table').length} {t('tables')} ·{' '}
+                  {dashboardItems.filter(i => i.displayAs === 'insight').length} {t('insightsLabel')}
+                </span>
+                <Button
+                  size="sm"
+                  onClick={handleExportPdf}
+                  disabled={exporting || !dashboardItems.length}
+                  className="gap-1.5"
+                >
+                  <FileDown className="h-3.5 w-3.5" />
+                  {exporting ? t('generatingPdf') : t('exportPdf')}
+                </Button>
+              </div>
+            </div>
+            <div ref={dashboardRef}>
+              <DashboardGrid
+                items={dashboardItems}
+                onReorder={setDashboardItems}
+                onRemove={handleRemoveFromDashboard}
+                onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
+                onDuplicate={handleDuplicate}
+                emptyAction={
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <Button size="sm" onClick={handleResetLayout} className="gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5" /> {t('autoGenerate')}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setActiveTab('build')} className="gap-1.5">
+                      <Plus className="h-3.5 w-3.5" /> {t('addChart')}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setActiveTab('insights')} className="gap-1.5">
+                      <Lightbulb className="h-3.5 w-3.5" /> {t('browseInsights')}
+                    </Button>
+                  </div>
+                }
+              />
+            </div>
             <AdSlot slot="" label="Sponsored" />
           </TabsContent>
 
