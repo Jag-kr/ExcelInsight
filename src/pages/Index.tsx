@@ -336,7 +336,7 @@ export default function Index() {
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary mb-4">
               <BarChart3 className="h-4 w-4" /> {t('analyticsEngine')}
             </div>
-            <img src={logo} alt="ExcelInsight logo" className="h-16 mx-auto mb-2" />
+            <img src={logo} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-16 w-16 mx-auto mb-2" />
             <h1 className="text-4xl font-bold gradient-text">{t('appName')}</h1>
             <p className="text-muted-foreground">{t('uploadSubtitle')}</p>
           </div>
@@ -365,7 +365,7 @@ export default function Index() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="ExcelInsight" className="h-6" />
+            <img src={logo} alt="ExcelInsight" width="24" height="24" decoding="async" className="h-6 w-6" />
             <span className="font-bold gradient-text">{t('appName')}</span>
             <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">{fileName}</span>
           </div>
