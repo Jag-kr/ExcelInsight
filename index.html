@@ -48,19 +48,13 @@
     }
     </script>
 
-    <!-- Google AdSense — Auto Ads.
-         REPLACE ca-pub-XXXXXXXXXXXXXXXX with your real AdSense publisher ID after approval. -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-      crossorigin="anonymous"></script>
     <meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXXXXXX">
 
     <!-- Preconnect to third-party origins to reduce LCP -->
     <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net">
 
-    <!-- Google AdSense — Auto Ads. Defer to keep main thread free for LCP/TBT.
+    <!-- Google AdSense — Auto Ads. async + defer keeps the main thread free (helps TBT/LCP).
          REPLACE ca-pub-XXXXXXXXXXXXXXXX with your real AdSense publisher ID after approval. -->
     <script async defer src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
       crossorigin="anonymous"></script>
