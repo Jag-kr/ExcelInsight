@@ -445,29 +445,33 @@ export default function Index() {
                 </Button>
               </div>
             </div>
-            <div ref={dashboardRef}>
-              <DashboardGrid
-                items={dashboardItems}
-                onReorder={setDashboardItems}
-                onRemove={handleRemoveFromDashboard}
-                onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
-                onDuplicate={handleDuplicate}
-                emptyAction={
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    <Button size="sm" onClick={handleResetLayout} className="gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5" /> {t('autoGenerate')}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setActiveTab('build')} className="gap-1.5">
-                      <Plus className="h-3.5 w-3.5" /> {t('addChart')}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setActiveTab('insights')} className="gap-1.5">
-                      <Lightbulb className="h-3.5 w-3.5" /> {t('browseInsights')}
-                    </Button>
-                  </div>
-                }
-              />
+            <div ref={dashboardRef} className="min-h-[400px]">
+              <Suspense fallback={<ChartFallback />}>
+                <DashboardGrid
+                  items={dashboardItems}
+                  onReorder={setDashboardItems}
+                  onRemove={handleRemoveFromDashboard}
+                  onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
+                  onDuplicate={handleDuplicate}
+                  emptyAction={
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      <Button size="sm" onClick={handleResetLayout} className="gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5" /> {t('autoGenerate')}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setActiveTab('build')} className="gap-1.5">
+                        <Plus className="h-3.5 w-3.5" /> {t('addChart')}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setActiveTab('insights')} className="gap-1.5">
+                        <Lightbulb className="h-3.5 w-3.5" /> {t('browseInsights')}
+                      </Button>
+                    </div>
+                  }
+                />
+              </Suspense>
             </div>
-            <AdSlot slot="" label="Sponsored" />
+            <div className="min-h-[100px]">
+              <AdSlot slot="" label="Sponsored" />
+            </div>
           </TabsContent>
 
           <TabsContent value="explore" className="space-y-4">
