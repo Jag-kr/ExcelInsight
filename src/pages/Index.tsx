@@ -476,24 +476,26 @@ export default function Index() {
 
           <TabsContent value="explore" className="space-y-4">
             {availableSuggestions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="flex flex-col items-center justify-center py-16 text-center min-h-[300px]">
                 <BarChart3 className="h-8 w-8 text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">{t('allChartsAdded')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {availableSuggestions.map(s => (
-                  <div key={s.id} className="relative group">
-                    <DynamicChart
-                      title={s.title}
-                      description={s.description}
-                      type={s.type}
-                      data={s.data}
-                      dataKeys={s.dataKeys}
-                      xKey={s.xKey}
-                      theme={chartThemes[0]}
-                      showControls={false}
-                    />
+                  <div key={s.id} className="relative group min-h-[300px]">
+                    <Suspense fallback={<ChartFallback />}>
+                      <DynamicChart
+                        title={s.title}
+                        description={s.description}
+                        type={s.type}
+                        data={s.data}
+                        dataKeys={s.dataKeys}
+                        xKey={s.xKey}
+                        theme={chartThemes[0]}
+                        showControls={false}
+                      />
+                    </Suspense>
                     <button
                       onClick={() => addSuggestionToDashboard(s)}
                       className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90"
@@ -507,50 +509,63 @@ export default function Index() {
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-4">
-            <div className="glass-card rounded-xl p-5">
-              <SmartInsights columns={filteredColumns} data={filteredData} onAddToDashboard={addInsightToDashboard} onAddTableToDashboard={addTableToDashboard} addedInsightIds={addedInsightIds} />
+            <div className="glass-card rounded-xl p-5 min-h-[300px]">
+              <Suspense fallback={<PanelFallback />}>
+                <SmartInsights columns={filteredColumns} data={filteredData} onAddToDashboard={addInsightToDashboard} onAddTableToDashboard={addTableToDashboard} addedInsightIds={addedInsightIds} />
+              </Suspense>
             </div>
           </TabsContent>
 
           <TabsContent value="build" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="glass-card rounded-xl p-5">
-                <ManualChartBuilder data={filteredData} columns={filteredColumns} onAddToDashboard={addToDashboard} />
+              <div className="glass-card rounded-xl p-5 min-h-[300px]">
+                <Suspense fallback={<PanelFallback />}>
+                  <ManualChartBuilder data={filteredData} columns={filteredColumns} onAddToDashboard={addToDashboard} />
+                </Suspense>
               </div>
-              <div className="glass-card rounded-xl p-5">
-                <ColumnMerger columns={columns} onMerge={handleMerge} />
+              <div className="glass-card rounded-xl p-5 min-h-[300px]">
+                <Suspense fallback={<PanelFallback />}>
+                  <ColumnMerger columns={columns} onMerge={handleMerge} />
+                </Suspense>
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="filter" className="space-y-4">
-            <div className="glass-card rounded-xl p-5">
-              <DataFilter columns={columns} data={data} filters={filters} onFiltersChange={setFilters} />
+            <div className="glass-card rounded-xl p-5 min-h-[250px]">
+              <Suspense fallback={<PanelFallback />}>
+                <DataFilter columns={columns} data={data} filters={filters} onFiltersChange={setFilters} />
+              </Suspense>
             </div>
             {Object.keys(filters).length > 0 && filteredSuggestions.length > 0 && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {filteredSuggestions.slice(0, 4).map(s => (
-                  <DynamicChart
-                    key={s.id}
-                    title={s.title}
-                    description={s.description}
-                    type={s.type}
-                    data={s.data}
-                    dataKeys={s.dataKeys}
-                    xKey={s.xKey}
-                    theme={chartThemes[0]}
-                    showControls={false}
-                  />
+                  <div key={s.id} className="min-h-[300px]">
+                    <Suspense fallback={<ChartFallback />}>
+                      <DynamicChart
+                        title={s.title}
+                        description={s.description}
+                        type={s.type}
+                        data={s.data}
+                        dataKeys={s.dataKeys}
+                        xKey={s.xKey}
+                        theme={chartThemes[0]}
+                        showControls={false}
+                      />
+                    </Suspense>
+                  </div>
                 ))}
               </div>
             )}
           </TabsContent>
 
           <TabsContent value="data" className="space-y-4">
-            <div className="glass-card rounded-xl p-5">
-              <DataSummary columns={filteredColumns} rowCount={filteredData.length} />
+            <div className="glass-card rounded-xl p-5 min-h-[200px]">
+              <Suspense fallback={<PanelFallback />}>
+                <DataSummary columns={filteredColumns} rowCount={filteredData.length} />
+              </Suspense>
             </div>
-            <div className="glass-card rounded-xl p-4 overflow-auto max-h-96">
+            <div className="glass-card rounded-xl p-4 overflow-auto max-h-96 min-h-[300px]">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border">
