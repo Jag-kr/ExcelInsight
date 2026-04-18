@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react';
-import * as XLSX from 'xlsx';
 import { Upload, FileSpreadsheet, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -16,8 +15,10 @@ export function FileUpload({ onDataLoaded }: FileUploadProps) {
     setLoading(true);
     setFileName(file.name);
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
+        // Lazy-load XLSX (~400KB) only when a file is actually picked.
+        const XLSX = await import('xlsx');
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];

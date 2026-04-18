@@ -45,14 +45,14 @@ export function AdSlot({
   if (isPlaceholder) return null;
 
   return (
-    <div className={`my-6 text-center ${className}`}>
+    <div className={`my-6 text-center min-h-[280px] ${className}`}>
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
         {label}
       </div>
       <ins
         ref={ref}
         className="adsbygoogle"
-        style={{ display: 'block' }}
+        style={{ display: 'block', minHeight: 250 }}
         data-ad-client={ADSENSE_CLIENT}
         data-ad-slot={slot}
         data-ad-format={format}
