@@ -1,12 +1,5 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { FileUpload } from '@/components/FileUpload';
-import { DataSummary } from '@/components/DataSummary';
-import { DynamicChart } from '@/components/DynamicChart';
-import { ManualChartBuilder } from '@/components/ManualChartBuilder';
-import { ColumnMerger } from '@/components/ColumnMerger';
-import { DashboardGrid, DashboardItem } from '@/components/DashboardGrid';
-import { DataFilter } from '@/components/DataFilter';
-import { SmartInsights } from '@/components/SmartInsights';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { LandingContent } from '@/components/LandingContent';
 import { AdSlot } from '@/components/AdSlot';
@@ -15,10 +8,35 @@ import { chartThemes } from '@/lib/chart-themes';
 import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus, Sparkles, RotateCcw, Trash2 } from 'lucide-react';
 import logo from '@/assets/ExcelInsight_Logo.png';
-import { exportDashboardToPDF } from '@/lib/pdf-export';
 import { toast } from 'sonner';
+import type { DashboardItem } from '@/components/DashboardGrid';
+
+// Lazy-load heavy components (recharts, drag-and-drop, pdf libs) so they don't block initial paint.
+const DataSummary = lazy(() => import('@/components/DataSummary').then(m => ({ default: m.DataSummary })));
+const DynamicChart = lazy(() => import('@/components/DynamicChart').then(m => ({ default: m.DynamicChart })));
+const ManualChartBuilder = lazy(() => import('@/components/ManualChartBuilder').then(m => ({ default: m.ManualChartBuilder })));
+const ColumnMerger = lazy(() => import('@/components/ColumnMerger').then(m => ({ default: m.ColumnMerger })));
+const DashboardGrid = lazy(() => import('@/components/DashboardGrid').then(m => ({ default: m.DashboardGrid })));
+const DataFilter = lazy(() => import('@/components/DataFilter').then(m => ({ default: m.DataFilter })));
+const SmartInsights = lazy(() => import('@/components/SmartInsights').then(m => ({ default: m.SmartInsights })));
+
+const ChartFallback = () => (
+  <div className="glass-card rounded-xl p-5 min-h-[300px]">
+    <Skeleton className="h-5 w-1/3 mb-3" />
+    <Skeleton className="h-[240px] w-full" />
+  </div>
+);
+
+const PanelFallback = () => (
+  <div className="glass-card rounded-xl p-5 min-h-[300px] space-y-3">
+    <Skeleton className="h-5 w-1/4" />
+    <Skeleton className="h-4 w-full" />
+    <Skeleton className="h-32 w-full" />
+  </div>
+);
 
 const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
 
@@ -180,6 +198,7 @@ export default function Index() {
       const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
       const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
       const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
+      const { exportDashboardToPDF } = await import('@/lib/pdf-export');
       await exportDashboardToPDF(dashboardRef.current, {
         appName: 'ExcelInsight',
         fileName,
@@ -317,7 +336,7 @@ export default function Index() {
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary mb-4">
               <BarChart3 className="h-4 w-4" /> {t('analyticsEngine')}
             </div>
-            <img src={logo} alt="ExcelInsight logo" className="h-16 mx-auto mb-2" />
+            <img src={logo} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-16 w-16 mx-auto mb-2" />
             <h1 className="text-4xl font-bold gradient-text">{t('appName')}</h1>
             <p className="text-muted-foreground">{t('uploadSubtitle')}</p>
           </div>
@@ -346,7 +365,7 @@ export default function Index() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="ExcelInsight" className="h-6" />
+            <img src={logo} alt="ExcelInsight" width="24" height="24" decoding="async" className="h-6 w-6" />
             <span className="font-bold gradient-text">{t('appName')}</span>
             <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">{fileName}</span>
           </div>
@@ -426,51 +445,57 @@ export default function Index() {
                 </Button>
               </div>
             </div>
-            <div ref={dashboardRef}>
-              <DashboardGrid
-                items={dashboardItems}
-                onReorder={setDashboardItems}
-                onRemove={handleRemoveFromDashboard}
-                onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
-                onDuplicate={handleDuplicate}
-                emptyAction={
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    <Button size="sm" onClick={handleResetLayout} className="gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5" /> {t('autoGenerate')}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setActiveTab('build')} className="gap-1.5">
-                      <Plus className="h-3.5 w-3.5" /> {t('addChart')}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setActiveTab('insights')} className="gap-1.5">
-                      <Lightbulb className="h-3.5 w-3.5" /> {t('browseInsights')}
-                    </Button>
-                  </div>
-                }
-              />
+            <div ref={dashboardRef} className="min-h-[400px]">
+              <Suspense fallback={<ChartFallback />}>
+                <DashboardGrid
+                  items={dashboardItems}
+                  onReorder={setDashboardItems}
+                  onRemove={handleRemoveFromDashboard}
+                  onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
+                  onDuplicate={handleDuplicate}
+                  emptyAction={
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      <Button size="sm" onClick={handleResetLayout} className="gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5" /> {t('autoGenerate')}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setActiveTab('build')} className="gap-1.5">
+                        <Plus className="h-3.5 w-3.5" /> {t('addChart')}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setActiveTab('insights')} className="gap-1.5">
+                        <Lightbulb className="h-3.5 w-3.5" /> {t('browseInsights')}
+                      </Button>
+                    </div>
+                  }
+                />
+              </Suspense>
             </div>
-            <AdSlot slot="" label="Sponsored" />
+            <div className="min-h-[100px]">
+              <AdSlot slot="" label="Sponsored" />
+            </div>
           </TabsContent>
 
           <TabsContent value="explore" className="space-y-4">
             {availableSuggestions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="flex flex-col items-center justify-center py-16 text-center min-h-[300px]">
                 <BarChart3 className="h-8 w-8 text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">{t('allChartsAdded')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {availableSuggestions.map(s => (
-                  <div key={s.id} className="relative group">
-                    <DynamicChart
-                      title={s.title}
-                      description={s.description}
-                      type={s.type}
-                      data={s.data}
-                      dataKeys={s.dataKeys}
-                      xKey={s.xKey}
-                      theme={chartThemes[0]}
-                      showControls={false}
-                    />
+                  <div key={s.id} className="relative group min-h-[300px]">
+                    <Suspense fallback={<ChartFallback />}>
+                      <DynamicChart
+                        title={s.title}
+                        description={s.description}
+                        type={s.type}
+                        data={s.data}
+                        dataKeys={s.dataKeys}
+                        xKey={s.xKey}
+                        theme={chartThemes[0]}
+                        showControls={false}
+                      />
+                    </Suspense>
                     <button
                       onClick={() => addSuggestionToDashboard(s)}
                       className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90"
@@ -484,50 +509,63 @@ export default function Index() {
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-4">
-            <div className="glass-card rounded-xl p-5">
-              <SmartInsights columns={filteredColumns} data={filteredData} onAddToDashboard={addInsightToDashboard} onAddTableToDashboard={addTableToDashboard} addedInsightIds={addedInsightIds} />
+            <div className="glass-card rounded-xl p-5 min-h-[300px]">
+              <Suspense fallback={<PanelFallback />}>
+                <SmartInsights columns={filteredColumns} data={filteredData} onAddToDashboard={addInsightToDashboard} onAddTableToDashboard={addTableToDashboard} addedInsightIds={addedInsightIds} />
+              </Suspense>
             </div>
           </TabsContent>
 
           <TabsContent value="build" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="glass-card rounded-xl p-5">
-                <ManualChartBuilder data={filteredData} columns={filteredColumns} onAddToDashboard={addToDashboard} />
+              <div className="glass-card rounded-xl p-5 min-h-[300px]">
+                <Suspense fallback={<PanelFallback />}>
+                  <ManualChartBuilder data={filteredData} columns={filteredColumns} onAddToDashboard={addToDashboard} />
+                </Suspense>
               </div>
-              <div className="glass-card rounded-xl p-5">
-                <ColumnMerger columns={columns} onMerge={handleMerge} />
+              <div className="glass-card rounded-xl p-5 min-h-[300px]">
+                <Suspense fallback={<PanelFallback />}>
+                  <ColumnMerger columns={columns} onMerge={handleMerge} />
+                </Suspense>
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="filter" className="space-y-4">
-            <div className="glass-card rounded-xl p-5">
-              <DataFilter columns={columns} data={data} filters={filters} onFiltersChange={setFilters} />
+            <div className="glass-card rounded-xl p-5 min-h-[250px]">
+              <Suspense fallback={<PanelFallback />}>
+                <DataFilter columns={columns} data={data} filters={filters} onFiltersChange={setFilters} />
+              </Suspense>
             </div>
             {Object.keys(filters).length > 0 && filteredSuggestions.length > 0 && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {filteredSuggestions.slice(0, 4).map(s => (
-                  <DynamicChart
-                    key={s.id}
-                    title={s.title}
-                    description={s.description}
-                    type={s.type}
-                    data={s.data}
-                    dataKeys={s.dataKeys}
-                    xKey={s.xKey}
-                    theme={chartThemes[0]}
-                    showControls={false}
-                  />
+                  <div key={s.id} className="min-h-[300px]">
+                    <Suspense fallback={<ChartFallback />}>
+                      <DynamicChart
+                        title={s.title}
+                        description={s.description}
+                        type={s.type}
+                        data={s.data}
+                        dataKeys={s.dataKeys}
+                        xKey={s.xKey}
+                        theme={chartThemes[0]}
+                        showControls={false}
+                      />
+                    </Suspense>
+                  </div>
                 ))}
               </div>
             )}
           </TabsContent>
 
           <TabsContent value="data" className="space-y-4">
-            <div className="glass-card rounded-xl p-5">
-              <DataSummary columns={filteredColumns} rowCount={filteredData.length} />
+            <div className="glass-card rounded-xl p-5 min-h-[200px]">
+              <Suspense fallback={<PanelFallback />}>
+                <DataSummary columns={filteredColumns} rowCount={filteredData.length} />
+              </Suspense>
             </div>
-            <div className="glass-card rounded-xl p-4 overflow-auto max-h-96">
+            <div className="glass-card rounded-xl p-4 overflow-auto max-h-96 min-h-[300px]">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border">
