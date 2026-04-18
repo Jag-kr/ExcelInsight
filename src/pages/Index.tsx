@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { FileUpload } from '@/components/FileUpload';
 import { DataSummary } from '@/components/DataSummary';
 import { DynamicChart } from '@/components/DynamicChart';
@@ -14,8 +14,11 @@ import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, Cha
 import { chartThemes } from '@/lib/chart-themes';
 import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus, Sparkles, RotateCcw, Trash2 } from 'lucide-react';
 import logo from '@/assets/ExcelInsight_Logo.png';
+import { exportDashboardToPDF } from '@/lib/pdf-export';
+import { toast } from 'sonner';
 
 const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
 
