@@ -1,12 +1,5 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { FileUpload } from '@/components/FileUpload';
-import { DataSummary } from '@/components/DataSummary';
-import { DynamicChart } from '@/components/DynamicChart';
-import { ManualChartBuilder } from '@/components/ManualChartBuilder';
-import { ColumnMerger } from '@/components/ColumnMerger';
-import { DashboardGrid, DashboardItem } from '@/components/DashboardGrid';
-import { DataFilter } from '@/components/DataFilter';
-import { SmartInsights } from '@/components/SmartInsights';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { LandingContent } from '@/components/LandingContent';
 import { AdSlot } from '@/components/AdSlot';
@@ -15,10 +8,35 @@ import { chartThemes } from '@/lib/chart-themes';
 import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus, Sparkles, RotateCcw, Trash2 } from 'lucide-react';
 import logo from '@/assets/ExcelInsight_Logo.png';
-import { exportDashboardToPDF } from '@/lib/pdf-export';
 import { toast } from 'sonner';
+import type { DashboardItem } from '@/components/DashboardGrid';
+
+// Lazy-load heavy components (recharts, drag-and-drop, pdf libs) so they don't block initial paint.
+const DataSummary = lazy(() => import('@/components/DataSummary').then(m => ({ default: m.DataSummary })));
+const DynamicChart = lazy(() => import('@/components/DynamicChart').then(m => ({ default: m.DynamicChart })));
+const ManualChartBuilder = lazy(() => import('@/components/ManualChartBuilder').then(m => ({ default: m.ManualChartBuilder })));
+const ColumnMerger = lazy(() => import('@/components/ColumnMerger').then(m => ({ default: m.ColumnMerger })));
+const DashboardGrid = lazy(() => import('@/components/DashboardGrid').then(m => ({ default: m.DashboardGrid })));
+const DataFilter = lazy(() => import('@/components/DataFilter').then(m => ({ default: m.DataFilter })));
+const SmartInsights = lazy(() => import('@/components/SmartInsights').then(m => ({ default: m.SmartInsights })));
+
+const ChartFallback = () => (
+  <div className="glass-card rounded-xl p-5 min-h-[300px]">
+    <Skeleton className="h-5 w-1/3 mb-3" />
+    <Skeleton className="h-[240px] w-full" />
+  </div>
+);
+
+const PanelFallback = () => (
+  <div className="glass-card rounded-xl p-5 min-h-[300px] space-y-3">
+    <Skeleton className="h-5 w-1/4" />
+    <Skeleton className="h-4 w-full" />
+    <Skeleton className="h-32 w-full" />
+  </div>
+);
 
 const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
 
