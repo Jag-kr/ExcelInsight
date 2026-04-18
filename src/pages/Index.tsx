@@ -198,6 +198,7 @@ export default function Index() {
       const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
       const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
       const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
+      const { exportDashboardToPDF } = await import('@/lib/pdf-export');
       await exportDashboardToPDF(dashboardRef.current, {
         appName: 'ExcelInsight',
         fileName,
