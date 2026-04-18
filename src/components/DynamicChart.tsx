@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import { useTheme } from '@/lib/theme';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -9,6 +9,7 @@ import {
 import { toPng } from 'html-to-image';
 import { Download, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ChartTheme, chartThemes, ChartType, chartTypeOptions } from '@/lib/chart-themes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -22,15 +23,18 @@ interface DynamicChartProps {
   theme?: ChartTheme;
   onChangeType?: (type: ChartType) => void;
   onChangeTheme?: (theme: ChartTheme) => void;
+  onRenameTitle?: (title: string) => void;
   showControls?: boolean;
 }
 
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
-  theme = chartThemes[0], onChangeType, onChangeTheme, showControls = true,
+  theme = chartThemes[0], onChangeType, onChangeTheme, onRenameTitle, showControls = true,
 }: DynamicChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const { theme: appTheme } = useTheme();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(title);
 
   const adaptedTheme = useMemo(() => {
     if (appTheme === 'light') {
@@ -179,11 +183,35 @@ export function DynamicChart({
   return (
     <div ref={chartRef} className="glass-card rounded-xl p-4 animate-fade-in">
       <div className="mb-3 flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-foreground truncate">{title}</h3>
+        <div className="min-w-0 flex-1">
+          {editing && onRenameTitle ? (
+            <Input
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={() => {
+                const v = draft.trim();
+                if (v && v !== title) onRenameTitle(v); else setDraft(title);
+                setEditing(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                if (e.key === 'Escape') { setDraft(title); setEditing(false); }
+              }}
+              className="h-7 text-sm font-semibold"
+            />
+          ) : (
+            <h3
+              className={`text-sm font-semibold text-foreground truncate ${onRenameTitle ? 'cursor-pointer hover:underline decoration-dotted underline-offset-2' : ''}`}
+              onClick={() => { if (onRenameTitle) { setDraft(title); setEditing(true); } }}
+              title={onRenameTitle ? 'Click to rename' : undefined}
+            >
+              {title}
+            </h3>
+          )}
           {description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{description}</p>}
         </div>
-        <div className="flex items-center gap-1 shrink-0" data-export-hide>
+        <div className="flex items-center gap-1 shrink-0" data-export-hide data-pdf-hide>
           {showControls && onChangeType && (
             <Select value={type} onValueChange={(v) => onChangeType(v as ChartType)}>
               <SelectTrigger className="h-7 w-[110px] text-xs bg-secondary border-border">
