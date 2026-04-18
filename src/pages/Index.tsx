@@ -22,6 +22,98 @@ import { toast } from 'sonner';
 
 const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
 
+function buildDefaultDashboard(
+  newData: Record<string, any>[],
+  cols: ColumnMeta[],
+  charts: ChartSuggestion[],
+): { items: DashboardItem[]; usedChartIds: Set<string> } {
+  const items: DashboardItem[] = [];
+  const usedChartIds = new Set<string>();
+
+  charts.slice(0, 3).forEach((c, i) => {
+    items.push({
+      id: c.id,
+      title: c.title,
+      description: c.description,
+      type: CHART_TYPE_ROTATION[i % CHART_TYPE_ROTATION.length],
+      data: c.data,
+      dataKeys: c.dataKeys,
+      xKey: c.xKey,
+      theme: chartThemes[i % chartThemes.length],
+      size: i === 0 ? 'lg' : 'md',
+    });
+    usedChartIds.add(c.id);
+  });
+
+  const numericCols = cols.filter(c => (c.type === 'numeric' || c.type === 'range') && c.stats);
+  if (numericCols.length > 0) {
+    items.push({
+      id: 'insight-stats-chart',
+      title: 'Column Statistics',
+      description: '',
+      type: 'bar', data: [], dataKeys: [], xKey: '',
+      displayAs: 'insight', insightType: 'stats', insightContent: numericCols, size: 'lg',
+    });
+  }
+
+  const repeating: any[] = [];
+  cols.forEach(col => {
+    if (col.type === 'id') return;
+    const counts: Record<string, number> = {};
+    newData.forEach(row => {
+      const v = row[col.name];
+      if (v !== null && v !== undefined && v !== '') counts[String(v)] = (counts[String(v)] || 0) + 1;
+    });
+    const entries = Object.entries(counts);
+    const uniqueCount = entries.length;
+    const totalCount = newData.length;
+    const repetitionRatio = 1 - (uniqueCount / Math.max(totalCount, 1));
+    if (repetitionRatio > 0.3 && uniqueCount <= 50 && uniqueCount >= 2) {
+      repeating.push({
+        name: col.name, uniqueCount, totalCount, repetitionRatio,
+        topValues: entries.sort((a, b) => b[1] - a[1]).slice(0, 8).map(([value, count]) => ({
+          value, count, percentage: Math.round((count / totalCount) * 100),
+        })),
+      });
+    }
+  });
+  repeating.sort((a, b) => b.repetitionRatio - a.repetitionRatio);
+  repeating.slice(0, 2).forEach(col => {
+    items.push({
+      id: `insight-repeat-chart-${col.name}`,
+      title: `${col.name} — Repeating Values`, description: '',
+      type: 'bar', data: [], dataKeys: [], xKey: '',
+      displayAs: 'insight', insightType: 'repeating', insightContent: col,
+    });
+  });
+
+  const quality = cols.map(c => ({
+    name: c.name,
+    completeness: Math.round(((c.totalCount - c.nullCount) / c.totalCount) * 100),
+    nullCount: c.nullCount,
+  })).filter(c => c.nullCount > 0);
+  if (quality.length > 0) {
+    items.push({
+      id: 'insight-quality-chart', title: 'Data Quality', description: '',
+      type: 'bar', data: [], dataKeys: [], xKey: '',
+      displayAs: 'insight', insightType: 'quality', insightContent: quality,
+    });
+  }
+
+  if (charts.length > 3) {
+    const c = charts[3];
+    items.push({
+      id: c.id, title: c.title, description: c.description,
+      type: CHART_TYPE_ROTATION[3 % CHART_TYPE_ROTATION.length],
+      data: c.data, dataKeys: c.dataKeys, xKey: c.xKey,
+      theme: chartThemes[3 % chartThemes.length],
+    });
+    usedChartIds.add(c.id);
+  }
+
+  return { items, usedChartIds };
+}
+
 export default function Index() {
   const { t } = useI18n();
   const [data, setData] = useState<Record<string, any>[]>([]);
@@ -32,119 +124,80 @@ export default function Index() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [addedChartIds, setAddedChartIds] = useState<Set<string>>(new Set());
   const [addedInsightIds, setAddedInsightIds] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [exporting, setExporting] = useState(false);
+  const dashboardRef = useRef<HTMLDivElement>(null);
 
   const handleDataLoaded = useCallback((newData: Record<string, any>[], name: string) => {
     setData(newData);
     setFileName(name);
     setFilters({});
-    setAddedChartIds(new Set());
-    setAddedInsightIds(new Set());
     const cols = analyzeColumns(newData);
     setColumns(cols);
     const charts = generateChartSuggestions(newData, cols);
     setSuggestions(charts);
 
-    // Build a rich default dashboard with mixed content
-    const items: DashboardItem[] = [];
-    const usedChartIds = new Set<string>();
-
-    // Add first 3 chart suggestions with varied types & themes
-    charts.slice(0, 3).forEach((c, i) => {
-      items.push({
-        id: c.id,
-        title: c.title,
-        description: c.description,
-        type: CHART_TYPE_ROTATION[i % CHART_TYPE_ROTATION.length],
-        data: c.data,
-        dataKeys: c.dataKeys,
-        xKey: c.xKey,
-        theme: chartThemes[i % chartThemes.length],
-        size: i === 0 ? 'lg' : 'md',
-      });
-      usedChartIds.add(c.id);
-    });
-
-    // Auto-generate stats insight if numeric columns exist
-    const numericCols = cols.filter(c => (c.type === 'numeric' || c.type === 'range') && c.stats);
-    if (numericCols.length > 0) {
-      const statsId = 'insight-stats-chart';
-      items.push({
-        id: statsId,
-        title: 'Column Statistics',
-        description: '',
-        type: 'bar',
-        data: [],
-        dataKeys: [],
-        xKey: '',
-        displayAs: 'insight',
-        insightType: 'stats',
-        insightContent: numericCols,
-        size: 'lg',
-      });
-    }
-
-    // Auto-generate repeating value insights
-    const repeating: any[] = [];
-    cols.forEach(col => {
-      if (col.type === 'id') return;
-      const counts: Record<string, number> = {};
-      newData.forEach(row => {
-        const v = row[col.name];
-        if (v !== null && v !== undefined && v !== '') counts[String(v)] = (counts[String(v)] || 0) + 1;
-      });
-      const entries = Object.entries(counts);
-      const uniqueCount = entries.length;
-      const totalCount = newData.length;
-      const repetitionRatio = 1 - (uniqueCount / Math.max(totalCount, 1));
-      if (repetitionRatio > 0.3 && uniqueCount <= 50 && uniqueCount >= 2) {
-        repeating.push({
-          name: col.name, uniqueCount, totalCount, repetitionRatio,
-          topValues: entries.sort((a, b) => b[1] - a[1]).slice(0, 8).map(([value, count]) => ({
-            value, count, percentage: Math.round((count / totalCount) * 100),
-          })),
-        });
-      }
-    });
-    repeating.sort((a, b) => b.repetitionRatio - a.repetitionRatio);
-    repeating.slice(0, 2).forEach(col => {
-      const id = `insight-repeat-chart-${col.name}`;
-      items.push({
-        id, title: `${col.name} — Repeating Values`, description: '',
-        type: 'bar', data: [], dataKeys: [], xKey: '',
-        displayAs: 'insight', insightType: 'repeating', insightContent: col,
-      });
-    });
-
-    // Data quality insight
-    const quality = cols.map(c => ({
-      name: c.name,
-      completeness: Math.round(((c.totalCount - c.nullCount) / c.totalCount) * 100),
-      nullCount: c.nullCount,
-    })).filter(c => c.nullCount > 0);
-    if (quality.length > 0) {
-      items.push({
-        id: 'insight-quality-chart', title: 'Data Quality', description: '',
-        type: 'bar', data: [], dataKeys: [], xKey: '',
-        displayAs: 'insight', insightType: 'quality', insightContent: quality,
-      });
-    }
-
-    // Add 4th chart if available
-    if (charts.length > 3) {
-      const c = charts[3];
-      items.push({
-        id: c.id, title: c.title, description: c.description,
-        type: CHART_TYPE_ROTATION[3 % CHART_TYPE_ROTATION.length],
-        data: c.data, dataKeys: c.dataKeys, xKey: c.xKey,
-        theme: chartThemes[3 % chartThemes.length],
-      });
-      usedChartIds.add(c.id);
-    }
-
+    const { items, usedChartIds } = buildDefaultDashboard(newData, cols, charts);
     setDashboardItems(items);
     setAddedChartIds(usedChartIds);
     setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
   }, []);
+
+  const handleResetLayout = useCallback(() => {
+    const { items, usedChartIds } = buildDefaultDashboard(data, columns, suggestions);
+    setDashboardItems(items);
+    setAddedChartIds(usedChartIds);
+    setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
+    toast.success('Layout reset');
+  }, [data, columns, suggestions]);
+
+  const handleClearAll = useCallback(() => {
+    setDashboardItems([]);
+    setAddedChartIds(new Set());
+    setAddedInsightIds(new Set());
+  }, []);
+
+  const handleDuplicate = useCallback((id: string) => {
+    setDashboardItems(prev => {
+      const idx = prev.findIndex(i => i.id === id);
+      if (idx < 0) return prev;
+      const original = prev[idx];
+      const copy: DashboardItem = { ...original, id: `${original.id}-copy-${Date.now()}`, title: `${original.title} (copy)` };
+      const next = [...prev];
+      next.splice(idx + 1, 0, copy);
+      return next;
+    });
+  }, []);
+
+  const handleExportPdf = useCallback(async () => {
+    if (!dashboardRef.current || !dashboardItems.length) {
+      toast.error('Nothing to export');
+      return;
+    }
+    setExporting(true);
+    const toastId = toast.loading(t('generatingPdf'));
+    try {
+      const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
+      const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
+      const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
+      await exportDashboardToPDF(dashboardRef.current, {
+        appName: 'ExcelInsight',
+        fileName,
+        rowCount: filteredData.length,
+        colCount: columns.length,
+        chartCount, tableCount, insightCount,
+        logoUrl: logo,
+      });
+      toast.success(t('pdfReady'), { id: toastId });
+    } catch (e) {
+      console.error(e);
+      toast.error(t('pdfFailed'), { id: toastId });
+    } finally {
+      setExporting(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dashboardItems, fileName, columns.length, t]);
+
 
   const filteredData = useMemo(() => {
     if (!Object.keys(filters).length) return data;
