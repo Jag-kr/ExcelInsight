@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://excelinsight.lovable.app/sitemap.xml
+Sitemap: https://excelinsight.xyz/sitemap.xml
