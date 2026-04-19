@@ -5,6 +5,7 @@ import { DynamicChart } from './DynamicChart';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
 
 interface ManualChartBuilderProps {
   data: Record<string, any>[];
@@ -13,6 +14,7 @@ interface ManualChartBuilderProps {
 }
 
 export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualChartBuilderProps) {
+  const { t } = useI18n();
   const [chartType, setChartType] = useState<ChartType>('bar');
   const [xCol, setXCol] = useState('');
   const [yCol, setYCol] = useState('');
@@ -62,7 +64,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
     if (!chartData.length) return;
     onAddToDashboard({
       id: `manual-${Date.now()}`,
-      title: yCol ? `${yCol} by ${xCol} (${aggregation})` : `${xCol} Count`,
+      title: yCol ? `${yCol} ${t('by')} ${xCol} (${t(aggregation)})` : `${xCol} ${t('count')}`,
       type: chartType,
       data: chartData,
       dataKeys: [dataKey],
@@ -74,11 +76,11 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-foreground">Build Custom Chart</h3>
+      <h3 className="text-sm font-semibold text-foreground">{t('buildCustomChart')}</h3>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Chart Type</label>
+          <label className="text-xs text-muted-foreground mb-1 block">{t('chartType')}</label>
           <Select value={chartType} onValueChange={(v) => setChartType(v as ChartType)}>
             <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -88,9 +90,9 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
         </div>
 
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">X-Axis / Category</label>
+          <label className="text-xs text-muted-foreground mb-1 block">{t('xAxisCategory')}</label>
           <Select value={xCol} onValueChange={setXCol}>
-            <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Select column" /></SelectTrigger>
+            <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder={t('selectColumn')} /></SelectTrigger>
             <SelectContent>
               {columns.map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
             </SelectContent>
@@ -98,11 +100,11 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
         </div>
 
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Y-Axis / Value (optional)</label>
+          <label className="text-xs text-muted-foreground mb-1 block">{t('yAxisValue')}</label>
           <Select value={yCol} onValueChange={setYCol}>
-            <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Count only" /></SelectTrigger>
+            <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder={t('countOnly')} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="__none">Count only</SelectItem>
+              <SelectItem value="__none">{t('countOnly')}</SelectItem>
               {numericCols.map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -110,13 +112,13 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
 
         {yCol && yCol !== '__none' && (
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Aggregation</label>
+            <label className="text-xs text-muted-foreground mb-1 block">{t('aggregation')}</label>
             <Select value={aggregation} onValueChange={(v) => setAggregation(v as any)}>
               <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="sum">Sum</SelectItem>
-                <SelectItem value="average">Average</SelectItem>
-                <SelectItem value="count">Count</SelectItem>
+                <SelectItem value="sum">{t('sum')}</SelectItem>
+                <SelectItem value="average">{t('average')}</SelectItem>
+                <SelectItem value="count">{t('count')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -126,7 +128,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
       {chartData.length > 0 && (
         <>
           <DynamicChart
-            title={yCol && yCol !== '__none' ? `${yCol} by ${xCol}` : `${xCol} Distribution`}
+            title={yCol && yCol !== '__none' ? `${yCol} ${t('by')} ${xCol}` : `${xCol} ${t('distribution')}`}
             type={chartType}
             data={chartData}
             dataKeys={[dataKey]}
@@ -135,7 +137,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
             onChangeTheme={setTheme}
           />
           <Button onClick={handleAdd} className="w-full" size="sm">
-            <Plus className="h-4 w-4 mr-1" /> Add to Dashboard
+            <Plus className="h-4 w-4 mr-1" /> {t('addDashboard')}
           </Button>
         </>
       )}
