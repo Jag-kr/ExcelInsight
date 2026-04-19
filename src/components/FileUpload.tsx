@@ -1,12 +1,14 @@
 import { useCallback, useState } from 'react';
 import { Upload, FileSpreadsheet, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/lib/i18n';
 
 interface FileUploadProps {
   onDataLoaded: (data: Record<string, any>[], fileName: string) => void;
 }
 
 export function FileUpload({ onDataLoaded }: FileUploadProps) {
+  const { t } = useI18n();
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,10 +73,10 @@ export function FileUpload({ onDataLoaded }: FileUploadProps) {
       </div>
       <div className="text-center">
         <p className="text-lg font-semibold text-foreground">
-          {loading ? 'Processing...' : 'Drop your Excel file here'}
+          {loading ? t('processing') : t('dropFile')}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          or click to browse • .xlsx, .xls, .csv
+          {t('orClickBrowse')}
         </p>
       </div>
       <input
