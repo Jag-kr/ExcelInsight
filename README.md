@@ -1,1 +1,1 @@
-https://excelinsight.lovable.app/
+https://excelinsight.xyz/
