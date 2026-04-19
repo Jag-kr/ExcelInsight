@@ -1,5 +1,6 @@
 import { ColumnMeta } from '@/lib/data-analyzer';
 import { Hash, Type, Calendar, List, Fingerprint, BarChart3 } from 'lucide-react';
+import { useI18n, TranslationKey } from '@/lib/i18n';
 
 interface DataSummaryProps {
   columns: ColumnMeta[];
@@ -15,26 +16,27 @@ const typeIcons: Record<string, any> = {
   id: Fingerprint,
 };
 
-const typeLabels: Record<string, string> = {
-  numeric: 'Summable Numeric',
-  categorical: 'Categorical',
-  date: 'Date',
-  text: 'Text',
-  range: 'Range / Discrete',
-  id: 'Identifier',
+const typeLabelKeys: Record<string, TranslationKey> = {
+  numeric: 'summableNumeric',
+  categorical: 'categorical',
+  date: 'date',
+  text: 'text',
+  range: 'rangeDiscrete',
+  id: 'identifier',
 };
 
 export function DataSummary({ columns, rowCount }: DataSummaryProps) {
+  const { t } = useI18n();
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <div className="glass-card rounded-lg px-4 py-3 text-center">
           <p className="text-2xl font-bold text-primary">{rowCount}</p>
-          <p className="text-xs text-muted-foreground">Rows</p>
+          <p className="text-xs text-muted-foreground">{t('rows')}</p>
         </div>
         <div className="glass-card rounded-lg px-4 py-3 text-center">
           <p className="text-2xl font-bold text-accent">{columns.length}</p>
-          <p className="text-xs text-muted-foreground">Columns</p>
+          <p className="text-xs text-muted-foreground">{t('columns')}</p>
         </div>
       </div>
 
@@ -46,10 +48,10 @@ export function DataSummary({ columns, rowCount }: DataSummaryProps) {
               <Icon className="h-4 w-4 shrink-0 text-primary" />
               <span className="font-medium text-foreground truncate">{col.name}</span>
               <span className="ml-auto shrink-0 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                {typeLabels[col.type]}
+                {t(typeLabelKeys[col.type] || 'text')}
               </span>
               {col.nullCount > 0 && (
-                <span className="shrink-0 text-xs text-warning">{col.nullCount} null</span>
+                <span className="shrink-0 text-xs text-warning">{col.nullCount} {t('nullValues')}</span>
               )}
             </div>
           );

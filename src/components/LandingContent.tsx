@@ -2,47 +2,50 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
 import { Link } from 'react-router-dom';
-
-const features = [
-  { icon: FileSpreadsheet, title: 'Excel & CSV Support', desc: 'Upload .xlsx, .xls, or .csv files of any size and instantly turn rows into insights.' },
-  { icon: Sparkles, title: 'Auto-Generated Charts', desc: 'Smart detection picks the right chart type — bar, line, pie, area, scatter, radar — for every column.' },
-  { icon: LayoutDashboard, title: 'Custom Dashboards', desc: 'Drag, drop, and resize cards to build a dashboard tailored to your data story.' },
-  { icon: Lightbulb, title: 'Smart Insights', desc: 'Get column statistics, repeating value detection, and data quality scores automatically.' },
-  { icon: Combine, title: 'Column Merging', desc: 'Combine two columns with a custom separator to create new dimensions on the fly.' },
-  { icon: Filter, title: 'Interactive Filters', desc: 'Slice your data with one-click filters that update every chart and insight live.' },
-  { icon: Download, title: 'PNG Export', desc: 'Export individual charts as high-resolution PNGs for reports and presentations.' },
-  { icon: Upload, title: '100% Browser-Based', desc: 'Your file never leaves your device. Everything runs locally for complete privacy.' },
-];
-
-const steps = [
-  { n: '01', title: 'Upload your file', desc: 'Drop an Excel or CSV file into the uploader. Files are processed locally in your browser — no servers, no signup.' },
-  { n: '02', title: 'Explore auto-generated analytics', desc: 'ExcelInsight analyzes every column, detects data types, and instantly builds a dashboard mixing charts, tables, and insights.' },
-  { n: '03', title: 'Customize your dashboard', desc: 'Resize cards, add charts from Auto Charts, build manual charts, merge columns, and apply filters.' },
-  { n: '04', title: 'Export & share', desc: 'Download charts as PNG to drop into reports, slides, or share with your team.' },
-];
-
-const faqs = [
-  { q: 'Is ExcelInsight free to use?', a: 'Yes — ExcelInsight is completely free. There are no signups, no subscriptions, and no usage limits. You can analyze unlimited Excel and CSV files.' },
-  { q: 'Is my data safe?', a: 'Absolutely. All file processing happens directly in your browser. Your spreadsheets are never uploaded to any server, so your data stays 100% private.' },
-  { q: 'What file formats are supported?', a: 'ExcelInsight supports .xlsx, .xls, and .csv files. Most spreadsheets exported from Excel, Google Sheets, Numbers, or any database tool will work.' },
-  { q: 'How large a file can I analyze?', a: 'Since processing runs in your browser, performance depends on your device. Files with up to ~100,000 rows typically work smoothly on a modern laptop.' },
-  { q: 'Can I export the dashboard or charts?', a: 'Yes — every chart on the dashboard has an "Export PNG" button to download a high-resolution image suitable for reports and presentations.' },
-  { q: 'Do I need to install anything?', a: 'No installation required. ExcelInsight runs entirely in your web browser on any device — Windows, Mac, Linux, iOS, or Android.' },
-  { q: 'Can I merge columns or filter data?', a: 'Yes. The Build tab lets you merge any two columns into a new one, and the Filter tab lets you drill into specific values across every chart.' },
-  { q: 'Does ExcelInsight work offline?', a: 'After the first load, most functionality continues to work even without an internet connection because everything runs client-side.' },
-];
+import { useI18n } from '@/lib/i18n';
 
 export function LandingContent() {
+  const { t } = useI18n();
+
+  const features = [
+    { icon: FileSpreadsheet, title: t('feat1Title'), desc: t('feat1Desc') },
+    { icon: Sparkles, title: t('feat2Title'), desc: t('feat2Desc') },
+    { icon: LayoutDashboard, title: t('feat3Title'), desc: t('feat3Desc') },
+    { icon: Lightbulb, title: t('feat4Title'), desc: t('feat4Desc') },
+    { icon: Combine, title: t('feat5Title'), desc: t('feat5Desc') },
+    { icon: Filter, title: t('feat6Title'), desc: t('feat6Desc') },
+    { icon: Download, title: t('feat7Title'), desc: t('feat7Desc') },
+    { icon: Upload, title: t('feat8Title'), desc: t('feat8Desc') },
+  ];
+
+  const steps = [
+    { n: '01', title: t('step1Title'), desc: t('step1Desc') },
+    { n: '02', title: t('step2Title'), desc: t('step2Desc') },
+    { n: '03', title: t('step3Title'), desc: t('step3Desc') },
+    { n: '04', title: t('step4Title'), desc: t('step4Desc') },
+  ];
+
+  const faqs = [
+    { q: t('faq1Q'), a: t('faq1A') },
+    { q: t('faq2Q'), a: t('faq2A') },
+    { q: t('faq3Q'), a: t('faq3A') },
+    { q: t('faq4Q'), a: t('faq4A') },
+    { q: t('faq5Q'), a: t('faq5A') },
+    { q: t('faq6Q'), a: t('faq6A') },
+    { q: t('faq7Q'), a: t('faq7A') },
+    { q: t('faq8Q'), a: t('faq8A') },
+  ];
+
   return (
     <div className="w-full max-w-6xl mx-auto px-4 pb-20 space-y-20">
       {/* Features */}
       <section aria-labelledby="features-heading">
         <div className="text-center mb-10">
           <h2 id="features-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
-            Everything you need to analyze Excel files
+            {t('featuresTitle')}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            ExcelInsight is a free online Excel analytics and dashboard builder. Upload a spreadsheet and get instant charts, statistics, and shareable dashboards — all without writing a single formula.
+            {t('featuresIntro')}
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -59,16 +62,16 @@ export function LandingContent() {
       </section>
 
       {/* Ad slot — between Features and How it works */}
-      <AdSlot slot="" label="Sponsored" />
+      <AdSlot slot="" label={t('sponsored')} />
 
       {/* How it works */}
       <section aria-labelledby="how-heading">
         <div className="text-center mb-10">
           <h2 id="how-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
-            How it works
+            {t('howTitle')}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Go from raw spreadsheet to interactive dashboard in under a minute.
+            {t('howIntro')}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -87,34 +90,34 @@ export function LandingContent() {
       {/* Use cases / SEO content */}
       <section aria-labelledby="usecases-heading" className="glass-card rounded-2xl p-8 md:p-10">
         <h2 id="usecases-heading" className="text-2xl md:text-3xl font-bold gradient-text mb-4">
-          Who uses ExcelInsight?
+          {t('useCasesTitle')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-muted-foreground leading-relaxed">
           <div>
-            <h3 className="font-semibold text-foreground mb-2">Analysts & Marketers</h3>
-            <p>Turn campaign exports, sales reports, and survey results into shareable dashboards without firing up Tableau or Power BI.</p>
+            <h3 className="font-semibold text-foreground mb-2">{t('useCase1Title')}</h3>
+            <p>{t('useCase1Desc')}</p>
           </div>
           <div>
-            <h3 className="font-semibold text-foreground mb-2">Students & Researchers</h3>
-            <p>Quickly visualize CSV datasets for assignments, theses, and research papers — no Python, R, or SPSS required.</p>
+            <h3 className="font-semibold text-foreground mb-2">{t('useCase2Title')}</h3>
+            <p>{t('useCase2Desc')}</p>
           </div>
           <div>
-            <h3 className="font-semibold text-foreground mb-2">Small Business Owners</h3>
-            <p>Understand sales trends, inventory patterns, and customer behavior from your accounting or POS exports.</p>
+            <h3 className="font-semibold text-foreground mb-2">{t('useCase3Title')}</h3>
+            <p>{t('useCase3Desc')}</p>
           </div>
         </div>
       </section>
 
       {/* Ad slot — between Use Cases and FAQ */}
-      <AdSlot slot="" label="Sponsored" />
+      <AdSlot slot="" label={t('sponsored')} />
 
       {/* FAQ */}
       <section aria-labelledby="faq-heading">
         <div className="text-center mb-10">
           <h2 id="faq-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
-            Frequently asked questions
+            {t('faqTitle')}
           </h2>
-          <p className="text-muted-foreground">Everything you need to know about ExcelInsight.</p>
+          <p className="text-muted-foreground">{t('faqIntro')}</p>
         </div>
         <Accordion type="single" collapsible className="max-w-3xl mx-auto">
           {faqs.map((f, i) => (
@@ -133,12 +136,12 @@ export function LandingContent() {
       {/* Footer */}
       <footer className="text-center pt-10 border-t border-border space-y-3">
         <nav className="flex items-center justify-center gap-4 text-sm">
-          <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link>
+          <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">{t('privacyPolicy')}</Link>
           <span className="text-border">•</span>
-          <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
+          <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">{t('termsOfService')}</Link>
         </nav>
         <p className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} ExcelInsight — Free Excel analytics & dashboard builder. Made for analysts, students, and small businesses.
+          © {new Date().getFullYear()} ExcelInsight — {t('footerCopy')}
         </p>
       </footer>
 
