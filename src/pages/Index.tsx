@@ -3,6 +3,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { LandingContent } from '@/components/LandingContent';
 import { AdSlot } from '@/components/AdSlot';
+import { SEO } from '@/components/SEO';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { chartThemes } from '@/lib/chart-themes';
 import { useI18n } from '@/lib/i18n';
@@ -328,6 +329,7 @@ export default function Index() {
   if (!data.length) {
     return (
       <div className="min-h-screen" style={{ background: 'var(--gradient-glow)' }}>
+        <SEO path="/" />
         <div className="absolute top-4 right-4 z-10">
           <ThemeLangSwitcher />
         </div>
