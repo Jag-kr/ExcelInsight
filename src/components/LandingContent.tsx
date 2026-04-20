@@ -38,6 +38,17 @@ export function LandingContent() {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 pb-20 space-y-20">
+      {/* SEO-rich intro */}
+      <section aria-label="ExcelInsight overview" className="text-center max-w-3xl mx-auto pt-4">
+        <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+          <strong className="text-foreground">ExcelInsight</strong> is the fastest way to turn an Excel spreadsheet into beautiful{' '}
+          <strong className="text-foreground">Excel visualizations</strong>, <strong className="text-foreground">graphs</strong>,{' '}
+          <strong className="text-foreground">plots</strong>, <strong className="text-foreground">dashboards</strong>, and{' '}
+          <strong className="text-foreground">reports</strong>. Get instant <strong className="text-foreground">Excel analytics</strong> and{' '}
+          <strong className="text-foreground">Excel insights</strong> from any .xlsx or .csv file — free, private, and 100% browser-based.
+        </p>
+      </section>
+
       {/* Features */}
       <section aria-labelledby="features-heading">
         <div className="text-center mb-10">
