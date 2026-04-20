@@ -1,11 +1,31 @@
 {
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "excel-insight-ruddy.vercel.app"
+        }
+      ],
+      "destination": "https://excelinsight.xyz/:path*",
+      "permanent": true,
+      "statusCode": 301
+    }
+  ],
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "excel-insight-ruddy.vercel.app"
+        }
+      ],
       "headers": [
         {
-          "key": "Link",
-          "value": "<https://excelinsight.xyz/>; rel=\"canonical\""
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
         }
       ]
     }
