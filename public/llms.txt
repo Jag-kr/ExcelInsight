@@ -1,0 +1,32 @@
+# ExcelInsight
+
+> ExcelInsight is a free online Excel and CSV analytics tool that turns spreadsheets into automated insights, interactive charts, and custom dashboards in seconds — no signup required. Upload XLSX or CSV files, explore auto-generated statistics, merge columns, filter data, and export polished PDF reports directly from the browser.
+
+ExcelInsight runs entirely client-side: your files never leave your device. The app is built for analysts, students, marketers, finance teams, and anyone who needs fast spreadsheet analysis without installing software. It supports six languages (English, Hindi, Spanish, Mandarin Chinese, French, German) and works on desktop and mobile.
+
+## Core Pages
+
+- [ExcelInsight Home](https://excelinsight.xyz/): Upload Excel or CSV files to instantly generate analytics, charts, smart insights, and a custom drag-and-drop dashboard.
+- [Privacy Policy](https://excelinsight.xyz/privacy): How ExcelInsight handles data — files are processed locally in your browser and are never uploaded to a server.
+- [Terms of Service](https://excelinsight.xyz/terms): Terms governing use of the ExcelInsight web application.
+
+## Key Features
+
+- **Excel & CSV Analysis**: Upload .xlsx, .xls, or .csv files and get automatic column detection, type inference, and quality reports.
+- **Auto-Generated Charts**: Smart chart suggestions (bar, line, pie, scatter) based on column types and data distribution.
+- **Custom Dashboard Builder**: Drag, drop, resize, and duplicate chart widgets to build a personalized dashboard.
+- **Smart Insights**: Automatic detection of trends, outliers, correlations, and summary statistics.
+- **Column Merger**: Combine multiple columns into a single derived field with custom separators.
+- **Data Filtering**: Filter rows by value, range, or text match across any column.
+- **PDF Export**: Export the entire dashboard — charts, tables, and insights — to a single PDF report.
+- **Multi-language UI**: English, Hindi, Spanish, Mandarin Chinese, French, German.
+- **Privacy-First**: 100% client-side processing. No file uploads, no accounts, no tracking of file contents.
+
+## Resources
+
+- [Sitemap](https://excelinsight.xyz/sitemap.xml): Full list of indexable pages.
+- [Robots](https://excelinsight.xyz/robots.txt): Crawler directives.
+
+## Contact
+
+- Website: https://excelinsight.xyz/
