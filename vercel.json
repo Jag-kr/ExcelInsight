@@ -1,15 +1,13 @@
 {
-  "redirects": [
+  "headers": [
     {
       "source": "/(.*)",
-      "has": [
+      "headers": [
         {
-          "type": "host",
-          "value": "excel-insight-ruddy.vercel.app"
+          "key": "Link",
+          "value": "<https://excelinsight.xyz/>; rel=\"canonical\""
         }
-      ],
-      "destination": "https://excelinsight.xyz/$1",
-      "permanent": true
+      ]
     }
   ]
 }
