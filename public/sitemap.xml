@@ -1,21 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://excelinsight.xyz/</loc>
-    <lastmod>2026-04-17</lastmod>
+    <lastmod>2026-04-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://excelinsight.xyz/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://excelinsight.xyz/?lang=hi"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://excelinsight.xyz/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://excelinsight.xyz/?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://excelinsight.xyz/?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://excelinsight.xyz/?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://excelinsight.xyz/"/>
   </url>
   <url>
     <loc>https://excelinsight.xyz/privacy</loc>
-    <lastmod>2026-04-17</lastmod>
+    <lastmod>2026-04-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://excelinsight.xyz/privacy"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://excelinsight.xyz/privacy?lang=hi"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://excelinsight.xyz/privacy?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://excelinsight.xyz/privacy?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://excelinsight.xyz/privacy?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://excelinsight.xyz/privacy?lang=de"/>
   </url>
   <url>
     <loc>https://excelinsight.xyz/terms</loc>
-    <lastmod>2026-04-17</lastmod>
+    <lastmod>2026-04-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://excelinsight.xyz/terms"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://excelinsight.xyz/terms?lang=hi"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://excelinsight.xyz/terms?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://excelinsight.xyz/terms?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://excelinsight.xyz/terms?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://excelinsight.xyz/terms?lang=de"/>
   </url>
 </urlset>
