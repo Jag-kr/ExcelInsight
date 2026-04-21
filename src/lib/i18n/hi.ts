@@ -173,4 +173,8 @@ export const hi: Record<TranslationKey, string> = {
   termsOfService: 'सेवा की शर्तें',
   footerCopy: 'मुफ़्त एक्सेल एनालिटिक्स और डैशबोर्ड बिल्डर। विश्लेषकों, छात्रों और छोटे व्यवसायों के लिए बनाया गया।',
   sponsored: 'प्रायोजित',
+  clearFile: 'फ़ाइल हटाएँ',
+  clearFileConfirmTitle: 'अपलोड की गई फ़ाइल हटाएँ?',
+  clearFileConfirmDesc: 'इससे वर्तमान फ़ाइल हट जाएगी और सभी चार्ट, फ़िल्टर और डैशबोर्ड रीसेट हो जाएंगे। इसे पूर्ववत नहीं किया जा सकता।',
+  cancel: 'रद्द करें',
 };
