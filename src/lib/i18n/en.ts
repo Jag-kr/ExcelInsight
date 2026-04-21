@@ -183,6 +183,10 @@ export const en = {
   termsOfService: 'Terms of Service',
   footerCopy: 'Free Excel analytics & dashboard builder. Made for analysts, students, and small businesses.',
   sponsored: 'Sponsored',
+  clearFile: 'Clear file',
+  clearFileConfirmTitle: 'Clear uploaded file?',
+  clearFileConfirmDesc: 'This will remove the current file and reset all charts, filters, and dashboards. This cannot be undone.',
+  cancel: 'Cancel',
 } as const;
 
 export type TranslationKey = keyof typeof en;
