@@ -176,6 +176,19 @@ export default function Index() {
     setAddedInsightIds(new Set());
   }, []);
 
+  const handleClearFile = useCallback(() => {
+    setData([]);
+    setFileName('');
+    setColumns([]);
+    setSuggestions([]);
+    setDashboardItems([]);
+    setFilters({});
+    setAddedChartIds(new Set());
+    setAddedInsightIds(new Set());
+    setActiveTab('dashboard');
+    toast.success('File cleared');
+  }, []);
+
   const handleDuplicate = useCallback((id: string) => {
     setDashboardItems(prev => {
       const idx = prev.findIndex(i => i.id === id);
