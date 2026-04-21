@@ -173,4 +173,8 @@ export const fr: Record<TranslationKey, string> = {
   termsOfService: 'Conditions d\'Utilisation',
   footerCopy: 'Constructeur d\'analyses Excel et de tableaux de bord gratuit. Conçu pour les analystes, étudiants et petites entreprises.',
   sponsored: 'Sponsorisé',
+  clearFile: 'Effacer le fichier',
+  clearFileConfirmTitle: 'Effacer le fichier téléchargé ?',
+  clearFileConfirmDesc: 'Cela supprimera le fichier actuel et réinitialisera tous les graphiques, filtres et tableaux de bord. Cette action est irréversible.',
+  cancel: 'Annuler',
 };

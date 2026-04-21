@@ -173,4 +173,8 @@ export const de: Record<TranslationKey, string> = {
   termsOfService: 'Nutzungsbedingungen',
   footerCopy: 'Kostenloser Excel-Analyse- und Dashboard-Builder. Gemacht für Analysten, Studierende und Kleinunternehmen.',
   sponsored: 'Gesponsert',
+  clearFile: 'Datei löschen',
+  clearFileConfirmTitle: 'Hochgeladene Datei löschen?',
+  clearFileConfirmDesc: 'Dadurch wird die aktuelle Datei entfernt und alle Diagramme, Filter und Dashboards werden zurückgesetzt. Dies kann nicht rückgängig gemacht werden.',
+  cancel: 'Abbrechen',
 };

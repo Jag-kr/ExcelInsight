@@ -10,7 +10,18 @@ import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus, Sparkles, RotateCcw, Trash2 } from 'lucide-react';
+import { BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus, Sparkles, RotateCcw, Trash2, X } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import logo from '@/assets/ExcelInsight_Logo.png';
 import { toast } from 'sonner';
 import type { DashboardItem } from '@/components/DashboardGrid';
@@ -174,6 +185,19 @@ export default function Index() {
     setDashboardItems([]);
     setAddedChartIds(new Set());
     setAddedInsightIds(new Set());
+  }, []);
+
+  const handleClearFile = useCallback(() => {
+    setData([]);
+    setFileName('');
+    setColumns([]);
+    setSuggestions([]);
+    setDashboardItems([]);
+    setFilters({});
+    setAddedChartIds(new Set());
+    setAddedInsightIds(new Set());
+    setActiveTab('dashboard');
+    toast.success('File cleared');
   }, []);
 
   const handleDuplicate = useCallback((id: string) => {
@@ -369,7 +393,31 @@ export default function Index() {
           <div className="flex items-center gap-3">
             <img src={logo} alt="ExcelInsight" width="24" height="24" decoding="async" className="h-6 w-6" />
             <span className="font-bold gradient-text">{t('appName')}</span>
-            <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">{fileName}</span>
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-secondary pl-2 pr-1 py-0.5 rounded">
+              <span className="truncate max-w-[200px]">{fileName}</span>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={t('clearFile')}
+                    title={t('clearFile')}
+                    className="inline-flex items-center justify-center h-4 w-4 rounded hover:bg-destructive/20 hover:text-destructive transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t('clearFileConfirmTitle')}</AlertDialogTitle>
+                    <AlertDialogDescription>{t('clearFileConfirmDesc')}</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearFile}>{t('clearFile')}</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
