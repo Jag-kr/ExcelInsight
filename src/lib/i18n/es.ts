@@ -173,4 +173,8 @@ export const es: Record<TranslationKey, string> = {
   termsOfService: 'Términos del Servicio',
   footerCopy: 'Análisis de Excel y constructor de paneles gratuito. Hecho para analistas, estudiantes y pequeñas empresas.',
   sponsored: 'Patrocinado',
+  clearFile: 'Borrar archivo',
+  clearFileConfirmTitle: '¿Borrar archivo cargado?',
+  clearFileConfirmDesc: 'Esto eliminará el archivo actual y restablecerá todos los gráficos, filtros y paneles. Esta acción no se puede deshacer.',
+  cancel: 'Cancelar',
 };

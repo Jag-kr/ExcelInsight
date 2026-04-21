@@ -5,9 +5,10 @@ import { useI18n } from '@/lib/i18n';
 
 interface FileUploadProps {
   onDataLoaded: (data: Record<string, any>[], fileName: string) => void;
+  onClear?: () => void;
 }
 
-export function FileUpload({ onDataLoaded }: FileUploadProps) {
+export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
   const { t } = useI18n();
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -52,7 +53,14 @@ export function FileUpload({ onDataLoaded }: FileUploadProps) {
       <div className="flex items-center gap-3 rounded-lg bg-secondary px-4 py-2">
         <FileSpreadsheet className="h-5 w-5 text-primary" />
         <span className="text-sm text-foreground">{fileName}</span>
-        <Button variant="ghost" size="sm" className="ml-auto h-6 w-6 p-0" onClick={() => setFileName(null)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ml-auto h-6 w-6 p-0"
+          onClick={() => { setFileName(null); onClear?.(); }}
+          aria-label={t('clearFile')}
+          title={t('clearFile')}
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
