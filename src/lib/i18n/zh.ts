@@ -173,4 +173,8 @@ export const zh: Record<TranslationKey, string> = {
   termsOfService: '服务条款',
   footerCopy: '免费的Excel分析和仪表板构建器。专为分析师、学生和小企业打造。',
   sponsored: '赞助',
+  clearFile: '清除文件',
+  clearFileConfirmTitle: '清除已上传的文件？',
+  clearFileConfirmDesc: '这将删除当前文件并重置所有图表、筛选器和仪表板。此操作无法撤销。',
+  cancel: '取消',
 };
