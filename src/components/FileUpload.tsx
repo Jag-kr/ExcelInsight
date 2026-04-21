@@ -5,9 +5,10 @@ import { useI18n } from '@/lib/i18n';
 
 interface FileUploadProps {
   onDataLoaded: (data: Record<string, any>[], fileName: string) => void;
+  onClear?: () => void;
 }
 
-export function FileUpload({ onDataLoaded }: FileUploadProps) {
+export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
   const { t } = useI18n();
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
