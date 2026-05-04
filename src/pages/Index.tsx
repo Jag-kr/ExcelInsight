@@ -25,6 +25,35 @@ import {
 import logo from '@/assets/ExcelInsight_Logo.png';
 import { toast } from 'sonner';
 import type { DashboardItem } from '@/components/DashboardGrid';
+import type { ChartType, ChartTheme } from '@/lib/chart-themes';
+
+function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: () => void; addLabel: string }) {
+  const [type, setType] = useState<ChartType>(s.type);
+  const [theme, setTheme] = useState<ChartTheme>(chartThemes[0]);
+  return (
+    <div className="relative group min-h-[300px]">
+      <Suspense fallback={<ChartFallback />}>
+        <DynamicChart
+          title={s.title}
+          description={s.description}
+          type={type}
+          data={s.data}
+          dataKeys={s.dataKeys}
+          xKey={s.xKey}
+          theme={theme}
+          onChangeType={setType}
+          onChangeTheme={setTheme}
+        />
+      </Suspense>
+      <button
+        onClick={onAdd}
+        className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 shadow"
+      >
+        {addLabel}
+      </button>
+    </div>
+  );
+}
 
 // Lazy-load heavy components (recharts, drag-and-drop, pdf libs) so they don't block initial paint.
 const DataSummary = lazy(() => import('@/components/DataSummary').then(m => ({ default: m.DataSummary })));
