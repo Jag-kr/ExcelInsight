@@ -188,7 +188,7 @@ export function DynamicChart({
   };
 
   return (
-    <div ref={chartRef} className="glass-card rounded-xl p-4 animate-fade-in">
+    <div ref={chartRef} className="glass-card rounded-xl p-4 animate-fade-in h-full flex flex-col">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           {editing && onRenameTitle ? (
