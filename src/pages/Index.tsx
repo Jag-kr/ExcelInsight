@@ -562,26 +562,12 @@ export default function Index() {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {availableSuggestions.map(s => (
-                  <div key={s.id} className="relative group min-h-[300px]">
-                    <Suspense fallback={<ChartFallback />}>
-                      <DynamicChart
-                        title={s.title}
-                        description={s.description}
-                        type={s.type}
-                        data={s.data}
-                        dataKeys={s.dataKeys}
-                        xKey={s.xKey}
-                        theme={chartThemes[0]}
-                        showControls={false}
-                      />
-                    </Suspense>
-                    <button
-                      onClick={() => addSuggestionToDashboard(s)}
-                      className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90"
-                    >
-                      {t('addToDashboard')}
-                    </button>
-                  </div>
+                  <ExploreChartCard
+                    key={s.id}
+                    s={s}
+                    onAdd={() => addSuggestionToDashboard(s)}
+                    addLabel={t('addToDashboard')}
+                  />
                 ))}
               </div>
             )}
