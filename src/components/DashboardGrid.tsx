@@ -430,7 +430,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 auto-rows-[minmax(0,auto)]">
           {items.map(item => (
             <SortableCard
               key={item.id}
