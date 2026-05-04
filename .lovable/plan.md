@@ -1,74 +1,51 @@
+## Problem
 
+In `DashboardGrid.tsx`, the size mapping is:
+```
+sm → col-span-1
+md → col-span-1     ← identical to sm
+lg → col-span-1 lg:col-span-2
+```
+On a 2-column grid, "Small" and "Medium" render at the exact same width, so the resize popover feels broken. Several other UX gaps make the builder feel less polished than the UI suggests.
 
-# Dashboard: Interactive, User-Friendly, PDF Export
+## Fix: make sizes truly distinct (3-column grid)
 
-## Goals
-1. Make the dashboard feel more interactive and discoverable.
-2. Improve usability (clearer controls, empty/help states, mobile-friendly resizing).
-3. Add a one-click "Export as PDF" that captures the entire dashboard with all charts, tables, and insights.
+Switch the dashboard grid from `lg:grid-cols-2` to `lg:grid-cols-6` (a 6-column track allows clean S/M/L spans):
 
----
+| Size | Span (desktop) | Span (tablet) | Visual |
+|------|---------------|---------------|--------|
+| sm   | 2 / 6 (≈⅓)    | 1 / 2         | compact tile, min-h ~260px |
+| md   | 3 / 6 (½)     | 1 / 2 (full)  | standard, min-h ~320px |
+| lg   | 6 / 6 (full)  | 2 / 2 (full)  | hero, min-h ~420px |
 
-## 1. Interactivity & UX Improvements (`DashboardGrid.tsx`, `Index.tsx`)
+Each card also gets a `min-h-*` per size so charts visibly grow/shrink, not just change width. The DynamicChart container will read the size and pass through a matching height.
 
-**Card controls always visible on mobile, hover-only on desktop**
-- Current: controls hidden until hover (broken on touch). Make controls always visible on `<lg`, hover-only on `>=lg`.
-- Add tooltips to every icon button (drag, resize, delete, change-type).
+## Other UX improvements
 
-**Resize UX**
-- Replace the single cycling button with a small popover offering S / M / L with visual icons + labels.
-- Add a "Duplicate card" button alongside resize/delete.
+1. **Live preview in the resize popover** — show width hint next to each option (e.g. "S · ⅓", "M · ½", "L · full") so users understand the effect before clicking.
+2. **Size badge on the card** — tiny `S/M/L` chip in the top-right that's always visible (not just on hover) so users can see the current size at a glance.
+3. **Keyboard shortcuts** — when a card is focused: `[` shrink, `]` grow, `Del` remove, `D` duplicate. Listed in a tooltip on the drag handle.
+4. **Mobile: collapse all sizes to full-width** (already effectively true) and show controls in a bottom action bar instead of overlapping the card top — easier to tap.
+5. **Drag placeholder** — render a dashed outline at the drop target using `DragOverlay` so users see where the card will land (today the dragged card just becomes semi-transparent in place).
+6. **Quick-add toolbar polish** — the existing toolbar stays, but disable "Reset Layout" when the layout already matches the auto-generated default and add a tooltip explaining what it does.
+7. **Empty drop zone hint** — when the dashboard has 1–2 cards, show a faint dashed "+ Add another card" tile after them that opens the manual chart builder.
+8. **Confirm before destructive actions** — wrap the per-card `Trash2` in a small inline confirm (click → "Click again to remove" for 2s) instead of an alert dialog, so single removes feel fast but accidental clicks are caught.
 
-**Quick-add toolbar above the grid**
-- Buttons: "Add Chart" (opens manual chart builder in dialog), "Add Insight" (opens insight picker), "Reset Layout" (restore auto-generated default), "Clear All".
-- Show a small counter: "5 cards · 2 charts · 1 table · 2 insights".
+## Technical notes
 
-**Empty state polish**
-- When dashboard is empty, show a friendly card with 3 quick-action buttons (Auto-generate, Add chart, Browse insights) instead of plain text.
-
-**Drag affordance**
-- Add a subtle dashed outline + "Drop here" hint on the placeholder while dragging.
-- Cursor + slight scale on the dragged card.
-
-**Edit title inline**
-- Click the card title to rename (input on focus, save on blur/Enter). Persists in `DashboardItem.title`.
-
----
-
-## 2. PDF Export (`Index.tsx`, new `src/lib/pdf-export.ts`)
-
-**Approach:** Client-side capture using `html2canvas` + `jspdf` (no backend, works offline, preserves theming).
-
-**How:**
-- Add an "Export PDF" button in the dashboard tab header.
-- On click:
-  1. Find the dashboard grid container by ref.
-  2. Temporarily expand all cards to full visibility (no overflow clipping) and hide control buttons.
-  3. Render each card to canvas via `html2canvas` (respects current light/dark theme).
-  4. Compose into a multi-page A4 PDF via `jspdf`: cover page (logo + filename + date + row count), then 1-2 cards per page depending on size.
-  5. Restore original DOM state. Trigger download as `ExcelInsight-Dashboard-<filename>-<date>.pdf`.
-- Show a toast "Generating PDF…" then "Downloaded".
-
-**Cover page contents:**
-- ExcelInsight logo, "Dashboard Report", source filename, generated date, total rows/columns, count of charts/tables/insights.
-
-**Dependencies to add:** `html2canvas`, `jspdf`.
-
----
-
-## 3. Technical Notes
-
-- `DashboardItem` gains no new required fields. Inline-rename simply uses existing `title`.
-- New `src/lib/pdf-export.ts` exports `exportDashboardToPDF(element, meta)`.
-- Quick-add toolbar lives in `Index.tsx` above `<DashboardGrid />` — wired to existing `setDashboardItems` and the existing manual chart builder dialog.
-- Mobile control visibility: swap `opacity-0 group-hover:opacity-100` → `opacity-100 lg:opacity-0 lg:group-hover:opacity-100`.
-- PDF capture must temporarily set `document.documentElement` to a stable theme to avoid flicker mid-capture.
-
----
+- File: `src/components/DashboardGrid.tsx`
+  - Update `sizeClasses` map and grid wrapper classes; add `sizeMinHeights`.
+  - Add `SizeBadge` subcomponent rendered inside each card.
+  - Extend popover items with width-fraction labels.
+  - Add `useEffect` keyboard handler scoped to the focused card (track via `tabIndex`/`onFocus`).
+  - Switch DnD to `DragOverlay` + render a placeholder slot.
+  - Inline two-step delete using local `useState<'idle'|'confirm'>` per card with a 2s timeout.
+- File: `src/components/DynamicChart.tsx` — accept optional `size` prop and adjust ResponsiveContainer height (sm 220, md 280, lg 360).
+- File: `src/pages/Index.tsx` — pass `size` through to DynamicChart props if needed; compare current `dashboardItems` to default-rebuilt version to enable/disable Reset.
+- File: `src/lib/i18n/*.ts` — add 6 new keys: `sizeFractionThird`, `sizeFractionHalf`, `sizeFractionFull`, `clickAgainToRemove`, `addAnotherCard`, `keyboardShortcuts`. Add to all 6 languages.
 
 ## Files Changed
-- `src/components/DashboardGrid.tsx` — visible controls, resize popover, duplicate, inline title, empty state, drag polish.
-- `src/pages/Index.tsx` — quick-add toolbar, Export PDF button, dashboard ref, reset layout.
-- `src/lib/pdf-export.ts` — new, PDF generation logic.
-- `package.json` — add `html2canvas`, `jspdf`.
-
+- `src/components/DashboardGrid.tsx`
+- `src/components/DynamicChart.tsx`
+- `src/pages/Index.tsx`
+- `src/lib/i18n/{en,hi,es,zh,fr,de}.ts`

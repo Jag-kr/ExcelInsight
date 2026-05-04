@@ -25,11 +25,18 @@ interface DynamicChartProps {
   onChangeTheme?: (theme: ChartTheme) => void;
   onRenameTitle?: (title: string) => void;
   showControls?: boolean;
+  size?: 'sm' | 'md' | 'lg';
 }
+
+const SIZE_HEIGHTS: Record<'sm' | 'md' | 'lg', string> = {
+  sm: 'h-[200px]',
+  md: 'h-[280px]',
+  lg: 'h-[380px]',
+};
 
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
-  theme = chartThemes[0], onChangeType, onChangeTheme, onRenameTitle, showControls = true,
+  theme = chartThemes[0], onChangeType, onChangeTheme, onRenameTitle, showControls = true, size = 'md',
 }: DynamicChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const { theme: appTheme } = useTheme();
@@ -181,7 +188,7 @@ export function DynamicChart({
   };
 
   return (
-    <div ref={chartRef} className="glass-card rounded-xl p-4 animate-fade-in">
+    <div ref={chartRef} className="glass-card rounded-xl p-4 animate-fade-in h-full flex flex-col">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           {editing && onRenameTitle ? (
@@ -242,7 +249,7 @@ export function DynamicChart({
           </Button>
         </div>
       </div>
-      <div className="h-[280px] w-full">
+      <div className={`${SIZE_HEIGHTS[size]} w-full flex-1`}>
         <ResponsiveContainer width="100%" height="100%">
           {renderChart() || <div />}
         </ResponsiveContainer>
