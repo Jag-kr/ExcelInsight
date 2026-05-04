@@ -216,9 +216,21 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
 }
 
 const sizeClasses: Record<string, string> = {
-  sm: 'col-span-1',
-  md: 'col-span-1',
-  lg: 'col-span-1 lg:col-span-2',
+  sm: 'col-span-1 md:col-span-1 lg:col-span-2',
+  md: 'col-span-1 md:col-span-2 lg:col-span-3',
+  lg: 'col-span-1 md:col-span-2 lg:col-span-6',
+};
+
+const sizeMinHeights: Record<string, string> = {
+  sm: 'min-h-[260px]',
+  md: 'min-h-[340px]',
+  lg: 'min-h-[440px]',
+};
+
+const sizeFractionLabel: Record<'sm' | 'md' | 'lg', string> = {
+  sm: '⅓',
+  md: '½',
+  lg: 'full',
 };
 
 function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
