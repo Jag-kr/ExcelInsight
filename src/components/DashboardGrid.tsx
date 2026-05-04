@@ -333,6 +333,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
                 >
                   <Icon className="h-3.5 w-3.5" />
                   <span className="text-xs">{label}</span>
+                  <span className="text-[10px] opacity-70">· {sizeFractionLabel[v]}</span>
                   {size === v && <Check className="h-3 w-3" />}
                 </Button>
               ))}
