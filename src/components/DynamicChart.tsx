@@ -249,7 +249,7 @@ export function DynamicChart({
           </Button>
         </div>
       </div>
-      <div className="h-[280px] w-full">
+      <div className={`${SIZE_HEIGHTS[size]} w-full flex-1`}>
         <ResponsiveContainer width="100%" height="100%">
           {renderChart() || <div />}
         </ResponsiveContainer>
