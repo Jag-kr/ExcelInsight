@@ -111,6 +111,7 @@ export const es: Record<TranslationKey, string> = {
   autoGenerate: 'Auto-generar',
   browseInsights: 'Explorar Información',
   renameTitle: 'Renombrar',
+  clickAgainToRemove: 'Haz clic de nuevo para eliminar',
 
   featuresTitle: 'Todo lo que necesitas para analizar archivos Excel',
   featuresIntro: 'ExcelInsight es un constructor de análisis y paneles de Excel en línea gratuito. Sube una hoja de cálculo y obtén gráficos, estadísticas y paneles compartibles al instante — todo sin escribir una sola fórmula.',

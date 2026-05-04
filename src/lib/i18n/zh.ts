@@ -111,6 +111,7 @@ export const zh: Record<TranslationKey, string> = {
   autoGenerate: '自动生成',
   browseInsights: '浏览洞察',
   renameTitle: '重命名',
+  clickAgainToRemove: '再次点击以删除',
 
   featuresTitle: '分析Excel文件所需的一切',
   featuresIntro: 'ExcelInsight是一款免费的在线Excel分析和仪表板构建工具。上传电子表格即可获得即时图表、统计数据和可分享的仪表板——无需编写任何公式。',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent,
 } from '@dnd-kit/core';
@@ -216,9 +216,21 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
 }
 
 const sizeClasses: Record<string, string> = {
-  sm: 'col-span-1',
-  md: 'col-span-1',
-  lg: 'col-span-1 lg:col-span-2',
+  sm: 'col-span-1 md:col-span-1 lg:col-span-2',
+  md: 'col-span-1 md:col-span-2 lg:col-span-3',
+  lg: 'col-span-1 md:col-span-2 lg:col-span-6',
+};
+
+const sizeMinHeights: Record<string, string> = {
+  sm: 'min-h-[260px]',
+  md: 'min-h-[340px]',
+  lg: 'min-h-[440px]',
+};
+
+const sizeFractionLabel: Record<'sm' | 'md' | 'lg', string> = {
+  sm: '⅓',
+  md: '½',
+  lg: 'full',
 };
 
 function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
@@ -229,7 +241,22 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
 }) {
   const { t } = useI18n();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
-  const size = item.size || 'md';
+  const size = (item.size || 'md') as 'sm' | 'md' | 'lg';
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const confirmTimer = useRef<number | null>(null);
+
+  useEffect(() => () => { if (confirmTimer.current) window.clearTimeout(confirmTimer.current); }, []);
+
+  const handleRemoveClick = () => {
+    if (confirmRemove) {
+      if (confirmTimer.current) window.clearTimeout(confirmTimer.current);
+      setConfirmRemove(false);
+      onRemove();
+      return;
+    }
+    setConfirmRemove(true);
+    confirmTimer.current = window.setTimeout(() => setConfirmRemove(false), 2000);
+  };
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -246,8 +273,16 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
       ref={setNodeRef}
       style={style}
       data-pdf-card
-      className={`relative group ${sizeClasses[size]} ${isDragging ? 'scale-[1.02] shadow-2xl' : ''} transition-transform`}
+      className={`relative group ${sizeClasses[size]} ${sizeMinHeights[size]} ${isDragging ? 'scale-[1.02] shadow-2xl' : ''} transition-all`}
     >
+      <div
+        data-pdf-hide
+        className="absolute top-2 right-2 z-10 pointer-events-none"
+      >
+        <span className="pointer-events-auto inline-flex items-center rounded-md bg-secondary/80 backdrop-blur px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/50 uppercase tracking-wide">
+          {size}
+        </span>
+      </div>
       <div
         data-pdf-hide
         className="absolute top-2 left-2 z-10 flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100 transition-opacity"
@@ -298,6 +333,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
                 >
                   <Icon className="h-3.5 w-3.5" />
                   <span className="text-xs">{label}</span>
+                  <span className="text-[10px] opacity-70">· {sizeFractionLabel[v]}</span>
                   {size === v && <Check className="h-3 w-3" />}
                 </Button>
               ))}
@@ -324,16 +360,17 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
+                variant={confirmRemove ? 'destructive' : 'ghost'}
                 size="sm"
                 aria-label={t('remove')}
-                className="h-7 w-7 p-0 bg-secondary/90 backdrop-blur border border-border/50 hover:bg-destructive/20"
-                onClick={onRemove}
+                className={`h-7 ${confirmRemove ? 'px-2' : 'w-7 p-0'} bg-secondary/90 backdrop-blur border border-border/50 hover:bg-destructive/20`}
+                onClick={handleRemoveClick}
               >
                 <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                {confirmRemove && <span className="ml-1 text-[10px] font-semibold">?</span>}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom"><span className="text-xs">{t('remove')}</span></TooltipContent>
+            <TooltipContent side="bottom"><span className="text-xs">{confirmRemove ? t('clickAgainToRemove') : t('remove')}</span></TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
@@ -354,6 +391,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
           onChangeType={(type) => onUpdateItem({ type })}
           onChangeTheme={(theme) => onUpdateItem({ theme })}
           onRenameTitle={renameTitle}
+          size={size}
         />
       )}
     </div>
@@ -392,7 +430,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 auto-rows-[minmax(0,auto)]">
           {items.map(item => (
             <SortableCard
               key={item.id}
