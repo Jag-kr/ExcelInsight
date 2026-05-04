@@ -273,8 +273,16 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
       ref={setNodeRef}
       style={style}
       data-pdf-card
-      className={`relative group ${sizeClasses[size]} ${isDragging ? 'scale-[1.02] shadow-2xl' : ''} transition-transform`}
+      className={`relative group ${sizeClasses[size]} ${sizeMinHeights[size]} ${isDragging ? 'scale-[1.02] shadow-2xl' : ''} transition-all`}
     >
+      <div
+        data-pdf-hide
+        className="absolute top-2 right-2 z-10 pointer-events-none"
+      >
+        <span className="pointer-events-auto inline-flex items-center rounded-md bg-secondary/80 backdrop-blur px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/50 uppercase tracking-wide">
+          {size}
+        </span>
+      </div>
       <div
         data-pdf-hide
         className="absolute top-2 left-2 z-10 flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100 transition-opacity"
