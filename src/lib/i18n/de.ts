@@ -111,6 +111,7 @@ export const de: Record<TranslationKey, string> = {
   autoGenerate: 'Auto-Generieren',
   browseInsights: 'Erkenntnisse Durchsuchen',
   renameTitle: 'Umbenennen',
+  clickAgainToRemove: 'Erneut klicken zum Entfernen',
 
   featuresTitle: 'Alles, was Sie zur Analyse von Excel-Dateien brauchen',
   featuresIntro: 'ExcelInsight ist ein kostenloser Online-Excel-Analyse- und Dashboard-Builder. Laden Sie eine Tabelle hoch und erhalten Sie sofort Diagramme, Statistiken und teilbare Dashboards — ohne eine einzige Formel zu schreiben.',
