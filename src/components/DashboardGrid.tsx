@@ -360,16 +360,17 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
+                variant={confirmRemove ? 'destructive' : 'ghost'}
                 size="sm"
                 aria-label={t('remove')}
-                className="h-7 w-7 p-0 bg-secondary/90 backdrop-blur border border-border/50 hover:bg-destructive/20"
-                onClick={onRemove}
+                className={`h-7 ${confirmRemove ? 'px-2' : 'w-7 p-0'} bg-secondary/90 backdrop-blur border border-border/50 hover:bg-destructive/20`}
+                onClick={handleRemoveClick}
               >
                 <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                {confirmRemove && <span className="ml-1 text-[10px] font-semibold">?</span>}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom"><span className="text-xs">{t('remove')}</span></TooltipContent>
+            <TooltipContent side="bottom"><span className="text-xs">{confirmRemove ? t('clickAgainToRemove') : t('remove')}</span></TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
