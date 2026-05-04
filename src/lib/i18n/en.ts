@@ -120,6 +120,7 @@ export const en = {
   autoGenerate: 'Auto-generate',
   browseInsights: 'Browse Insights',
   renameTitle: 'Rename',
+  clickAgainToRemove: 'Click again to remove',
 
   // Landing page
   featuresTitle: 'Everything you need to analyze Excel files',
