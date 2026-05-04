@@ -241,7 +241,22 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
 }) {
   const { t } = useI18n();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
-  const size = item.size || 'md';
+  const size = (item.size || 'md') as 'sm' | 'md' | 'lg';
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const confirmTimer = useRef<number | null>(null);
+
+  useEffect(() => () => { if (confirmTimer.current) window.clearTimeout(confirmTimer.current); }, []);
+
+  const handleRemoveClick = () => {
+    if (confirmRemove) {
+      if (confirmTimer.current) window.clearTimeout(confirmTimer.current);
+      setConfirmRemove(false);
+      onRemove();
+      return;
+    }
+    setConfirmRemove(true);
+    confirmTimer.current = window.setTimeout(() => setConfirmRemove(false), 2000);
+  };
 
   const style = {
     transform: CSS.Transform.toString(transform),
