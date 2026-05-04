@@ -25,11 +25,18 @@ interface DynamicChartProps {
   onChangeTheme?: (theme: ChartTheme) => void;
   onRenameTitle?: (title: string) => void;
   showControls?: boolean;
+  size?: 'sm' | 'md' | 'lg';
 }
+
+const SIZE_HEIGHTS: Record<'sm' | 'md' | 'lg', string> = {
+  sm: 'h-[200px]',
+  md: 'h-[280px]',
+  lg: 'h-[380px]',
+};
 
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
-  theme = chartThemes[0], onChangeType, onChangeTheme, onRenameTitle, showControls = true,
+  theme = chartThemes[0], onChangeType, onChangeTheme, onRenameTitle, showControls = true, size = 'md',
 }: DynamicChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const { theme: appTheme } = useTheme();
