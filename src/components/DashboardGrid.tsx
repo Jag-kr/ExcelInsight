@@ -391,6 +391,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
           onChangeType={(type) => onUpdateItem({ type })}
           onChangeTheme={(theme) => onUpdateItem({ theme })}
           onRenameTitle={renameTitle}
+          size={size}
         />
       )}
     </div>
