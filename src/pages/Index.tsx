@@ -467,7 +467,7 @@ export default function Index() {
         </div>
       </header>
 
-      <div className="container px-4 py-6">
+      <main className="container px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-secondary border border-border flex-wrap h-auto gap-1 p-1">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
