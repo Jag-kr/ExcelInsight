@@ -386,31 +386,33 @@ export default function Index() {
         <div className="absolute top-4 right-4 z-10">
           <ThemeLangSwitcher />
         </div>
-        <section className="w-full max-w-xl mx-auto px-6 pt-16 pb-12 space-y-6 animate-fade-in">
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary mb-4">
-              <BarChart3 className="h-4 w-4" /> {t('analyticsEngine')}
-            </div>
-            <img src={logo} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-16 w-16 mx-auto mb-2" />
-            <h1 className="text-4xl font-bold gradient-text">{t('appName')}</h1>
-            <p className="text-muted-foreground">{t('uploadSubtitle')}</p>
-          </div>
-          <FileUpload onDataLoaded={handleDataLoaded} />
-          <div className="grid grid-cols-3 gap-3 text-center">
-            {[
-              { icon: Database, label: t('smartDetection'), desc: t('smartDetectionDesc') },
-              { icon: BarChart3, label: t('autoCharts'), desc: t('autoChartsDesc') },
-              { icon: LayoutDashboard, label: t('dashboards'), desc: t('dashboardsDesc') },
-            ].map(({ icon: Icon, label, desc }) => (
-              <div key={label} className="glass-card rounded-lg p-3">
-                <Icon className="h-5 w-5 text-primary mx-auto mb-1" />
-                <p className="text-xs font-medium text-foreground">{label}</p>
-                <p className="text-[10px] text-muted-foreground">{desc}</p>
+        <main>
+          <section className="w-full max-w-xl mx-auto px-6 pt-16 pb-12 space-y-6 animate-fade-in">
+            <div className="text-center space-y-2">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary mb-4">
+                <BarChart3 className="h-4 w-4" /> {t('analyticsEngine')}
               </div>
-            ))}
-          </div>
-        </section>
-        <LandingContent />
+              <img src={logo} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-16 w-16 mx-auto mb-2" />
+              <h1 className="text-4xl font-bold gradient-text">{t('appName')}</h1>
+              <p className="text-muted-foreground">{t('uploadSubtitle')}</p>
+            </div>
+            <FileUpload onDataLoaded={handleDataLoaded} />
+            <div className="grid grid-cols-3 gap-3 text-center">
+              {[
+                { icon: Database, label: t('smartDetection'), desc: t('smartDetectionDesc') },
+                { icon: BarChart3, label: t('autoCharts'), desc: t('autoChartsDesc') },
+                { icon: LayoutDashboard, label: t('dashboards'), desc: t('dashboardsDesc') },
+              ].map(({ icon: Icon, label, desc }) => (
+                <div key={label} className="glass-card rounded-lg p-3">
+                  <Icon className="h-5 w-5 text-primary mx-auto mb-1" />
+                  <p className="text-xs font-medium text-foreground">{label}</p>
+                  <p className="text-[10px] text-muted-foreground">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+          <LandingContent />
+        </main>
       </div>
     );
   }
@@ -465,7 +467,7 @@ export default function Index() {
         </div>
       </header>
 
-      <div className="container px-4 py-6">
+      <main className="container px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-secondary border border-border flex-wrap h-auto gap-1 p-1">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -652,7 +654,7 @@ export default function Index() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </main>
     </div>
   );
 }
