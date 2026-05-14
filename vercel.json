@@ -1,1 +1,12 @@
-{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "statusCode": 301 },
+    { "source": "/index.php", "destination": "/", "statusCode": 301 },
+    { "source": "/home", "destination": "/", "statusCode": 301 }
+  ],
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/" }
+  ]
+}

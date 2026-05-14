@@ -6,6 +6,7 @@ interface SEOProps {
   description?: string;
   path?: string;
   keywords?: string;
+  noindex?: boolean;
 }
 
 const langToLocale: Record<Language, string> = {
@@ -17,7 +18,7 @@ const langToLocale: Record<Language, string> = {
   de: 'de_DE',
 };
 
-const SITE_URL = 'https://excelinsight.lovable.app';
+const SITE_URL = 'https://excelinsight.xyz';
 
 const defaultsByLang: Record<Language, { title: string; description: string }> = {
   en: {
@@ -46,7 +47,7 @@ const defaultsByLang: Record<Language, { title: string; description: string }> =
   },
 };
 
-export function SEO({ title, description, path = '/', keywords }: SEOProps) {
+export function SEO({ title, description, path = '/', keywords, noindex }: SEOProps) {
   const { lang } = useI18n();
   const defaults = defaultsByLang[lang];
   const finalTitle = title || defaults.title;
@@ -61,6 +62,8 @@ export function SEO({ title, description, path = '/', keywords }: SEOProps) {
       <meta name="description" content={finalDescription} />
       <meta name="keywords" content={finalKeywords} />
       <link rel="canonical" href={url} />
+      {noindex && <meta name="robots" content="noindex, nofollow" />}
+      {noindex && <meta name="prerender-status-code" content="404" />}
 
       <meta property="og:type" content="website" />
       <meta property="og:url" content={url} />
