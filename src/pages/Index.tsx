@@ -654,7 +654,7 @@ export default function Index() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </main>
     </div>
   );
 }
