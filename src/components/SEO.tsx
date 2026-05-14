@@ -17,7 +17,7 @@ const langToLocale: Record<Language, string> = {
   de: 'de_DE',
 };
 
-const SITE_URL = 'https://excelinsight.lovable.app';
+const SITE_URL = 'https://excelinsight.xyz';
 
 const defaultsByLang: Record<Language, { title: string; description: string }> = {
   en: {
