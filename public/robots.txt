@@ -54,5 +54,5 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://excelinsight.lovable.app/sitemap.xml
-Host: https://excelinsight.lovable.app
+Sitemap: https://excelinsight.xyz/sitemap.xml
+Host: https://excelinsight.xyz

@@ -15,6 +15,7 @@ const NotFound = () => {
         path={location.pathname}
         title="Page Not Found – ExcelInsight"
         description="The page you are looking for does not exist. Return to ExcelInsight to analyze and visualize your Excel files for free."
+        noindex
       />
       <div className="text-center">
         <h1 className="mb-4 text-4xl font-bold">404</h1>
