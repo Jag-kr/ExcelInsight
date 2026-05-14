@@ -17,12 +17,12 @@ const langToLocale: Record<Language, string> = {
   de: 'de_DE',
 };
 
-const SITE_URL = 'https://excelinsight.xyz';
+const SITE_URL = 'https://excelinsight.lovable.app';
 
 const defaultsByLang: Record<Language, { title: string; description: string }> = {
   en: {
-    title: 'ExcelInsight – Free Excel Analytics, Visualization & Dashboard Builder',
-    description: 'Upload Excel or CSV files to instantly create Excel charts, graphs, plots, reports, and interactive dashboards. Free Excel analytics & visualization tool, 100% private.',
+    title: 'ExcelInsight – Free Excel Charts & Dashboards',
+    description: 'Turn Excel or CSV files into charts, dashboards and reports instantly. Free, private and browser-based — no signup required.',
   },
   hi: {
     title: 'ExcelInsight – मुफ्त Excel एनालिटिक्स, विज़ुअलाइज़ेशन और डैशबोर्ड बिल्डर',
