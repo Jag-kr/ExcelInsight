@@ -6,6 +6,7 @@ interface SEOProps {
   description?: string;
   path?: string;
   keywords?: string;
+  noindex?: boolean;
 }
 
 const langToLocale: Record<Language, string> = {
