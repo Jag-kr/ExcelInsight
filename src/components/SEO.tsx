@@ -22,7 +22,7 @@ const SITE_URL = 'https://excelinsight.xyz';
 
 const defaultsByLang: Record<Language, { title: string; description: string }> = {
   en: {
-    title: 'ExcelInsight – Free Excel Charts & Dashboards',
+    title: 'ExcelInsight – Free Excel Charts, Dashboards & Reports',
     description: 'Turn Excel or CSV files into charts, dashboards and reports instantly. Free, private and browser-based — no signup required.',
   },
   hi: {
