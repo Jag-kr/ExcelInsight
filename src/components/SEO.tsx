@@ -22,8 +22,8 @@ const SITE_URL = 'https://excelinsight.xyz';
 
 const defaultsByLang: Record<Language, { title: string; description: string }> = {
   en: {
-    title: 'ExcelInsight – Free Excel Charts, Dashboards & Reports',
-    description: 'Turn Excel or CSV files into charts, dashboards and reports instantly. Free, private and browser-based — no signup required.',
+    title: 'ExcelInsight – Free Online Excel Chart & Dashboard Maker',
+    description: 'Turn Excel or CSV files into interactive charts, dashboards and PDF reports online. Free, private, browser-based Excel analytics — no signup, try it now.',
   },
   hi: {
     title: 'ExcelInsight – मुफ्त Excel एनालिटिक्स, विज़ुअलाइज़ेशन और डैशबोर्ड बिल्डर',
