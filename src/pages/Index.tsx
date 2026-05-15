@@ -393,7 +393,7 @@ export default function Index() {
                 <BarChart3 className="h-4 w-4" /> {t('analyticsEngine')}
               </div>
               <img src={logo} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-16 w-16 mx-auto mb-2" />
-              <h1 className="text-4xl font-bold gradient-text">{t('appName')}</h1>
+              <h1 className="text-4xl font-bold gradient-text">ExcelInsight – Excel Charts &amp; Dashboards</h1>
               <p className="text-muted-foreground">{t('uploadSubtitle')}</p>
             </div>
             <FileUpload onDataLoaded={handleDataLoaded} />
