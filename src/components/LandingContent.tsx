@@ -1,8 +1,9 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download } from 'lucide-react';
+import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download, ArrowRight } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
 import { Link } from 'react-router-dom';
 import { useI18n } from '@/lib/i18n';
+import { seoPagesByCategory, categoryLabel, type SeoCategory } from '@/content/seo-pages';
 
 export function LandingContent() {
   const { t } = useI18n();
