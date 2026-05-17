@@ -12,6 +12,7 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import Terms from "./pages/Terms.tsx";
+import SeoLanding from "./pages/SeoLanding.tsx";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
+                <Route path="/:slug" element={<SeoLanding />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
