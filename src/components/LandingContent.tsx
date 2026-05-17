@@ -123,6 +123,40 @@ export function LandingContent() {
       {/* Ad slot — between Use Cases and FAQ */}
       <AdSlot slot="" label={t('sponsored')} />
 
+      {/* Tools & resources — internal linking hub for programmatic SEO landing pages */}
+      <section aria-labelledby="tools-heading">
+        <div className="text-center mb-10">
+          <h2 id="tools-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
+            Tools, templates & guides
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Free Excel and CSV tools built on the same engine — pick the one that matches your job.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {(Object.keys(seoPagesByCategory) as SeoCategory[]).map((cat) => (
+            <div key={cat} className="glass-card rounded-xl p-5">
+              <h3 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide text-primary/80">
+                {categoryLabel[cat]}
+              </h3>
+              <ul className="space-y-2">
+                {seoPagesByCategory[cat].map((p) => (
+                  <li key={p.slug}>
+                    <Link
+                      to={`/${p.slug}`}
+                      className="group flex items-center justify-between gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <span>{p.h1}</span>
+                      <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* FAQ */}
       <section aria-labelledby="faq-heading">
         <div className="text-center mb-10">
