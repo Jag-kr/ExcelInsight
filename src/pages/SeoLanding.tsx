@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ArrowRight, Check, ChevronRight, Sparkles } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
@@ -80,6 +80,10 @@ function Cta({ label }: { label: string }) {
 export default function SeoLanding() {
   const { slug } = useParams<{ slug: string }>();
   const page = slug ? seoPageMap[slug] : undefined;
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
 
   if (!page) return <NotFound />;
 
@@ -220,19 +224,15 @@ export default function SeoLanding() {
 
         {/* FAQ */}
         <section className="max-w-3xl mx-auto px-6 pb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Frequently asked questions</h2>
-          <Accordion type="single" collapsible>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">Frequently asked questions</h2>
+          <div className="space-y-6">
             {page.faqs.map((f, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="glass-card rounded-lg mb-3 border-0 px-5">
-                <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
-                  {f.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
-                  {f.a}
-                </AccordionContent>
-              </AccordionItem>
+              <article key={i} className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground">{f.q}</h3>
+                <p className="text-muted-foreground leading-relaxed">{f.a}</p>
+              </article>
             ))}
-          </Accordion>
+          </div>
         </section>
 
         {/* Related */}
