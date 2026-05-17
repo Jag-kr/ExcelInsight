@@ -243,15 +243,15 @@ export const seoPages: SeoPage[] = [
   {
     slug: 'excelinsight-vs-tableau',
     category: 'comparison',
-    title: 'ExcelInsight vs Tableau — Free Alternative Compared',
-    description: 'ExcelInsight vs Tableau: side-by-side comparison of price, setup, privacy, file support and export. A free, browser-based alternative for quick Excel dashboards.',
-    h1: 'ExcelInsight vs Tableau',
+    title: 'ExcelInsight and Tableau: Built for Different Workflows',
+    description: 'Compare ExcelInsight and Tableau for Excel and CSV analysis. Learn which tool fits quick charting, private local analysis, or advanced reporting workflows.',
+    h1: 'ExcelInsight and Tableau: Built for Different Workflows',
     intro:
-      'Tableau is the industry standard for BI dashboards, but it’s overkill for the 70% of dashboards that come from a single Excel file. ExcelInsight is a free, browser-based alternative for those quick, repeatable dashboards — without Tableau Desktop, Tableau Cloud, or a learning curve.',
+      'Both ExcelInsight and Tableau help users work with data, but they are designed for very different workflows. ExcelInsight focuses on quick spreadsheet analysis directly in the browser, while Tableau is designed for enterprise-scale BI, live database connections and governed analytics.',
     sections: [
       {
-        heading: 'When ExcelInsight beats Tableau',
-        body: 'If your dashboard starts from one .xlsx or .csv file, you don’t want a server install, and you ship the report as a PDF, ExcelInsight is the faster path. You skip Tableau’s data-source connection, calculated fields and publish step.',
+        heading: 'Where ExcelInsight Fits Naturally',
+        body: `If your dashboard starts from one .xlsx or .csv file, you don't want a server install, and you ship the report as a PDF, ExcelInsight is the natural fit. You skip Tableau's data-source connection, calculated fields and publish step.`,
         bullets: [
           'Zero install and zero licence — open the URL and upload',
           '100% client-side — safer for confidential data',
@@ -259,8 +259,8 @@ export const seoPages: SeoPage[] = [
         ],
       },
       {
-        heading: 'When you still want Tableau',
-        body: 'Tableau still wins for live database connections, governed enterprise dashboards, row-level security and very large datasets. If you need real-time queries against Snowflake or BigQuery, use Tableau. If you need a clean dashboard from this week’s spreadsheet, use ExcelInsight.',
+        heading: 'Where Tableau Shines',
+        body: 'Tableau is the right choice for live database connections, governed enterprise dashboards, row-level security and very large datasets. If you need real-time queries against Snowflake or BigQuery, Tableau is designed for that workflow.',
       },
     ],
     comparison: {
@@ -278,8 +278,8 @@ export const seoPages: SeoPage[] = [
     },
     faqs: [
       {
-        q: 'Is ExcelInsight a Tableau replacement?',
-        a: 'For one-off and recurring spreadsheet dashboards, yes. For governed enterprise BI with live database connections and row-level security, Tableau is still the right tool.',
+        q: 'Is ExcelInsight similar to Tableau?',
+        a: `Both tools help create dashboards from data, but they're built for different workflows. ExcelInsight is lightweight and instant for single Excel or CSV files. Tableau is designed for enterprise-scale analytics with live database connections and governed access.`,
       },
       ...baseFaq,
     ],
@@ -288,19 +288,19 @@ export const seoPages: SeoPage[] = [
   {
     slug: 'excelinsight-vs-powerbi',
     category: 'comparison',
-    title: 'ExcelInsight vs Power BI — Free Alternative for Excel',
-    description: 'ExcelInsight vs Power BI: compared on price, privacy, learning curve and Excel support. A free, browser-based alternative for spreadsheet dashboards.',
-    h1: 'ExcelInsight vs Power BI',
+    title: 'ExcelInsight and Power BI: Comparing Spreadsheet Workflows',
+    description: 'Compare ExcelInsight and Power BI for Excel and CSV analysis. Learn which tool fits quick charting, private local analysis, or advanced reporting workflows.',
+    h1: 'ExcelInsight and Power BI: Comparing Spreadsheet Workflows',
     intro:
-      'Power BI is Microsoft’s flagship BI product, tightly integrated with the Office stack. ExcelInsight is a much lighter alternative for the use case where most dashboards actually start: a single Excel file you need to chart, summarize and share this week.',
+      `Both ExcelInsight and Power BI help users create dashboards from data, but they're built for different workflows. ExcelInsight focuses on quick browser-based analysis of single Excel or CSV files. Power BI is designed for enterprise reporting, governance and live database integration.`,
     sections: [
       {
-        heading: 'Why pick ExcelInsight over Power BI',
-        body: 'Power BI Desktop is Windows-only, requires installation, and pushes you toward Power BI Service for sharing. ExcelInsight runs in any browser on any OS, needs no signup, and exports the dashboard as a PDF you can attach to an email.',
+        heading: 'Where ExcelInsight Fits Naturally',
+        body: 'If you have an Excel or CSV file and need a dashboard today without installation or signup, ExcelInsight is the natural fit. It runs in any browser on any OS and exports the dashboard as a PDF you can attach to an email.',
       },
       {
-        heading: 'Why you might still want Power BI',
-        body: 'Power BI is the right call for governed reporting against an enterprise data warehouse, DAX measures, scheduled refresh and tight Microsoft Entra ID integration. For a spreadsheet you just received, ExcelInsight gets you to a dashboard 10× faster.',
+        heading: 'Where Power BI Shines',
+        body: 'Power BI is the right choice for governed reporting against an enterprise data warehouse, DAX measures, scheduled refresh and tight Microsoft Entra ID integration.',
       },
     ],
     comparison: {
@@ -317,8 +317,8 @@ export const seoPages: SeoPage[] = [
     },
     faqs: [
       {
-        q: 'Can ExcelInsight replace Power BI for my team?',
-        a: 'It depends on your use case. For shared, governed enterprise reporting against a warehouse — no. For ad-hoc and recurring dashboards built from Excel files — yes, and it does so without a licence or install.',
+        q: 'Should I use ExcelInsight or Power BI?',
+        a: 'It depends on your workflow. For quick ad-hoc and recurring dashboards from Excel files without installation or signup, ExcelInsight fits naturally. For shared, governed enterprise reporting against a data warehouse with live connections, Power BI is designed for that.',
       },
       ...baseFaq,
     ],
@@ -327,15 +327,15 @@ export const seoPages: SeoPage[] = [
   {
     slug: 'tableau-alternative',
     category: 'comparison',
-    title: 'Free Tableau Alternative — ExcelInsight Online',
-    description: 'Looking for a free Tableau alternative? ExcelInsight is a browser-based Excel dashboard tool — no licence, no install, 100% private.',
-    h1: 'A free Tableau alternative for Excel dashboards',
+    title: 'Free Excel Dashboard Tool — Built for Spreadsheet Workflows',
+    description: 'Need a fast, free way to turn Excel or CSV files into dashboards? ExcelInsight is a browser-based tool designed for quick spreadsheet analysis — no licence, no install, 100% private.',
+    h1: 'Free Excel dashboard tool for spreadsheet workflows',
     intro:
-      'Tableau is powerful but expensive, gated behind a licence and a learning curve. If you just need to turn an Excel or CSV file into a dashboard you can ship today, ExcelInsight is the simplest free alternative — no install, no signup, no upload to a server.',
+      'Tableau is powerful but designed for enterprise-scale BI with a steep learning curve and ongoing licence costs. If you just need to turn an Excel or CSV file into a clean dashboard quickly, ExcelInsight is a lightweight, free alternative — no install, no signup, no upload to a server.',
     sections: [
       {
-        heading: 'What you give up (and what you don’t)',
-        body: 'You give up live database connections, governed publishing and Tableau’s deep statistical features. You keep the parts most people actually use day to day: clean charts, KPI tiles, drag-and-drop layout, themed colours and a one-click PDF export.',
+        heading: 'Designed for Different Workflows',
+        body: 'ExcelInsight focuses on what most spreadsheet users need day to day: clean charts, KPI tiles, drag-and-drop layout, themed colours and a one-click PDF export. Tableau is designed for live database connections, governed publishing and deep statistical exploration — features optimized for large-scale enterprise teams.',
       },
       {
         heading: 'Best fit',
@@ -358,7 +358,7 @@ export const seoPages: SeoPage[] = [
     description: 'Looking for the best Excel dashboard tool? Compare the top options and see why ExcelInsight is the fastest free, private, browser-based pick.',
     h1: 'Best Excel dashboard tool in 2026',
     intro:
-      'There are dozens of Excel dashboard tools — from native Excel pivot charts to Tableau, Power BI, Looker Studio, Datawrapper and Flourish. This page is a short, opinionated take on which one to pick depending on what you’re actually trying to do.',
+      `There are dozens of Excel dashboard tools — from native Excel pivot charts to Tableau, Power BI, Looker Studio, Datawrapper and Flourish. This page is a short, opinionated take on which one to pick depending on what you're actually trying to do.`,
     sections: [
       {
         heading: 'The shortlist',

@@ -1,4 +1,3 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download, ArrowRight } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
 import { Link } from 'react-router-dom';
@@ -165,18 +164,14 @@ export function LandingContent() {
           </h2>
           <p className="text-muted-foreground">{t('faqIntro')}</p>
         </div>
-        <Accordion type="single" collapsible className="max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto space-y-6">
           {faqs.map((f, i) => (
-            <AccordionItem key={i} value={`item-${i}`} className="glass-card rounded-lg mb-3 border-0 px-5">
-              <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
-                {f.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                {f.a}
-              </AccordionContent>
-            </AccordionItem>
+            <article key={i} className="space-y-3">
+              <h3 className="text-lg font-semibold text-foreground">{f.q}</h3>
+              <p className="text-muted-foreground leading-relaxed">{f.a}</p>
+            </article>
           ))}
-        </Accordion>
+        </div>
       </section>
 
       {/* Footer */}
