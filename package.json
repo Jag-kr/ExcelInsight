@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "generate-seo": "tsx scripts/generate-seo-pages.ts",
+    "prebuild": "tsx scripts/generate-seo-pages.ts",
     "build": "vite build",
-    "postbuild": "react-snap",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -92,49 +93,11 @@
     "jsdom": "^20.0.3",
     "lovable-tagger": "^1.1.13",
     "postcss": "^8.5.6",
-    "react-snap": "^1.23.0",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.22.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",
     "vitest": "^3.2.4"
-  },
-  "reactSnap": {
-    "source": "dist",
-    "minifyHtml": {
-      "collapseWhitespace": false,
-      "removeComments": false
-    },
-    "puppeteerArgs": [
-      "--no-sandbox",
-      "--disable-setuid-sandbox"
-    ],
-    "include": [
-      "/",
-      "/privacy",
-      "/terms",
-      "/excel-dashboard-maker",
-      "/csv-visualization-tool",
-      "/excel-chart-generator",
-      "/excel-report-builder",
-      "/excel-to-pdf-dashboard",
-      "/excelinsight-vs-tableau",
-      "/excelinsight-vs-powerbi",
-      "/tableau-alternative",
-      "/best-excel-dashboard-tool",
-      "/bar-chart-maker",
-      "/line-chart-maker",
-      "/pie-chart-maker",
-      "/scatter-plot-generator",
-      "/area-chart-maker",
-      "/sales-dashboard-template",
-      "/inventory-dashboard-template",
-      "/hr-dashboard-template",
-      "/finance-reporting-dashboard",
-      "/ecommerce-analytics-dashboard",
-      "/startup-kpi-dashboard",
-      "/manufacturing-report-dashboard",
-      "/marketing-analytics-dashboard"
-    ]
   }
 }
