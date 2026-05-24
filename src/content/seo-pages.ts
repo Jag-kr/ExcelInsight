@@ -760,6 +760,70 @@ export const seoPages: SeoPage[] = [
     ],
     related: ['startup-kpi-dashboard', 'ecommerce-analytics-dashboard', 'excel-dashboard-maker', 'pie-chart-maker'],
   },
+  {
+    slug: 'analyse-excel-data',
+    category: 'feature',
+    title: 'Analyse Excel Data — Free Excel Analysis Tool Online',
+    description: 'Analyse Excel data online for free. Upload your spreadsheet and instantly perform Excel analysis, plot charts, and generate dashboards without formulas.',
+    h1: 'Free Excel analysis tool',
+    intro:
+      'ExcelInsight is a free tool to analyse Excel data. Simply upload your spreadsheet and ExcelInsight automatically performs a deep data analysis, detects data types, and suggests insightful charts to help you understand your data better.',
+    sections: [
+      {
+        heading: 'Analyse your Excel data instantly',
+        body: 'You do not need to write complicated formulas, run Power Query, or build pivot tables. ExcelInsight is designed to do the heavy lifting of Excel data analysis for you. Within seconds of uploading, it identifies numeric distributions, top categories, and missing values.',
+        bullets: [
+          'Automatic column detection and typing',
+          'Instant descriptive statistics and data quality checks',
+          'Find repeating values and outliers fast',
+        ],
+      },
+      {
+        heading: 'Browser-based Excel analysis',
+        body: 'Perform complex data analysis completely in your browser. Since nothing leaves your device, you can safely analyse confidential or sensitive Excel files without uploading them to a remote server.',
+      },
+    ],
+    faqs: [
+      {
+        q: 'Do I need any data analysis skills?',
+        a: 'No. ExcelInsight auto-generates the most useful charts and insights based on your data shape, making it the perfect analysis tool for beginners.',
+      },
+      ...baseFaq,
+    ],
+    related: ['plot-excel-data', 'excel-dashboard-maker', 'excel-chart-generator'],
+  },
+  {
+    slug: 'plot-excel-data',
+    category: 'feature',
+    title: 'Plot Excel Data — Free Online Excel Plotter & Graph Maker',
+    description: 'Plot Excel data online instantly. Drop your spreadsheet to plot Excel charts, scatter plots, and time series graphs without any software install.',
+    h1: 'Plot Excel data online',
+    intro:
+      'ExcelInsight makes it incredibly easy to plot Excel data online. Forget fumbling with chart settings in a spreadsheet application — upload your file and let ExcelInsight plot bar charts, line graphs, and scatter plots automatically.',
+    sections: [
+      {
+        heading: 'Plot charts with zero friction',
+        body: 'We built ExcelInsight so you can plot your data without configuring axes, legends, and series ranges manually. It analyses your columns and plots them immediately, allowing you to cycle through different visualizations in a single click.',
+        bullets: [
+          'Plot line charts for time-series data',
+          'Plot scatter graphs to discover correlations',
+          'Plot bar and pie charts for categorical breakdowns',
+        ],
+      },
+      {
+        heading: 'Export and share your plots',
+        body: 'Once you plot your Excel data, you can export individual charts as high-resolution PNGs or the entire set of plots as a multi-page PDF report. Perfect for sharing with your team or including in presentations.',
+      },
+    ],
+    faqs: [
+      {
+        q: 'Can I plot CSV files too?',
+        a: 'Yes, ExcelInsight can plot both Excel (.xlsx, .xls) and CSV files out of the box.',
+      },
+      ...baseFaq,
+    ],
+    related: ['analyse-excel-data', 'excel-chart-generator', 'scatter-plot-generator'],
+  },
 ];
 
 export const seoPageMap: Record<string, SeoPage> = Object.fromEntries(

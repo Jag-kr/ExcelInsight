@@ -7,15 +7,15 @@ const SITE_URL = 'https://excelinsight.xyz';
 const OG_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/neEqO6MCG2bHfGf0v6pME35dIMA2/social-images/social-1774898677243-ExcelInsight.webp';
 
 export const metadata: Metadata = {
-  title: "ExcelInsight – Free Excel Charts, Dashboards & Reports",
-  description: "Turn Excel or CSV files into interactive charts, dashboards and PDF reports online. Free, private, browser-based Excel analytics — no signup, try it now.",
+  title: "ExcelInsight – Analyse Excel & Plot Excel Data | Free Dashboard from Excel",
+  description: "Analyse Excel data and plot Excel charts instantly. Turn your spreadsheet into a free dashboard from Excel. ExcelInsight is private and browser-based.",
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: "ExcelInsight – Free Online Excel Chart & Dashboard Maker",
-    description: "Turn Excel or CSV files into interactive charts, dashboards and PDF reports online. Free, private, browser-based Excel analytics — no signup, try it now.",
+    title: "ExcelInsight – Analyse Excel & Plot Excel Data | Free Dashboard from Excel",
+    description: "Analyse Excel data and plot Excel charts instantly. Turn your spreadsheet into a free dashboard from Excel. ExcelInsight is private and browser-based.",
     url: SITE_URL,
     siteName: "ExcelInsight",
     locale: "en_US",
@@ -31,8 +31,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ExcelInsight – Free Online Excel Chart & Dashboard Maker",
-    description: "Upload Excel or CSV files and instantly generate charts, graphs, plots, reports and dashboards online. Free, private, no signup — try ExcelInsight now.",
+    title: "ExcelInsight – Analyse Excel & Plot Excel Data | Free Dashboard from Excel",
+    description: "Analyse Excel data and plot Excel charts instantly. Turn your spreadsheet into a free dashboard from Excel. ExcelInsight is private and browser-based.",
     images: [OG_IMAGE],
   },
   robots: {
