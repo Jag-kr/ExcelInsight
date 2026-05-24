@@ -7,7 +7,10 @@
     { "source": "/home", "destination": "/", "statusCode": 301 }
   ],
   "rewrites": [
-    { "source": "/((?!api/|assets/|sitemap\\.xml|robots\\.txt|llms\\.txt|ads\\.txt|favicon\\.ico|apple-touch-icon\\.png|logo\\.svg|logo\\.png|.*\\.(?:js|css|png|jpg|jpeg|gif|svg|webp|avif|ico|woff|woff2|ttf|otf|map|json|xml|txt|pdf)).*)", "destination": "/" }
+    { 
+      "source": "/((?!api/|sitemap\\.xml|robots\\.txt|favicon\\.ico|assets/).*)", 
+      "destination": "/" 
+    }
   ],
   "headers": [
     {
@@ -31,8 +34,18 @@
     {
       "source": "/sitemap.xml",
       "headers": [
-        { "key": "Content-Type", "value": "application/xml; charset=utf-8" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "all"
+        }
       ]
     },
     {
