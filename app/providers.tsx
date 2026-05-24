@@ -1,22 +1,16 @@
+"use client";
+
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Analytics } from '@vercel/analytics/react';
-import { HelmetProvider } from 'react-helmet-async';
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeContext, ThemeMode } from '@/lib/theme';
 import { I18nContext, Language, translations, TranslationKey } from '@/lib/i18n';
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import Privacy from "./pages/Privacy.tsx";
-import Terms from "./pages/Terms.tsx";
-import SeoLanding from "./pages/SeoLanding.tsx";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+export function Providers({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('datalens-theme') as ThemeMode) || 'dark';
@@ -54,29 +48,16 @@ const App = () => {
   const i18nCtx = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t]);
 
   return (
-    <HelmetProvider>
     <ThemeContext.Provider value={themeCtx}>
       <I18nContext.Provider value={i18nCtx}>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
+            {children}
             <Toaster />
             <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/:slug" element={<SeoLanding />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-            <Analytics />
           </TooltipProvider>
         </QueryClientProvider>
       </I18nContext.Provider>
     </ThemeContext.Provider>
-    </HelmetProvider>
   );
-};
-
-export default App;
+}

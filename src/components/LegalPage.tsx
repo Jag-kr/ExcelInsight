@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom';
+"use client";
+
+import Link from 'next/link';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
-import logo from '@/assets/ExcelInsight_Logo.png';
 import { useI18n } from '@/lib/i18n';
 import { legalContent, LegalDoc } from '@/lib/i18n/legal';
 
@@ -17,8 +18,9 @@ export function LegalPage({ docKey, otherDocPath }: LegalPageProps) {
     <div className="min-h-screen" style={{ background: 'var(--gradient-glow)' }}>
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container flex items-center justify-between h-14 px-4">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="ExcelInsight logo" className="h-6" />
+          <Link href="/" className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="ExcelInsight logo" className="h-6" />
             <span className="font-bold gradient-text">ExcelInsight</span>
           </Link>
           <ThemeLangSwitcher />
@@ -45,9 +47,9 @@ export function LegalPage({ docKey, otherDocPath }: LegalPageProps) {
           </div>
 
           <div className="mt-10 pt-6 border-t border-border text-sm">
-            <Link to="/" className="text-primary hover:underline">{doc.backToApp}</Link>
+            <Link href="/" className="text-primary hover:underline">{doc.backToApp}</Link>
             <span className="mx-2 text-muted-foreground">•</span>
-            <Link to={otherDocPath} className="text-primary hover:underline">{doc.otherDocLinkLabel}</Link>
+            <Link href={otherDocPath} className="text-primary hover:underline">{doc.otherDocLinkLabel}</Link>
           </div>
         </article>
       </main>
