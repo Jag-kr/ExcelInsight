@@ -1,15 +1,53 @@
-import { Link, useParams } from 'react-router-dom';
-import { useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 import { ArrowRight, Check, ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SEO } from '@/components/SEO';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
-import { seoPageMap, seoPagesByCategory, categoryLabel, type SeoPage } from '@/content/seo-pages';
-import logo from '@/assets/ExcelInsight_Logo.png';
-import NotFound from './NotFound';
+import { seoPageMap, seoPages, seoPagesByCategory, categoryLabel, type SeoPage } from '@/content/seo-pages';
 
 const SITE_URL = 'https://excelinsight.xyz';
+const OG_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/neEqO6MCG2bHfGf0v6pME35dIMA2/social-images/social-1774898677243-ExcelInsight.webp';
+
+// 1. Generate Static Params — Tells Next.js to pre-render all 22 pages
+export async function generateStaticParams() {
+  return seoPages.map((page) => ({
+    slug: page.slug,
+  }));
+}
+
+// 2. Generate Metadata — Replaces Helmet
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const page = seoPageMap[params.slug];
+  if (!page) return {};
+  
+  const url = `${SITE_URL}/${page.slug}`;
+
+  return {
+    title: page.title,
+    description: page.description,
+    alternates: {
+      canonical: `/${page.slug}`,
+    },
+    openGraph: {
+      title: page.title,
+      description: page.description,
+      url,
+      images: [
+        {
+          url: OG_IMAGE,
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      title: page.title,
+      description: page.description,
+      images: [OG_IMAGE],
+    },
+  };
+}
 
 function CategoryNav() {
   return (
@@ -22,7 +60,7 @@ function CategoryNav() {
               {seoPagesByCategory[cat].map((p) => (
                 <li key={p.slug}>
                   <Link
-                    to={`/${p.slug}`}
+                    href={`/${p.slug}`}
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
                     {p.h1}
@@ -41,8 +79,9 @@ function LandingHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="max-w-6xl mx-auto flex items-center justify-between h-14 px-6">
-        <Link to="/" className="flex items-center gap-2 font-bold gradient-text">
-          <img src={logo} alt="ExcelInsight" width="24" height="24" className="h-6 w-6" />
+        <Link href="/" className="flex items-center gap-2 font-bold gradient-text">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="ExcelInsight" width="24" height="24" className="h-6 w-6" />
           ExcelInsight
         </Link>
         <ThemeLangSwitcher />
@@ -56,7 +95,7 @@ function Breadcrumbs({ page }: { page: SeoPage }) {
     <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
       <ol className="flex items-center gap-2 flex-wrap">
         <li>
-          <Link to="/" className="hover:text-primary">Home</Link>
+          <Link href="/" className="hover:text-primary">Home</Link>
         </li>
         <li><ChevronRight className="h-3.5 w-3.5" /></li>
         <li>{categoryLabel[page.category]}</li>
@@ -70,27 +109,24 @@ function Breadcrumbs({ page }: { page: SeoPage }) {
 function Cta({ label }: { label: string }) {
   return (
     <Button asChild size="lg" className="gap-2">
-      <Link to="/">
+      <Link href="/">
         {label} <ArrowRight className="h-4 w-4" />
       </Link>
     </Button>
   );
 }
 
-export default function SeoLanding() {
-  const { slug } = useParams<{ slug: string }>();
-  const page = slug ? seoPageMap[slug] : undefined;
+export default function SeoLandingPage({ params }: { params: { slug: string } }) {
+  const page = seoPageMap[params.slug];
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [slug]);
-
-  if (!page) return <NotFound />;
+  if (!page) {
+    notFound();
+  }
 
   const ctaLabel = page.primaryCta ?? 'Upload your spreadsheet — free';
   const url = `${SITE_URL}/${page.slug}`;
 
-  // JSON-LD: FAQPage + BreadcrumbList + SoftwareApplication
+  // JSON-LD
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -130,12 +166,14 @@ export default function SeoLanding() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO path={`/${page.slug}`} title={page.title} description={page.description} />
-      <Helmet>
-        {jsonLd.map((schema, i) => (
-          <script key={i} type="application/ld+json">{JSON.stringify(schema)}</script>
-        ))}
-      </Helmet>
+      {/* Inject JSON-LD directly into the HTML */}
+      {jsonLd.map((schema, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
 
       <LandingHeader />
 
@@ -156,7 +194,7 @@ export default function SeoLanding() {
             <div className="flex flex-wrap gap-3 pt-2">
               <Cta label={ctaLabel} />
               <Button asChild variant="outline" size="lg">
-                <Link to="/">See it in action</Link>
+                <Link href="/">See it in action</Link>
               </Button>
             </div>
           </div>
@@ -246,7 +284,7 @@ export default function SeoLanding() {
                 return (
                   <Link
                     key={s}
-                    to={`/${rel.slug}`}
+                    href={`/${rel.slug}`}
                     className="glass-card rounded-xl p-4 hover:scale-[1.01] transition-transform flex items-start justify-between gap-3 group"
                   >
                     <div>
@@ -267,11 +305,11 @@ export default function SeoLanding() {
       <footer className="border-t border-border">
         <div className="max-w-6xl mx-auto px-6 py-8 text-center text-sm text-muted-foreground space-y-2">
           <nav className="flex items-center justify-center gap-4">
-            <Link to="/" className="hover:text-primary">Home</Link>
+            <Link href="/" className="hover:text-primary">Home</Link>
             <span className="text-border">•</span>
-            <Link to="/privacy" className="hover:text-primary">Privacy</Link>
+            <Link href="/privacy" className="hover:text-primary">Privacy</Link>
             <span className="text-border">•</span>
-            <Link to="/terms" className="hover:text-primary">Terms</Link>
+            <Link href="/terms" className="hover:text-primary">Terms</Link>
           </nav>
           <p>© {new Date().getFullYear()} ExcelInsight — free Excel & CSV analytics, charts, dashboards and reports.</p>
         </div>

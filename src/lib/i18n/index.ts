@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext } from 'react';
 import { en, TranslationKey } from './en';
 import { hi } from './hi';
