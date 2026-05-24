@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef, useEffect, lazy, Suspense } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { FileUpload } from '@/components/FileUpload';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { LandingContent } from '@/components/LandingContent';
@@ -57,13 +58,13 @@ function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: (
 }
 
 // Lazy-load heavy components (recharts, drag-and-drop, pdf libs) so they don't block initial paint.
-const DataSummary = lazy(() => import('@/components/DataSummary').then(m => ({ default: m.DataSummary })));
-const DynamicChart = lazy(() => import('@/components/DynamicChart').then(m => ({ default: m.DynamicChart })));
-const ManualChartBuilder = lazy(() => import('@/components/ManualChartBuilder').then(m => ({ default: m.ManualChartBuilder })));
-const ColumnMerger = lazy(() => import('@/components/ColumnMerger').then(m => ({ default: m.ColumnMerger })));
-const DashboardGrid = lazy(() => import('@/components/DashboardGrid').then(m => ({ default: m.DashboardGrid })));
-const DataFilter = lazy(() => import('@/components/DataFilter').then(m => ({ default: m.DataFilter })));
-const SmartInsights = lazy(() => import('@/components/SmartInsights').then(m => ({ default: m.SmartInsights })));
+const DataSummary = dynamic(() => import('@/components/DataSummary').then(m => m.DataSummary), { ssr: false });
+const DynamicChart = dynamic(() => import('@/components/DynamicChart').then(m => m.DynamicChart), { ssr: false });
+const ManualChartBuilder = dynamic(() => import('@/components/ManualChartBuilder').then(m => m.ManualChartBuilder), { ssr: false });
+const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m => m.ColumnMerger), { ssr: false });
+const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false });
+const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
+const SmartInsights = dynamic(() => import('@/components/SmartInsights').then(m => m.SmartInsights), { ssr: false });
 
 const ChartFallback = () => (
   <div className="glass-card rounded-xl p-5 min-h-[300px]">
