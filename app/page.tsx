@@ -1,9 +1,11 @@
-import { useState, useCallback, useMemo, useRef, useEffect, lazy, Suspense } from 'react';
+"use client";
+
+import { useState, useCallback, useMemo, useRef, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { FileUpload } from '@/components/FileUpload';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { LandingContent } from '@/components/LandingContent';
 import { AdSlot } from '@/components/AdSlot';
-import { SEO } from '@/components/SEO';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { chartThemes } from '@/lib/chart-themes';
 import { useI18n } from '@/lib/i18n';
@@ -56,13 +58,13 @@ function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: (
 }
 
 // Lazy-load heavy components (recharts, drag-and-drop, pdf libs) so they don't block initial paint.
-const DataSummary = lazy(() => import('@/components/DataSummary').then(m => ({ default: m.DataSummary })));
-const DynamicChart = lazy(() => import('@/components/DynamicChart').then(m => ({ default: m.DynamicChart })));
-const ManualChartBuilder = lazy(() => import('@/components/ManualChartBuilder').then(m => ({ default: m.ManualChartBuilder })));
-const ColumnMerger = lazy(() => import('@/components/ColumnMerger').then(m => ({ default: m.ColumnMerger })));
-const DashboardGrid = lazy(() => import('@/components/DashboardGrid').then(m => ({ default: m.DashboardGrid })));
-const DataFilter = lazy(() => import('@/components/DataFilter').then(m => ({ default: m.DataFilter })));
-const SmartInsights = lazy(() => import('@/components/SmartInsights').then(m => ({ default: m.SmartInsights })));
+const DataSummary = dynamic(() => import('@/components/DataSummary').then(m => m.DataSummary), { ssr: false });
+const DynamicChart = dynamic(() => import('@/components/DynamicChart').then(m => m.DynamicChart), { ssr: false });
+const ManualChartBuilder = dynamic(() => import('@/components/ManualChartBuilder').then(m => m.ManualChartBuilder), { ssr: false });
+const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m => m.ColumnMerger), { ssr: false });
+const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false });
+const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
+const SmartInsights = dynamic(() => import('@/components/SmartInsights').then(m => m.SmartInsights), { ssr: false });
 
 const ChartFallback = () => (
   <div className="glass-card rounded-xl p-5 min-h-[300px]">
@@ -305,7 +307,7 @@ export default function Index() {
         rowCount: filteredData.length,
         colCount: columns.length,
         chartCount, tableCount, insightCount,
-        logoUrl: logo,
+        logoUrl: logo.src,
       });
       toast.success(t('pdfReady'), { id: toastId });
     } catch (e) {
@@ -428,7 +430,6 @@ export default function Index() {
   if (!data.length) {
     return (
       <div className="min-h-screen" style={{ background: 'var(--gradient-glow)' }}>
-        <SEO path="/" />
         <div className="absolute top-4 right-4 z-10">
           <ThemeLangSwitcher />
         </div>
@@ -438,7 +439,7 @@ export default function Index() {
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary mb-4">
                 <BarChart3 className="h-4 w-4" /> {t('analyticsEngine')}
               </div>
-              <img src={logo} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-16 w-16 mx-auto mb-2" />
+              <img src={logo.src} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-16 w-16 mx-auto mb-2" />
               <h1 className="text-4xl font-bold gradient-text">ExcelInsight – Excel Charts &amp; Dashboards</h1>
               <p className="text-muted-foreground">{t('uploadSubtitle')}</p>
             </div>
@@ -468,7 +469,7 @@ export default function Index() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="ExcelInsight" width="24" height="24" decoding="async" className="h-6 w-6" />
+            <img src={logo.src} alt="ExcelInsight" width="24" height="24" decoding="async" className="h-6 w-6" />
             <span className="font-bold gradient-text">{t('appName')}</span>
             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-secondary pl-2 pr-1 py-0.5 rounded">
               <span className="truncate max-w-[200px]">{fileName}</span>

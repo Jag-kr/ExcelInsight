@@ -1,6 +1,8 @@
+"use client";
+
 import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download, ArrowRight } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import { seoPagesByCategory, categoryLabel, type SeoCategory } from '@/content/seo-pages';
 
@@ -142,7 +144,7 @@ export function LandingContent() {
                 {seoPagesByCategory[cat].map((p) => (
                   <li key={p.slug}>
                     <Link
-                      to={`/${p.slug}`}
+                      href={`/${p.slug}`}
                       className="group flex items-center justify-between gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
                     >
                       <span>{p.h1}</span>
@@ -177,9 +179,9 @@ export function LandingContent() {
       {/* Footer */}
       <footer className="text-center pt-10 border-t border-border space-y-3">
         <nav className="flex items-center justify-center gap-4 text-sm">
-          <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">{t('privacyPolicy')}</Link>
+          <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">{t('privacyPolicy')}</Link>
           <span className="text-border">•</span>
-          <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">{t('termsOfService')}</Link>
+          <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors">{t('termsOfService')}</Link>
         </nav>
         <p className="text-sm text-muted-foreground">
           © {new Date().getFullYear()} ExcelInsight — {t('footerCopy')}
