@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect, lazy, Suspense } from 'react';
 import { FileUpload } from '@/components/FileUpload';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { LandingContent } from '@/components/LandingContent';
@@ -173,19 +173,65 @@ function buildDefaultDashboard(
   return { items, usedChartIds };
 }
 
+const STORAGE_KEY = 'excelinsight-session-v1';
+
+type PersistedSession = {
+  data: Record<string, any>[];
+  fileName: string;
+  columns: ColumnMeta[];
+  suggestions: ChartSuggestion[];
+  dashboardItems: DashboardItem[];
+  filters: Record<string, string>;
+  addedChartIds: string[];
+  addedInsightIds: string[];
+  activeTab: string;
+};
+
+function loadSession(): PersistedSession | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as PersistedSession;
+  } catch {
+    return null;
+  }
+}
+
 export default function Index() {
   const { t } = useI18n();
-  const [data, setData] = useState<Record<string, any>[]>([]);
-  const [fileName, setFileName] = useState('');
-  const [columns, setColumns] = useState<ColumnMeta[]>([]);
-  const [suggestions, setSuggestions] = useState<ChartSuggestion[]>([]);
-  const [dashboardItems, setDashboardItems] = useState<DashboardItem[]>([]);
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [addedChartIds, setAddedChartIds] = useState<Set<string>>(new Set());
-  const [addedInsightIds, setAddedInsightIds] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const initial = useMemo(() => loadSession(), []);
+  const [data, setData] = useState<Record<string, any>[]>(() => initial?.data ?? []);
+  const [fileName, setFileName] = useState(() => initial?.fileName ?? '');
+  const [columns, setColumns] = useState<ColumnMeta[]>(() => initial?.columns ?? []);
+  const [suggestions, setSuggestions] = useState<ChartSuggestion[]>(() => initial?.suggestions ?? []);
+  const [dashboardItems, setDashboardItems] = useState<DashboardItem[]>(() => initial?.dashboardItems ?? []);
+  const [filters, setFilters] = useState<Record<string, string>>(() => initial?.filters ?? {});
+  const [addedChartIds, setAddedChartIds] = useState<Set<string>>(() => new Set(initial?.addedChartIds ?? []));
+  const [addedInsightIds, setAddedInsightIds] = useState<Set<string>>(() => new Set(initial?.addedInsightIds ?? []));
+  const [activeTab, setActiveTab] = useState<string>(() => initial?.activeTab ?? 'dashboard');
   const [exporting, setExporting] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!data.length) {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+    try {
+      const payload: PersistedSession = {
+        data, fileName, columns, suggestions, dashboardItems, filters,
+        addedChartIds: Array.from(addedChartIds),
+        addedInsightIds: Array.from(addedInsightIds),
+        activeTab,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (e) {
+      // Quota exceeded or non-serializable — fail silently.
+      console.warn('Could not persist session', e);
+    }
+  }, [data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab]);
 
   const handleDataLoaded = useCallback((newData: Record<string, any>[], name: string) => {
     setData(newData);
