@@ -178,4 +178,20 @@ export const hi: Record<TranslationKey, string> = {
   clearFileConfirmTitle: 'अपलोड की गई फ़ाइल हटाएँ?',
   clearFileConfirmDesc: 'इससे वर्तमान फ़ाइल हट जाएगी और सभी चार्ट, फ़िल्टर और डैशबोर्ड रीसेट हो जाएंगे। इसे पूर्ववत नहीं किया जा सकता।',
   cancel: 'रद्द करें',
+
+  // SEO page UI chrome
+  categoryFeature: 'विशेषताएँ',
+  categoryComparison: 'तुलनाएँ',
+  categoryChart: 'चार्ट निर्माता',
+  categoryTemplate: 'डैशबोर्ड टेम्पलेट',
+  categoryUsecase: 'उपयोग के मामले',
+  seeItInAction: 'इसे क्रिया में देखें',
+  tryWithYourOwnFile: 'अपनी फ़ाइल के साथ आज़माएँ',
+  tryItDesc: 'कोई साइनअप नहीं, सर्वर पर अपलोड नहीं। ExcelInsight खोलें, अपनी Excel या CSV फ़ाइल डालें, और सेकंड में डैशबोर्ड पाएं।',
+  frequentlyAskedQuestions: 'अक्सर पूछे जाने वाले प्रश्न',
+  relatedTools: 'संबंधित उपकरण',
+  uploadSpreadsheetFree: 'अपनी स्प्रेडशीट अपलोड करें — मुफ़्त',
+  feature: 'विशेषता',
+  comparisons: 'तुलनाएँ',
 };
+

@@ -178,4 +178,20 @@ export const zh: Record<TranslationKey, string> = {
   clearFileConfirmTitle: '清除已上传的文件？',
   clearFileConfirmDesc: '这将删除当前文件并重置所有图表、筛选器和仪表板。此操作无法撤销。',
   cancel: '取消',
+
+  // SEO page UI chrome
+  categoryFeature: '功能',
+  categoryComparison: '对比',
+  categoryChart: '图表制作',
+  categoryTemplate: '仪表板模板',
+  categoryUsecase: '使用场景',
+  seeItInAction: '查看演示',
+  tryWithYourOwnFile: '用您自己的文件试试',
+  tryItDesc: '无需注册，无需上传到服务器。打开 ExcelInsight，拖入您的 Excel 或 CSV 文件，几秒钟内即可生成仪表板。',
+  frequentlyAskedQuestions: '常见问题',
+  relatedTools: '相关工具',
+  uploadSpreadsheetFree: '上传您的电子表格 — 免费',
+  feature: '功能',
+  comparisons: '对比',
 };
+

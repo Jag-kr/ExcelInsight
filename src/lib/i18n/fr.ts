@@ -178,4 +178,20 @@ export const fr: Record<TranslationKey, string> = {
   clearFileConfirmTitle: 'Effacer le fichier téléchargé ?',
   clearFileConfirmDesc: 'Cela supprimera le fichier actuel et réinitialisera tous les graphiques, filtres et tableaux de bord. Cette action est irréversible.',
   cancel: 'Annuler',
+
+  // SEO page UI chrome
+  categoryFeature: 'Fonctionnalités',
+  categoryComparison: 'Comparaisons',
+  categoryChart: 'Créateurs de graphiques',
+  categoryTemplate: 'Modèles de tableau de bord',
+  categoryUsecase: 'Cas d\'utilisation',
+  seeItInAction: 'Voir en action',
+  tryWithYourOwnFile: 'Essayez avec votre propre fichier',
+  tryItDesc: 'Sans inscription, sans téléchargement vers un serveur. Ouvrez ExcelInsight, déposez votre fichier Excel ou CSV et obtenez un tableau de bord en quelques secondes.',
+  frequentlyAskedQuestions: 'Questions fréquemment posées',
+  relatedTools: 'Outils associés',
+  uploadSpreadsheetFree: 'Téléchargez votre tableur — gratuit',
+  feature: 'Fonctionnalité',
+  comparisons: 'Comparaisons',
 };
+
