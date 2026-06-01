@@ -4,36 +4,36 @@ import { seoPages } from '@/content/seo-pages';
 export const dynamic = 'force-static';
 
 const SITE_URL = 'https://excelinsight.xyz';
-const LAST_MODIFIED = new Date('2026-05-27');
+const LAST_MODIFIED = new Date('2026-05-27T00:00:00.000Z');
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = [
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: `${SITE_URL}/`,
       lastModified: LAST_MODIFIED,
-      changeFrequency: 'weekly' as const,
-      priority: 1.0,
+      changeFrequency: 'weekly',
+      priority: 1,
     },
     {
       url: `${SITE_URL}/privacy`,
       lastModified: LAST_MODIFIED,
-      changeFrequency: 'yearly' as const,
+      changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
       url: `${SITE_URL}/terms`,
       lastModified: LAST_MODIFIED,
-      changeFrequency: 'yearly' as const,
+      changeFrequency: 'yearly',
       priority: 0.3,
     },
   ];
 
-  const seoRoutes = seoPages.map((page) => ({
+  const seoRoutes: MetadataRoute.Sitemap = seoPages.map((page) => ({
     url: `${SITE_URL}/${page.slug}`,
     lastModified: LAST_MODIFIED,
-    changeFrequency: 'monthly' as const,
+    changeFrequency: 'monthly',
     priority: 0.8,
   }));
 
-  return [...routes, ...seoRoutes];
+  return [...staticRoutes, ...seoRoutes];
 }

@@ -180,6 +180,21 @@ export const en = {
   faq8Q: 'Does ExcelInsight work offline?',
   faq8A: 'After the first load, most functionality continues to work even without an internet connection because everything runs client-side.',
 
+  // SEO page UI chrome
+  categoryFeature: 'Features',
+  categoryComparison: 'Comparisons',
+  categoryChart: 'Chart makers',
+  categoryTemplate: 'Dashboard templates',
+  categoryUsecase: 'Use cases',
+  seeItInAction: 'See it in action',
+  tryWithYourOwnFile: 'Try it with your own file',
+  tryItDesc: 'No signup, no upload to a server. Open ExcelInsight, drop your Excel or CSV file, and get a dashboard in seconds.',
+  frequentlyAskedQuestions: 'Frequently asked questions',
+  relatedTools: 'Related tools',
+  uploadSpreadsheetFree: 'Upload your spreadsheet — free',
+  feature: 'Feature',
+  comparisons: 'Comparisons',
+
   privacyPolicy: 'Privacy Policy',
   termsOfService: 'Terms of Service',
   footerCopy: 'Free Excel analytics & dashboard builder. Made for analysts, students, and small businesses.',

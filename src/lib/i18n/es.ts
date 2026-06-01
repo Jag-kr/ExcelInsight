@@ -178,4 +178,20 @@ export const es: Record<TranslationKey, string> = {
   clearFileConfirmTitle: '¿Borrar archivo cargado?',
   clearFileConfirmDesc: 'Esto eliminará el archivo actual y restablecerá todos los gráficos, filtros y paneles. Esta acción no se puede deshacer.',
   cancel: 'Cancelar',
+
+  // SEO page UI chrome
+  categoryFeature: 'Características',
+  categoryComparison: 'Comparaciones',
+  categoryChart: 'Creadores de gráficos',
+  categoryTemplate: 'Plantillas de panel',
+  categoryUsecase: 'Casos de uso',
+  seeItInAction: 'Verlo en acción',
+  tryWithYourOwnFile: 'Pruébalo con tu propio archivo',
+  tryItDesc: 'Sin registro, sin subida a un servidor. Abre ExcelInsight, sube tu archivo Excel o CSV y obtén un panel en segundos.',
+  frequentlyAskedQuestions: 'Preguntas frecuentes',
+  relatedTools: 'Herramientas relacionadas',
+  uploadSpreadsheetFree: 'Sube tu hoja de cálculo — gratis',
+  feature: 'Característica',
+  comparisons: 'Comparaciones',
 };
+

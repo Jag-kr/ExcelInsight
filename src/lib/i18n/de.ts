@@ -178,4 +178,20 @@ export const de: Record<TranslationKey, string> = {
   clearFileConfirmTitle: 'Hochgeladene Datei löschen?',
   clearFileConfirmDesc: 'Dadurch wird die aktuelle Datei entfernt und alle Diagramme, Filter und Dashboards werden zurückgesetzt. Dies kann nicht rückgängig gemacht werden.',
   cancel: 'Abbrechen',
+
+  // SEO page UI chrome
+  categoryFeature: 'Funktionen',
+  categoryComparison: 'Vergleiche',
+  categoryChart: 'Diagramm-Tools',
+  categoryTemplate: 'Dashboard-Vorlagen',
+  categoryUsecase: 'Anwendungsfälle',
+  seeItInAction: 'In Aktion sehen',
+  tryWithYourOwnFile: 'Mit eigener Datei ausprobieren',
+  tryItDesc: 'Kein Konto, kein Upload auf einen Server. Öffnen Sie ExcelInsight, laden Sie Ihre Excel- oder CSV-Datei hoch und erhalten Sie in Sekunden ein Dashboard.',
+  frequentlyAskedQuestions: 'Häufig gestellte Fragen',
+  relatedTools: 'Ähnliche Tools',
+  uploadSpreadsheetFree: 'Tabelle hochladen — kostenlos',
+  feature: 'Funktion',
+  comparisons: 'Vergleiche',
 };
+
