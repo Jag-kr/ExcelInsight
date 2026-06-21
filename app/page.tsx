@@ -7,12 +7,11 @@ import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { LandingContent } from '@/components/LandingContent';
 import { AdSlot } from '@/components/AdSlot';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
-import { chartThemes } from '@/lib/chart-themes';
 import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus, Sparkles, RotateCcw, Trash2, X } from 'lucide-react';
+import { BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus, Sparkles, RotateCcw, Trash2, X, ChevronDown } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,11 +26,14 @@ import {
 import logo from '@/assets/ExcelInsight_Logo.png';
 import { toast } from 'sonner';
 import type { DashboardItem } from '@/components/DashboardGrid';
-import type { ChartType, ChartTheme } from '@/lib/chart-themes';
+import type { ChartType } from '@/lib/chart-themes';
+import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: () => void; addLabel: string }) {
   const [type, setType] = useState<ChartType>(s.type);
-  const [theme, setTheme] = useState<ChartTheme>(chartThemes[0]);
   return (
     <div className="relative group min-h-[300px]">
       <Suspense fallback={<ChartFallback />}>
@@ -42,9 +44,7 @@ function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: (
           data={s.data}
           dataKeys={s.dataKeys}
           xKey={s.xKey}
-          theme={theme}
           onChangeType={setType}
-          onChangeTheme={setTheme}
         />
       </Suspense>
       <button
@@ -57,29 +57,29 @@ function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: (
   );
 }
 
-// Lazy-load heavy components (recharts, drag-and-drop, pdf libs) so they don't block initial paint.
-const DataSummary = dynamic(() => import('@/components/DataSummary').then(m => m.DataSummary), { ssr: false });
-const DynamicChart = dynamic(() => import('@/components/DynamicChart').then(m => m.DynamicChart), { ssr: false });
-const ManualChartBuilder = dynamic(() => import('@/components/ManualChartBuilder').then(m => m.ManualChartBuilder), { ssr: false });
-const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m => m.ColumnMerger), { ssr: false });
-const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false });
-const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
-const SmartInsights = dynamic(() => import('@/components/SmartInsights').then(m => m.SmartInsights), { ssr: false });
-
 const ChartFallback = () => (
-  <div className="glass-card rounded-xl p-5 min-h-[300px]">
+  <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-5 min-h-[300px]">
     <Skeleton className="h-5 w-1/3 mb-3" />
     <Skeleton className="h-[240px] w-full" />
-  </div>
+  </Card>
 );
 
 const PanelFallback = () => (
-  <div className="glass-card rounded-xl p-5 min-h-[300px] space-y-3">
+  <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-5 min-h-[300px] space-y-3">
     <Skeleton className="h-5 w-1/4" />
     <Skeleton className="h-4 w-full" />
     <Skeleton className="h-32 w-full" />
-  </div>
+  </Card>
 );
+
+// Lazy-load heavy components (recharts, drag-and-drop, pdf libs) so they don't block initial paint.
+const DataSummary = dynamic(() => import('@/components/DataSummary').then(m => m.DataSummary), { ssr: false, loading: () => <PanelFallback /> });
+const DynamicChart = dynamic(() => import('@/components/DynamicChart').then(m => m.DynamicChart), { ssr: false, loading: () => <ChartFallback /> });
+const ManualChartBuilder = dynamic(() => import('@/components/ManualChartBuilder').then(m => m.ManualChartBuilder), { ssr: false, loading: () => <PanelFallback /> });
+const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m => m.ColumnMerger), { ssr: false });
+const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false, loading: () => <ChartFallback /> });
+const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
+const SmartInsights = dynamic(() => import('@/components/SmartInsights').then(m => m.SmartInsights), { ssr: false, loading: () => <PanelFallback /> });
 
 const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
 
@@ -100,7 +100,6 @@ function buildDefaultDashboard(
       data: c.data,
       dataKeys: c.dataKeys,
       xKey: c.xKey,
-      theme: chartThemes[i % chartThemes.length],
       size: i === 0 ? 'lg' : 'md',
     });
     usedChartIds.add(c.id);
@@ -167,7 +166,6 @@ function buildDefaultDashboard(
       id: c.id, title: c.title, description: c.description,
       type: CHART_TYPE_ROTATION[3 % CHART_TYPE_ROTATION.length],
       data: c.data, dataKeys: c.dataKeys, xKey: c.xKey,
-      theme: chartThemes[3 % chartThemes.length],
     });
     usedChartIds.add(c.id);
   }
@@ -214,6 +212,7 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState<string>(() => initial?.activeTab ?? 'dashboard');
   const [exporting, setExporting] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -361,7 +360,6 @@ export default function Index() {
       data: s.data,
       dataKeys: s.dataKeys,
       xKey: s.xKey,
-      theme: chartThemes[0],
     }]);
     setAddedChartIds(prev => new Set(prev).add(s.id));
   }, []);
@@ -516,29 +514,47 @@ export default function Index() {
 
       <main className="container px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-secondary border border-border flex-wrap h-auto gap-1 p-1">
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <LayoutDashboard className="h-4 w-4 mr-1" /> {t('dashboard')}
-            </TabsTrigger>
-            <TabsTrigger value="explore" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <BarChart3 className="h-4 w-4 mr-1" /> {t('explore')}
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Lightbulb className="h-4 w-4 mr-1" /> {t('insights')}
-            </TabsTrigger>
-            <TabsTrigger value="build" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Wrench className="h-4 w-4 mr-1" /> {t('build')}
-            </TabsTrigger>
-            <TabsTrigger value="filter" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Filter className="h-4 w-4 mr-1" /> {t('filter')}
-            </TabsTrigger>
-            <TabsTrigger value="data" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Database className="h-4 w-4 mr-1" /> {t('data')}
-            </TabsTrigger>
-          </TabsList>
+          {isMobile ? (
+            <div className="w-full relative">
+              <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger className="w-full bg-secondary border-border h-10 font-medium">
+                  <SelectValue placeholder="Select tab" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dashboard"><span className="flex items-center"><LayoutDashboard className="h-4 w-4 mr-2" /> {t('dashboard')}</span></SelectItem>
+                  <SelectItem value="explore"><span className="flex items-center"><BarChart3 className="h-4 w-4 mr-2" /> {t('explore')}</span></SelectItem>
+                  <SelectItem value="insights"><span className="flex items-center"><Lightbulb className="h-4 w-4 mr-2" /> {t('insights')}</span></SelectItem>
+                  <SelectItem value="build"><span className="flex items-center"><Wrench className="h-4 w-4 mr-2" /> {t('build')}</span></SelectItem>
+                  <SelectItem value="filter"><span className="flex items-center"><Filter className="h-4 w-4 mr-2" /> {t('filter')}</span></SelectItem>
+                  <SelectItem value="data"><span className="flex items-center"><Database className="h-4 w-4 mr-2" /> {t('data')}</span></SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <TabsList className="bg-secondary border border-border flex-wrap h-auto gap-1 p-1">
+              <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <LayoutDashboard className="h-4 w-4 mr-1" /> {t('dashboard')}
+              </TabsTrigger>
+              <TabsTrigger value="explore" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <BarChart3 className="h-4 w-4 mr-1" /> {t('explore')}
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Lightbulb className="h-4 w-4 mr-1" /> {t('insights')}
+              </TabsTrigger>
+              <TabsTrigger value="build" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Wrench className="h-4 w-4 mr-1" /> {t('build')}
+              </TabsTrigger>
+              <TabsTrigger value="filter" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Filter className="h-4 w-4 mr-1" /> {t('filter')}
+              </TabsTrigger>
+              <TabsTrigger value="data" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Database className="h-4 w-4 mr-1" /> {t('data')}
+              </TabsTrigger>
+            </TabsList>
+          )}
 
           <TabsContent value="dashboard" className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 glass-card rounded-xl p-3">
+            <Card className="flex flex-wrap items-center justify-between gap-3 bg-card/80 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Button size="sm" variant="outline" onClick={() => setActiveTab('build')} className="gap-1.5">
                   <Plus className="h-3.5 w-3.5" /> {t('addChart')}
@@ -572,7 +588,7 @@ export default function Index() {
                   {exporting ? t('generatingPdf') : t('exportPdf')}
                 </Button>
               </div>
-            </div>
+            </Card>
             <div ref={dashboardRef} className="min-h-[400px]">
               <Suspense fallback={<ChartFallback />}>
                 <DashboardGrid
@@ -623,34 +639,34 @@ export default function Index() {
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-4">
-            <div className="glass-card rounded-xl p-5 min-h-[300px]">
+            <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-5 min-h-[300px]">
               <Suspense fallback={<PanelFallback />}>
                 <SmartInsights columns={filteredColumns} data={filteredData} onAddToDashboard={addInsightToDashboard} onAddTableToDashboard={addTableToDashboard} addedInsightIds={addedInsightIds} />
               </Suspense>
-            </div>
+            </Card>
           </TabsContent>
 
           <TabsContent value="build" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="glass-card rounded-xl p-5 min-h-[300px]">
+              <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-5 min-h-[300px]">
                 <Suspense fallback={<PanelFallback />}>
                   <ManualChartBuilder data={filteredData} columns={filteredColumns} onAddToDashboard={addToDashboard} />
                 </Suspense>
-              </div>
-              <div className="glass-card rounded-xl p-5 min-h-[300px]">
+              </Card>
+              <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-5 min-h-[300px]">
                 <Suspense fallback={<PanelFallback />}>
                   <ColumnMerger columns={columns} onMerge={handleMerge} />
                 </Suspense>
-              </div>
+              </Card>
             </div>
           </TabsContent>
 
           <TabsContent value="filter" className="space-y-4">
-            <div className="glass-card rounded-xl p-5 min-h-[250px]">
+            <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-5 min-h-[250px]">
               <Suspense fallback={<PanelFallback />}>
                 <DataFilter columns={columns} data={data} filters={filters} onFiltersChange={setFilters} />
               </Suspense>
-            </div>
+            </Card>
             {Object.keys(filters).length > 0 && filteredSuggestions.length > 0 && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {filteredSuggestions.slice(0, 4).map(s => (
@@ -663,7 +679,6 @@ export default function Index() {
                         data={s.data}
                         dataKeys={s.dataKeys}
                         xKey={s.xKey}
-                        theme={chartThemes[0]}
                         showControls={false}
                       />
                     </Suspense>
@@ -674,31 +689,31 @@ export default function Index() {
           </TabsContent>
 
           <TabsContent value="data" className="space-y-4">
-            <div className="glass-card rounded-xl p-5 min-h-[200px]">
+            <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-5 min-h-[200px]">
               <Suspense fallback={<PanelFallback />}>
                 <DataSummary columns={filteredColumns} rowCount={filteredData.length} />
               </Suspense>
-            </div>
-            <div className="glass-card rounded-xl p-4 overflow-auto max-h-96 min-h-[300px]">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border">
+            </Card>
+            <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-4 overflow-auto max-h-96 min-h-[300px]">
+              <Table className="text-xs">
+                <TableHeader>
+                  <TableRow>
                     {columns.slice(0, 10).map(c => (
-                      <th key={c.name} className="text-left p-2 text-muted-foreground font-medium">{c.name}</th>
+                      <TableHead key={c.name} className="font-medium">{c.name}</TableHead>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {filteredData.slice(0, 50).map((row, i) => (
-                    <tr key={i} className="border-b border-border/30 hover:bg-secondary/30">
+                    <TableRow key={i} className="hover:bg-secondary/30">
                       {columns.slice(0, 10).map(c => (
-                        <td key={c.name} className="p-2 text-foreground truncate max-w-[150px]">{String(row[c.name] ?? '')}</td>
+                        <TableCell key={c.name} className="truncate max-w-[150px]">{String(row[c.name] ?? '')}</TableCell>
                       ))}
-                    </tr>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </TableBody>
+              </Table>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>
