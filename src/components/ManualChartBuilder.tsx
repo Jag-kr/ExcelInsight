@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
-import { ChartType, chartTypeOptions, chartThemes, ChartTheme } from '@/lib/chart-themes';
+import { ChartType, chartTypeOptions } from '@/lib/chart-themes';
 import { DynamicChart } from './DynamicChart';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,7 +19,6 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
   const [xCol, setXCol] = useState('');
   const [yCol, setYCol] = useState('');
   const [aggregation, setAggregation] = useState<'sum' | 'average' | 'count'>('sum');
-  const [theme, setTheme] = useState<ChartTheme>(chartThemes[0]);
 
   const buildChartData = () => {
     if (!xCol) return [];
@@ -68,7 +67,6 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
       type: chartType,
       data: chartData,
       dataKeys: [dataKey],
-      theme,
     });
   };
 
@@ -78,7 +76,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-foreground">{t('buildCustomChart')}</h3>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="text-xs text-muted-foreground mb-1 block">{t('chartType')}</label>
           <Select value={chartType} onValueChange={(v) => setChartType(v as ChartType)}>
@@ -132,9 +130,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
             type={chartType}
             data={chartData}
             dataKeys={[dataKey]}
-            theme={theme}
             onChangeType={setChartType}
-            onChangeTheme={setTheme}
           />
           <Button onClick={handleAdd} className="w-full" size="sm">
             <Plus className="h-4 w-4 mr-1" /> {t('addDashboard')}

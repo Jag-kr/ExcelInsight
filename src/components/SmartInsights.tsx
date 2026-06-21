@@ -3,6 +3,10 @@ import { ColumnMeta } from '@/lib/data-analyzer';
 import { AlertTriangle, BarChart3, CheckCircle2, Repeat2, Plus, TableIcon, Check } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Progress } from '@/components/ui/progress';
 
 interface SmartInsightsProps {
   columns: ColumnMeta[];
@@ -71,9 +75,9 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
   const isAdded = (id: string) => addedInsightIds.has(id);
 
   const AddedBadge = () => (
-    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-success/20 text-success">
+    <Badge variant="secondary" className="gap-1 text-[10px] bg-success/20 text-success border-0 px-2 py-0.5 font-normal">
       <Check className="h-3 w-3" /> {t('addToDashboard')}
-    </span>
+    </Badge>
   );
 
   const addRepeatingAsDashboardChart = (col: RepeatingColumn) => {
@@ -157,13 +161,13 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
               const chartId = `insight-repeat-chart-${col.name}`;
               const tableId = `insight-repeat-table-${col.name}`;
               return (
-                <div key={col.name} className="glass-card rounded-lg p-3 space-y-2 relative group">
+                <Card key={col.name} className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg p-3 space-y-2 relative group">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">{col.name}</span>
                     <div className="flex items-center gap-1">
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/20 text-accent">
+                      <Badge variant="secondary" className="text-[10px] bg-accent/20 text-accent font-normal border-0">
                         {t('highRepetition')} ({Math.round(col.repetitionRatio * 100)}%)
-                      </span>
+                      </Badge>
                       {isAdded(chartId) ? <AddedBadge /> : onAddToDashboard && (
                         <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => addRepeatingAsDashboardChart(col)} title={t('addToDashboard')}>
                           <Plus className="h-3.5 w-3.5 text-primary" />
@@ -183,15 +187,13 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
                     <p className="text-[10px] text-muted-foreground font-medium">{t('topValues')}:</p>
                     {col.topValues.map(v => (
                       <div key={v.value} className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
-                          <div className="h-full rounded-full bg-primary/70" style={{ width: `${v.percentage}%` }} />
-                        </div>
+                        <Progress value={v.percentage} className="flex-1 h-1.5 [&>div]:bg-primary/70" />
                         <span className="text-[10px] text-foreground min-w-[60px] truncate">{v.value}</span>
                         <span className="text-[10px] text-muted-foreground shrink-0">{v.count} ({v.percentage}%)</span>
                       </div>
                     ))}
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>
@@ -219,31 +221,31 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
               )}
             </div>
           </div>
-          <div className="overflow-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-2 text-muted-foreground font-medium">{t('columns')}</th>
-                  <th className="text-right p-2 text-muted-foreground font-medium">{t('min')}</th>
-                  <th className="text-right p-2 text-muted-foreground font-medium">{t('max')}</th>
-                  <th className="text-right p-2 text-muted-foreground font-medium">{t('mean')}</th>
-                  <th className="text-right p-2 text-muted-foreground font-medium">{t('median')}</th>
-                  <th className="text-right p-2 text-muted-foreground font-medium">{t('stdDev')}</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="overflow-x-auto w-full">
+            <Table className="text-xs min-w-[600px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[150px]">{t('columns')}</TableHead>
+                  <TableHead className="text-right">{t('min')}</TableHead>
+                  <TableHead className="text-right">{t('max')}</TableHead>
+                  <TableHead className="text-right">{t('mean')}</TableHead>
+                  <TableHead className="text-right">{t('median')}</TableHead>
+                  <TableHead className="text-right">{t('stdDev')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {numericInsights.map(col => (
-                  <tr key={col.name} className="border-b border-border/30 hover:bg-secondary/30">
-                    <td className="p-2 font-medium text-foreground">{col.name}</td>
-                    <td className="p-2 text-right text-muted-foreground">{col.stats!.min.toFixed(1)}</td>
-                    <td className="p-2 text-right text-muted-foreground">{col.stats!.max.toFixed(1)}</td>
-                    <td className="p-2 text-right text-muted-foreground">{col.stats!.mean.toFixed(2)}</td>
-                    <td className="p-2 text-right text-muted-foreground">{col.stats!.median.toFixed(1)}</td>
-                    <td className="p-2 text-right text-muted-foreground">{col.stats!.stdDev.toFixed(2)}</td>
-                  </tr>
+                  <TableRow key={col.name}>
+                    <TableCell className="font-medium text-foreground">{col.name}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{col.stats!.min.toFixed(1)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{col.stats!.max.toFixed(1)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{col.stats!.mean.toFixed(2)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{col.stats!.median.toFixed(1)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{col.stats!.stdDev.toFixed(2)}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
       )}
@@ -273,12 +275,11 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
             {dataQuality.map(col => (
               <div key={col.name} className="flex items-center gap-3 rounded-lg bg-secondary/50 px-3 py-2">
                 <span className="text-xs font-medium text-foreground truncate flex-1">{col.name}</span>
-                <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${col.completeness > 90 ? 'bg-success' : col.completeness > 70 ? 'bg-warning' : 'bg-destructive'}`}
-                    style={{ width: `${col.completeness}%` }}
-                  />
-                </div>
+                <Progress 
+                  value={col.completeness} 
+                  className="w-20 h-1.5" 
+                  indicatorClassName={col.completeness > 90 ? 'bg-success' : col.completeness > 70 ? 'bg-warning' : 'bg-destructive'} 
+                />
                 <span className="text-[10px] text-muted-foreground shrink-0">
                   {col.completeness}% {t('complete')}
                 </span>

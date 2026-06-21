@@ -7,7 +7,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DynamicChart } from './DynamicChart';
-import { ChartTheme, chartThemes, ChartType } from '@/lib/chart-themes';
+import { ChartType } from '@/lib/chart-themes';
 import {
   GripVertical, Trash2, Maximize2, Minimize2, Square, Repeat2, BarChart3, AlertTriangle,
   Copy, Pencil, Check,
@@ -17,6 +17,10 @@ import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 export interface DashboardItem {
   id: string;
@@ -26,7 +30,6 @@ export interface DashboardItem {
   data: any[];
   dataKeys: string[];
   xKey?: string;
-  theme?: ChartTheme;
   displayAs?: 'chart' | 'table' | 'insight';
   tableColumns?: string[];
   size?: 'sm' | 'md' | 'lg';
@@ -85,31 +88,33 @@ function EditableTitle({ value, onChange, className }: { value: string; onChange
 function DashboardTable({ item, onRename }: { item: DashboardItem; onRename: (v: string) => void }) {
   const cols = item.tableColumns || (item.data.length > 0 ? Object.keys(item.data[0]) : []);
   return (
-    <div className="glass-card rounded-xl p-4 animate-fade-in h-full">
-      <h3 className="text-sm font-semibold text-foreground mb-3 truncate">
-        <EditableTitle value={item.title} onChange={onRename} />
-      </h3>
-      <div className="overflow-auto max-h-[280px]">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-border">
+    <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full flex flex-col">
+      <CardHeader className="p-4 pb-0">
+        <CardTitle className="text-sm font-semibold truncate">
+          <EditableTitle value={item.title} onChange={onRename} />
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 pt-2 flex-1 overflow-auto max-h-[280px]">
+        <Table className="text-xs">
+          <TableHeader>
+            <TableRow>
               {cols.map(c => (
-                <th key={c} className="text-left p-2 text-muted-foreground font-medium">{c}</th>
+                <TableHead key={c}>{c}</TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {item.data.map((row, i) => (
-              <tr key={i} className="border-b border-border/30 hover:bg-secondary/30">
+              <TableRow key={i}>
                 {cols.map(c => (
-                  <td key={c} className="p-2 text-foreground truncate max-w-[150px]">{String(row[c] ?? '')}</td>
+                  <TableCell key={c} className="truncate max-w-[150px]">{String(row[c] ?? '')}</TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -119,15 +124,15 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
 
   if (item.insightType === 'repeating' && content) {
     return (
-      <div className="glass-card rounded-xl p-4 animate-fade-in h-full space-y-2">
+      <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full space-y-2 p-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 min-w-0 flex-1">
             <Repeat2 className="h-4 w-4 text-accent shrink-0" />
             <EditableTitle value={item.title} onChange={onRename} className="min-w-0" />
           </h3>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/20 text-accent shrink-0">
+          <Badge variant="secondary" className="text-[10px] bg-accent/20 text-accent">
             {t('highRepetition')} ({Math.round(content.repetitionRatio * 100)}%)
-          </span>
+          </Badge>
         </div>
         <p className="text-xs text-muted-foreground">
           {content.uniqueCount} {t('uniqueValues')} / {content.totalCount} {t('rows')}
@@ -136,58 +141,58 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
           <p className="text-[10px] text-muted-foreground font-medium">{t('topValues')}:</p>
           {content.topValues?.map((v: any) => (
             <div key={v.value} className="flex items-center gap-2">
-              <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
-                <div className="h-full rounded-full bg-primary/70" style={{ width: `${v.percentage}%` }} />
-              </div>
+              <Progress value={v.percentage} className="flex-1 h-1.5 [&>div]:bg-primary/70" />
               <span className="text-[10px] text-foreground min-w-[60px] truncate">{v.value}</span>
               <span className="text-[10px] text-muted-foreground shrink-0">{v.count} ({v.percentage}%)</span>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
     );
   }
 
   if (item.insightType === 'stats' && Array.isArray(content)) {
     return (
-      <div className="glass-card rounded-xl p-4 animate-fade-in h-full space-y-2">
-        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-primary" />
-          <EditableTitle value={item.title} onChange={onRename} />
-        </h3>
-        <div className="overflow-auto max-h-[280px]">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left p-2 text-muted-foreground font-medium">{t('columns')}</th>
-                <th className="text-right p-2 text-muted-foreground font-medium">{t('min')}</th>
-                <th className="text-right p-2 text-muted-foreground font-medium">{t('max')}</th>
-                <th className="text-right p-2 text-muted-foreground font-medium">{t('mean')}</th>
-                <th className="text-right p-2 text-muted-foreground font-medium">{t('median')}</th>
-                <th className="text-right p-2 text-muted-foreground font-medium">{t('stdDev')}</th>
-              </tr>
-            </thead>
-            <tbody>
+      <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full flex flex-col">
+        <CardHeader className="p-4 pb-0">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-primary" />
+            <EditableTitle value={item.title} onChange={onRename} />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-2 flex-1 overflow-auto max-h-[280px]">
+          <Table className="text-xs">
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('columns')}</TableHead>
+                <TableHead className="text-right">{t('min')}</TableHead>
+                <TableHead className="text-right">{t('max')}</TableHead>
+                <TableHead className="text-right">{t('mean')}</TableHead>
+                <TableHead className="text-right">{t('median')}</TableHead>
+                <TableHead className="text-right">{t('stdDev')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {content.map((col: any) => (
-                <tr key={col.name} className="border-b border-border/30 hover:bg-secondary/30">
-                  <td className="p-2 font-medium text-foreground">{col.name}</td>
-                  <td className="p-2 text-right text-muted-foreground">{col.stats?.min?.toFixed(1)}</td>
-                  <td className="p-2 text-right text-muted-foreground">{col.stats?.max?.toFixed(1)}</td>
-                  <td className="p-2 text-right text-muted-foreground">{col.stats?.mean?.toFixed(2)}</td>
-                  <td className="p-2 text-right text-muted-foreground">{col.stats?.median?.toFixed(1)}</td>
-                  <td className="p-2 text-right text-muted-foreground">{col.stats?.stdDev?.toFixed(2)}</td>
-                </tr>
+                <TableRow key={col.name}>
+                  <TableCell className="font-medium">{col.name}</TableCell>
+                  <TableCell className="text-right text-muted-foreground">{col.stats?.min?.toFixed(1)}</TableCell>
+                  <TableCell className="text-right text-muted-foreground">{col.stats?.max?.toFixed(1)}</TableCell>
+                  <TableCell className="text-right text-muted-foreground">{col.stats?.mean?.toFixed(2)}</TableCell>
+                  <TableCell className="text-right text-muted-foreground">{col.stats?.median?.toFixed(1)}</TableCell>
+                  <TableCell className="text-right text-muted-foreground">{col.stats?.stdDev?.toFixed(2)}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     );
   }
 
   if (item.insightType === 'quality' && Array.isArray(content)) {
     return (
-      <div className="glass-card rounded-xl p-4 animate-fade-in h-full space-y-2">
+      <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full space-y-2 p-4">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-warning" />
           <EditableTitle value={item.title} onChange={onRename} />
@@ -196,19 +201,18 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
           {content.map((col: any) => (
             <div key={col.name} className="flex items-center gap-3 rounded-lg bg-secondary/50 px-3 py-2">
               <span className="text-xs font-medium text-foreground truncate flex-1">{col.name}</span>
-              <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${col.completeness > 90 ? 'bg-success' : col.completeness > 70 ? 'bg-warning' : 'bg-destructive'}`}
-                  style={{ width: `${col.completeness}%` }}
-                />
-              </div>
+              <Progress 
+                value={col.completeness} 
+                className="w-20 h-1.5" 
+                indicatorClassName={col.completeness > 90 ? 'bg-success' : col.completeness > 70 ? 'bg-warning' : 'bg-destructive'}
+              />
               <span className="text-[10px] text-muted-foreground shrink-0">
                 {col.completeness}% {t('complete')}
               </span>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
     );
   }
 
@@ -219,12 +223,6 @@ const sizeClasses: Record<string, string> = {
   sm: 'col-span-1 md:col-span-1 lg:col-span-2',
   md: 'col-span-1 md:col-span-2 lg:col-span-3',
   lg: 'col-span-1 md:col-span-2 lg:col-span-6',
-};
-
-const sizeMinHeights: Record<string, string> = {
-  sm: 'min-h-[260px]',
-  md: 'min-h-[340px]',
-  lg: 'min-h-[440px]',
 };
 
 const sizeFractionLabel: Record<'sm' | 'md' | 'lg', string> = {
@@ -273,7 +271,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
       ref={setNodeRef}
       style={style}
       data-pdf-card
-      className={`relative group ${sizeClasses[size]} ${sizeMinHeights[size]} ${isDragging ? 'scale-[1.02] shadow-2xl' : ''} transition-all`}
+      className={`relative group ${sizeClasses[size]} ${isDragging ? 'scale-[1.02] shadow-2xl' : ''} transition-all`}
     >
       <div
         data-pdf-hide
@@ -387,9 +385,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
           data={item.data}
           dataKeys={item.dataKeys}
           xKey={item.xKey}
-          theme={item.theme || chartThemes[0]}
           onChangeType={(type) => onUpdateItem({ type })}
-          onChangeTheme={(theme) => onUpdateItem({ theme })}
           onRenameTitle={renameTitle}
           size={size}
         />
@@ -416,14 +412,14 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
 
   if (!items.length) {
     return (
-      <div className="glass-card rounded-2xl border-2 border-dashed border-border p-10 text-center animate-fade-in">
+      <Card className="bg-card/80 backdrop-blur-xl border-dashed border-2 border-border/50 shadow-lg p-10 text-center animate-fade-in">
         <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
           <BarChart3 className="h-6 w-6 text-primary" />
         </div>
         <h3 className="text-base font-semibold text-foreground mb-1">{t('emptyDashboardTitle')}</h3>
         <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">{t('emptyDashboardDesc')}</p>
         {emptyAction}
-      </div>
+      </Card>
     );
   }
 
