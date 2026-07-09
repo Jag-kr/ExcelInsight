@@ -110,6 +110,21 @@ export const zh: Record<TranslationKey, string> = {
   emptyDashboardDesc: '通过添加图表、洞察或返回自动生成的建议来构建它。',
   autoGenerate: '自动生成',
   browseInsights: '浏览洞察',
+
+  // Quick Add Panel
+  addToDashboardPanel: '添加到仪表板',
+  suggestedCharts: '推荐图表',
+  customChart: '自定义图表',
+  searchChartsInsights: '搜索图表和洞察...',
+  moreActions: '更多操作',
+  quickAdd: '快速添加',
+  dashboardActions: '仪表板操作',
+  noSuggestionsLeft: '所有建议已添加！',
+  longPressToMove: '长按以重新排序',
+  expandChart: '展开',
+  collapseSection: '收起',
+  expandSection: '展开',
+
   renameTitle: '重命名',
   clickAgainToRemove: '再次点击以删除',
 

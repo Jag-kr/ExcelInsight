@@ -110,6 +110,21 @@ export const hi: Record<TranslationKey, string> = {
   emptyDashboardDesc: 'चार्ट, अंतर्दृष्टि जोड़कर या ऑटो-सुझावों पर वापस जाकर इसे बनाएं।',
   autoGenerate: 'ऑटो-जनरेट',
   browseInsights: 'अंतर्दृष्टि देखें',
+
+  // Quick Add Panel
+  addToDashboardPanel: 'डैशबोर्ड में जोड़ें',
+  suggestedCharts: 'सुझाए गए चार्ट',
+  customChart: 'कस्टम चार्ट',
+  searchChartsInsights: 'चार्ट और अंतर्दृष्टि खोजें...',
+  moreActions: 'और कार्रवाइयाँ',
+  quickAdd: 'त्वरित जोड़',
+  dashboardActions: 'डैशबोर्ड कार्रवाइयाँ',
+  noSuggestionsLeft: 'सभी सुझाव जोड़ दिए गए!',
+  longPressToMove: 'पुनर्व्यवस्थित करने के लिए देर तक दबाएं',
+  expandChart: 'विस्तृत करें',
+  collapseSection: 'संक्षिप्त करें',
+  expandSection: 'विस्तार करें',
+
   renameTitle: 'नाम बदलें',
   clickAgainToRemove: 'हटाने के लिए फिर से क्लिक करें',
 
