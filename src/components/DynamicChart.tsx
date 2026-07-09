@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
-import { toPng } from 'html-to-image';
+import html2canvas from 'html2canvas';
 import { Download, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIcon, AreaChart as AreaChartIcon, ScatterChart as ScatterChartIcon, Radar as RadarIcon, MoreHorizontal, AlignLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,7 +70,9 @@ export function DynamicChart({
     try {
       const controls = chartRef.current.querySelectorAll('[data-export-hide]');
       controls.forEach(el => (el as HTMLElement).style.display = 'none');
-      const url = await toPng(chartRef.current, { pixelRatio: 2 });
+      const bgColor = getComputedStyle(document.body).backgroundColor || '#ffffff';
+      const canvas = await html2canvas(chartRef.current, { scale: 2, backgroundColor: bgColor, useCORS: true });
+      const url = canvas.toDataURL('image/png');
       controls.forEach(el => (el as HTMLElement).style.display = '');
       const link = document.createElement('a');
       link.download = `${title.replace(/\s+/g, '_')}.png`;

@@ -217,6 +217,12 @@ const MOBILE_TABS = [
 
 export default function Index() {
   const { t } = useI18n();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const initial = useMemo(() => loadSession(), []);
   const [data, setData] = useState<Record<string, any>[]>(() => initial?.data ?? []);
   const [fileName, setFileName] = useState(() => initial?.fileName ?? '');
@@ -443,7 +449,7 @@ export default function Index() {
     });
   }, []);
 
-  if (!data.length) {
+  if (!mounted || !data.length) {
     return (
       <div className="min-h-screen" style={{ background: 'var(--gradient-glow)' }}>
         <div className="absolute top-4 right-4 z-10">
