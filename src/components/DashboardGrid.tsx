@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent,
+  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy,
@@ -10,14 +10,14 @@ import { DynamicChart } from './DynamicChart';
 import { ChartType } from '@/lib/chart-themes';
 import {
   GripVertical, Trash2, Maximize2, Minimize2, Square, Repeat2, BarChart3, AlertTriangle,
-  Copy, Pencil, Check,
+  Copy, MoreHorizontal, RectangleHorizontal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -219,16 +219,23 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
   return null;
 }
 
+/* ─── Responsive size classes ─── */
 const sizeClasses: Record<string, string> = {
-  sm: 'col-span-1 md:col-span-1 lg:col-span-2',
-  md: 'col-span-1 md:col-span-2 lg:col-span-3',
-  lg: 'col-span-1 md:col-span-2 lg:col-span-6',
+  sm: 'col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-2',
+  md: 'col-span-1 sm:col-span-1 md:col-span-2 lg:col-span-3',
+  lg: 'col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-6',
 };
 
 const sizeFractionLabel: Record<'sm' | 'md' | 'lg', string> = {
   sm: '⅓',
   md: '½',
   lg: 'full',
+};
+
+const sizeIcons = {
+  sm: Minimize2,
+  md: Square,
+  lg: Maximize2,
 };
 
 function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
@@ -258,119 +265,110 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.6 : 1,
+    transition: transition || 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
+    opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 50 : 'auto' as any,
   };
 
   const setSize = (s: 'sm' | 'md' | 'lg') => onUpdateItem({ size: s });
   const renameTitle = (v: string) => onUpdateItem({ title: v });
 
+  const SizeIcon = sizeIcons[size];
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       data-pdf-card
-      className={`relative group ${sizeClasses[size]} ${isDragging ? 'scale-[1.02] shadow-2xl' : ''} transition-all`}
+      className={`relative group ${sizeClasses[size]} ${isDragging ? 'scale-[1.02] shadow-2xl ring-2 ring-primary/30' : ''} transition-all duration-200`}
     >
+      {/* ─── Top bar: drag handle + actions ─── */}
       <div
         data-pdf-hide
-        className="absolute top-2 right-2 z-10 pointer-events-none"
+        className="absolute top-1.5 left-1.5 right-1.5 z-10 flex items-center justify-between pointer-events-none"
       >
-        <span className="pointer-events-auto inline-flex items-center rounded-md bg-secondary/80 backdrop-blur px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/50 uppercase tracking-wide">
-          {size}
-        </span>
-      </div>
-      <div
-        data-pdf-hide
-        className="absolute top-2 left-2 z-10 flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100 transition-opacity"
-      >
-        <TooltipProvider delayDuration={200}>
+        {/* Drag handle — always visible */}
+        <TooltipProvider delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 {...attributes}
                 {...listeners}
                 aria-label={t('dragToReorder')}
-                className="cursor-grab active:cursor-grabbing rounded bg-secondary/90 backdrop-blur p-1.5 hover:bg-secondary border border-border/50"
+                className="pointer-events-auto cursor-grab active:cursor-grabbing rounded-md bg-secondary/90 backdrop-blur px-1.5 py-1 hover:bg-secondary border border-border/50 transition-colors touch-none"
               >
                 <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom"><span className="text-xs">{t('dragToReorder')}</span></TooltipContent>
           </Tooltip>
-
-          <Popover>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label={t('resize')}
-                    className="h-7 w-7 p-0 bg-secondary/90 backdrop-blur border border-border/50 hover:bg-secondary"
-                  >
-                    {size === 'lg' ? <Maximize2 className="h-3.5 w-3.5" /> : size === 'sm' ? <Minimize2 className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
-                  </Button>
-                </PopoverTrigger>
-              </TooltipTrigger>
-              <TooltipContent side="bottom"><span className="text-xs">{t('resize')}</span></TooltipContent>
-            </Tooltip>
-            <PopoverContent side="bottom" align="start" className="w-auto p-1.5 flex gap-1">
-              {([
-                { v: 'sm' as const, Icon: Minimize2, label: t('small') },
-                { v: 'md' as const, Icon: Square, label: t('medium') },
-                { v: 'lg' as const, Icon: Maximize2, label: t('large') },
-              ]).map(({ v, Icon, label }) => (
-                <Button
-                  key={v}
-                  variant={size === v ? 'default' : 'ghost'}
-                  size="sm"
-                  className="h-8 px-2 gap-1.5"
-                  onClick={() => setSize(v)}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  <span className="text-xs">{label}</span>
-                  <span className="text-[10px] opacity-70">· {sizeFractionLabel[v]}</span>
-                  {size === v && <Check className="h-3 w-3" />}
-                </Button>
-              ))}
-            </PopoverContent>
-          </Popover>
-
-          {onDuplicate && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label={t('duplicate')}
-                  className="h-7 w-7 p-0 bg-secondary/90 backdrop-blur border border-border/50 hover:bg-secondary"
-                  onClick={onDuplicate}
-                >
-                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom"><span className="text-xs">{t('duplicate')}</span></TooltipContent>
-            </Tooltip>
-          )}
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={confirmRemove ? 'destructive' : 'ghost'}
-                size="sm"
-                aria-label={t('remove')}
-                className={`h-7 ${confirmRemove ? 'px-2' : 'w-7 p-0'} bg-secondary/90 backdrop-blur border border-border/50 hover:bg-destructive/20`}
-                onClick={handleRemoveClick}
-              >
-                <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                {confirmRemove && <span className="ml-1 text-[10px] font-semibold">?</span>}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom"><span className="text-xs">{confirmRemove ? t('clickAgainToRemove') : t('remove')}</span></TooltipContent>
-          </Tooltip>
         </TooltipProvider>
+
+        {/* Actions: size badge + dropdown */}
+        <div className="pointer-events-auto flex items-center gap-1">
+          {/* Size badge */}
+          <span className="inline-flex items-center gap-0.5 rounded-md bg-secondary/80 backdrop-blur px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/50 uppercase tracking-wide">
+            <SizeIcon className="h-2.5 w-2.5" />
+            {sizeFractionLabel[size]}
+          </span>
+
+          {/* Actions dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 bg-secondary/90 backdrop-blur border border-border/50 hover:bg-secondary opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100 transition-opacity"
+              >
+                <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              {/* Resize submenu */}
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="text-xs">
+                  <RectangleHorizontal className="h-3.5 w-3.5 mr-2" />
+                  {t('resize')}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {([
+                    { v: 'sm' as const, Icon: Minimize2, label: t('small'), fraction: '⅓' },
+                    { v: 'md' as const, Icon: Square, label: t('medium'), fraction: '½' },
+                    { v: 'lg' as const, Icon: Maximize2, label: t('large'), fraction: 'Full' },
+                  ]).map(({ v, Icon, label, fraction }) => (
+                    <DropdownMenuItem
+                      key={v}
+                      onClick={() => setSize(v)}
+                      className="text-xs"
+                    >
+                      <Icon className="h-3.5 w-3.5 mr-2" />
+                      {label}
+                      <span className="ml-auto text-[10px] text-muted-foreground">{fraction}</span>
+                      {size === v && <span className="ml-1 text-primary">✓</span>}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+
+              {onDuplicate && (
+                <DropdownMenuItem onClick={onDuplicate} className="text-xs">
+                  <Copy className="h-3.5 w-3.5 mr-2" />
+                  {t('duplicate')}
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={handleRemoveClick}
+                className="text-xs text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-2" />
+                {confirmRemove ? t('clickAgainToRemove') : t('remove')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {item.displayAs === 'insight' ? (
@@ -396,18 +394,29 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
 
 export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, emptyAction }: DashboardGridProps) {
   const { t } = useI18n();
+  const [activeId, setActiveId] = useState<string | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
     const { active, over } = event;
     if (over && active.id !== over.id) {
       const oldIndex = items.findIndex(i => i.id === active.id);
       const newIndex = items.findIndex(i => i.id === over.id);
       onReorder(arrayMove(items, oldIndex, newIndex));
     }
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
   };
 
   if (!items.length) {
@@ -423,10 +432,18 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
     );
   }
 
+  const activeItem = activeId ? items.find(i => i.id === activeId) : null;
+
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
       <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 auto-rows-[minmax(0,auto)]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 auto-rows-[minmax(0,auto)]">
           {items.map(item => (
             <SortableCard
               key={item.id}
@@ -438,6 +455,33 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
           ))}
         </div>
       </SortableContext>
+
+      {/* Drag overlay for visual feedback */}
+      <DragOverlay dropAnimation={{
+        duration: 200,
+        easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+      }}>
+        {activeItem ? (
+          <div className="opacity-80 scale-[1.02] shadow-2xl ring-2 ring-primary/40 rounded-lg pointer-events-none">
+            {activeItem.displayAs === 'insight' ? (
+              <DashboardInsightCard item={activeItem} onRename={() => {}} />
+            ) : activeItem.displayAs === 'table' ? (
+              <DashboardTable item={activeItem} onRename={() => {}} />
+            ) : (
+              <DynamicChart
+                title={activeItem.title}
+                description={activeItem.description}
+                type={activeItem.type}
+                data={activeItem.data}
+                dataKeys={activeItem.dataKeys}
+                xKey={activeItem.xKey}
+                showControls={false}
+                size={(activeItem.size || 'md') as 'sm' | 'md' | 'lg'}
+              />
+            )}
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 }

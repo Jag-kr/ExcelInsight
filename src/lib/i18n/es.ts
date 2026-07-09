@@ -110,6 +110,21 @@ export const es: Record<TranslationKey, string> = {
   emptyDashboardDesc: 'Constrúyelo añadiendo gráficos, información o volviendo a las sugerencias generadas automáticamente.',
   autoGenerate: 'Auto-generar',
   browseInsights: 'Explorar Información',
+
+  // Quick Add Panel
+  addToDashboardPanel: 'Añadir al Panel',
+  suggestedCharts: 'Gráficos Sugeridos',
+  customChart: 'Gráfico Personalizado',
+  searchChartsInsights: 'Buscar gráficos e información...',
+  moreActions: 'Más Acciones',
+  quickAdd: 'Añadir Rápido',
+  dashboardActions: 'Acciones del Panel',
+  noSuggestionsLeft: '¡Todas las sugerencias añadidas!',
+  longPressToMove: 'Mantén pulsado para reordenar',
+  expandChart: 'Expandir',
+  collapseSection: 'Contraer',
+  expandSection: 'Expandir',
+
   renameTitle: 'Renombrar',
   clickAgainToRemove: 'Haz clic de nuevo para eliminar',
 
