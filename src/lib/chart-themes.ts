@@ -28,7 +28,8 @@ export function getChartColor(index: number): string {
  * Returns `var(--color-KEY)` where KEY is the sanitized data key.
  */
 export function getChartVarColor(key: string): string {
-  return `var(--color-${key})`;
+  const sanitizedKey = key.replace(/[^a-zA-Z0-9_-]/g, "_");
+  return `var(--color-${sanitizedKey})`;
 }
 
 /**
