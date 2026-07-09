@@ -8,12 +8,13 @@ import {
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { toPng } from 'html-to-image';
-import { Download } from 'lucide-react';
+import { Download, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIcon, AreaChart as AreaChartIcon, ScatterChart as ScatterChartIcon, Radar as RadarIcon, MoreHorizontal, AlignLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, getChartColor, getChartVarColor } from '@/lib/chart-themes';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface DynamicChartProps {
   title: string;
@@ -34,6 +35,20 @@ const SIZE_CLASSES: Record<'sm' | 'md' | 'lg', string> = {
   lg: 'h-[300px] sm:h-[350px] lg:h-[400px]',
 };
 
+/* Quick chart type pills — show the first 4 as icon buttons, rest in overflow */
+const CHART_TYPE_ICONS: Record<ChartType, React.ElementType> = {
+  bar: BarChart3,
+  horizontalBar: AlignLeft,
+  line: LineChartIcon,
+  area: AreaChartIcon,
+  pie: PieChartIcon,
+  scatter: ScatterChartIcon,
+  radar: RadarIcon,
+};
+
+const PRIMARY_CHART_TYPES: ChartType[] = ['bar', 'line', 'area', 'pie'];
+const OVERFLOW_CHART_TYPES: ChartType[] = ['horizontalBar', 'scatter', 'radar'];
+
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
   onChangeType, onRenameTitle, showControls = true, size = 'md',
@@ -41,6 +56,7 @@ export function DynamicChart({
   const chartRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(title);
+  const [transitioning, setTransitioning] = useState(false);
 
   const chartConfig = useMemo<ChartConfig>(() => {
     if (type === 'pie' || type === 'scatter') {
@@ -63,6 +79,16 @@ export function DynamicChart({
     } catch (e) {
       console.error('Export failed', e);
     }
+  };
+
+  const handleTypeChange = (newType: ChartType) => {
+    if (newType === type || !onChangeType) return;
+    setTransitioning(true);
+    // Brief transition effect
+    setTimeout(() => {
+      onChangeType(newType);
+      setTimeout(() => setTransitioning(false), 150);
+    }, 100);
   };
 
   const renderChart = () => {
@@ -173,7 +199,7 @@ export function DynamicChart({
 
   return (
     <Card ref={chartRef} className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full flex flex-col">
-      <CardHeader className="p-4 pb-0">
+      <CardHeader className="p-3 sm:p-4 pb-0">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             {editing && onRenameTitle ? (
@@ -203,18 +229,117 @@ export function DynamicChart({
             )}
             {description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{description}</p>}
           </div>
-          <div className="flex items-center gap-1 shrink-0" data-export-hide data-pdf-hide>
+          <div className="flex items-center gap-0.5 shrink-0" data-export-hide data-pdf-hide>
             {showControls && onChangeType && (
-              <Select value={type} onValueChange={(v) => onChangeType(v as ChartType)}>
-                <SelectTrigger className="h-7 w-[110px] text-xs bg-secondary border-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {chartTypeOptions.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <TooltipProvider delayDuration={300}>
+                {/* Primary chart type pills */}
+                <div className="hidden sm:flex items-center gap-0.5 bg-secondary/50 rounded-md p-0.5">
+                  {PRIMARY_CHART_TYPES.map(ct => {
+                    const Icon = CHART_TYPE_ICONS[ct];
+                    const label = chartTypeOptions.find(o => o.value === ct)?.label || ct;
+                    return (
+                      <Tooltip key={ct}>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={() => handleTypeChange(ct)}
+                            className={`p-1 rounded transition-all ${
+                              type === ct
+                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                            }`}
+                          >
+                            <Icon className="h-3 w-3" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom"><span className="text-xs">{label}</span></TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+
+                  {/* Overflow for remaining types */}
+                  <Popover>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={`p-1 rounded transition-all ${
+                              OVERFLOW_CHART_TYPES.includes(type)
+                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                            }`}
+                          >
+                            <MoreHorizontal className="h-3 w-3" />
+                          </button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom"><span className="text-xs">More types</span></TooltipContent>
+                    </Tooltip>
+                    <PopoverContent side="bottom" align="end" className="w-auto p-1 flex gap-0.5">
+                      {OVERFLOW_CHART_TYPES.map(ct => {
+                        const Icon = CHART_TYPE_ICONS[ct];
+                        const label = chartTypeOptions.find(o => o.value === ct)?.label || ct;
+                        return (
+                          <Tooltip key={ct}>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={() => handleTypeChange(ct)}
+                                className={`p-1.5 rounded transition-all ${
+                                  type === ct
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                                }`}
+                              >
+                                <Icon className="h-3.5 w-3.5" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom"><span className="text-xs">{label}</span></TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {/* Mobile: compact select-style dropdown */}
+                <div className="flex sm:hidden">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        {(() => {
+                          const Icon = CHART_TYPE_ICONS[type];
+                          return <Icon className="h-3.5 w-3.5" />;
+                        })()}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent side="bottom" align="end" className="w-auto p-1.5 grid grid-cols-4 gap-1">
+                      {chartTypeOptions.map(opt => {
+                        const Icon = CHART_TYPE_ICONS[opt.value];
+                        return (
+                          <Tooltip key={opt.value}>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={() => handleTypeChange(opt.value)}
+                                className={`p-2 rounded transition-all ${
+                                  type === opt.value
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                                }`}
+                              >
+                                <Icon className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent><span className="text-xs">{opt.label}</span></TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </TooltipProvider>
             )}
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleExport} title="Export PNG">
               <Download className="h-3.5 w-3.5" />
@@ -222,10 +347,12 @@ export function DynamicChart({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-2 flex-1">
-        <ChartContainer config={chartConfig} className={`w-full ${SIZE_CLASSES[size]}`}>
-          {renderChart() || <div />}
-        </ChartContainer>
+      <CardContent className="p-3 sm:p-4 pt-2 flex-1">
+        <div className={`transition-opacity duration-150 ${transitioning ? 'opacity-30' : 'opacity-100'}`}>
+          <ChartContainer config={chartConfig} className={`w-full ${SIZE_CLASSES[size]}`}>
+            {renderChart() || <div />}
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );
