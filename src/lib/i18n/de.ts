@@ -110,6 +110,21 @@ export const de: Record<TranslationKey, string> = {
   emptyDashboardDesc: 'Erstellen Sie es, indem Sie Diagramme, Erkenntnisse hinzufügen oder zu automatisch generierten Vorschlägen zurückkehren.',
   autoGenerate: 'Auto-Generieren',
   browseInsights: 'Erkenntnisse Durchsuchen',
+
+  // Quick Add Panel
+  addToDashboardPanel: 'Zum Dashboard hinzufügen',
+  suggestedCharts: 'Vorgeschlagene Diagramme',
+  customChart: 'Benutzerdefiniertes Diagramm',
+  searchChartsInsights: 'Diagramme & Erkenntnisse suchen...',
+  moreActions: 'Weitere Aktionen',
+  quickAdd: 'Schnell hinzufügen',
+  dashboardActions: 'Dashboard-Aktionen',
+  noSuggestionsLeft: 'Alle Vorschläge hinzugefügt!',
+  longPressToMove: 'Lange drücken zum Neuordnen',
+  expandChart: 'Erweitern',
+  collapseSection: 'Einklappen',
+  expandSection: 'Ausklappen',
+
   renameTitle: 'Umbenennen',
   clickAgainToRemove: 'Erneut klicken zum Entfernen',
 

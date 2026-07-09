@@ -119,6 +119,21 @@ export const en = {
   emptyDashboardDesc: 'Build it by adding charts, insights, or jumping back to auto-generated suggestions.',
   autoGenerate: 'Auto-generate',
   browseInsights: 'Browse Insights',
+
+  // Quick Add Panel
+  addToDashboardPanel: 'Add to Dashboard',
+  suggestedCharts: 'Suggested Charts',
+  customChart: 'Custom Chart',
+  searchChartsInsights: 'Search charts & insights...',
+  moreActions: 'More Actions',
+  quickAdd: 'Quick Add',
+  dashboardActions: 'Dashboard Actions',
+  noSuggestionsLeft: 'All suggestions added!',
+  longPressToMove: 'Long press to reorder',
+  expandChart: 'Expand',
+  collapseSection: 'Collapse',
+  expandSection: 'Expand',
+
   renameTitle: 'Rename',
   clickAgainToRemove: 'Click again to remove',
 
