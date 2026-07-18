@@ -59,7 +59,7 @@ function EditableTitle({ value, onChange, className }: { value: string; onChange
 
   if (editing) {
     return (
-      <Input
+      <input
         autoFocus
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
@@ -68,7 +68,8 @@ function EditableTitle({ value, onChange, className }: { value: string; onChange
           if (e.key === 'Enter') commit();
           if (e.key === 'Escape') { setDraft(value); setEditing(false); }
         }}
-        className="h-7 text-sm font-semibold"
+        maxLength={100}
+        className="h-6 sm:h-7 text-xs sm:text-sm font-semibold w-full px-1.5 py-0.5 border rounded"
       />
     );
   }
@@ -77,7 +78,7 @@ function EditableTitle({ value, onChange, className }: { value: string; onChange
     <button
       type="button"
       onClick={() => { setDraft(value); setEditing(true); }}
-      className={`text-left truncate hover:underline decoration-dotted underline-offset-2 ${className || ''}`}
+      className={`text-left truncate hover:underline decoration-dotted underline-offset-2 text-xs sm:text-sm w-full ${className || ''}`}
       title="Click to rename"
     >
       {value}
@@ -89,13 +90,14 @@ function DashboardTable({ item, onRename }: { item: DashboardItem; onRename: (v:
   const cols = item.tableColumns || (item.data.length > 0 ? Object.keys(item.data[0]) : []);
   return (
     <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full flex flex-col">
-      <CardHeader className="p-4 pb-0">
-        <CardTitle className="text-sm font-semibold truncate">
+      <CardHeader className="p-3 sm:p-4 pb-0">
+        <CardTitle className="text-xs sm:text-sm font-semibold truncate">
           <EditableTitle value={item.title} onChange={onRename} />
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-2 flex-1 overflow-auto max-h-[280px]">
-        <Table className="text-xs">
+      <CardContent className="p-3 sm:p-4 pt-2 flex-1 overflow-auto max-h-[280px]">
+        <div className="overflow-x-auto w-full">
+        <Table className="text-xs sm:text-sm min-w-[500px] sm:min-w-0">
           <TableHeader>
             <TableRow>
               {cols.map(c => (
@@ -107,12 +109,13 @@ function DashboardTable({ item, onRename }: { item: DashboardItem; onRename: (v:
             {item.data.map((row, i) => (
               <TableRow key={i}>
                 {cols.map(c => (
-                  <TableCell key={c} className="truncate max-w-[150px]">{String(row[c] ?? '')}</TableCell>
+                  <TableCell key={c} className="px-2 sm:px-4 py-1 sm:py-2 truncate max-w-[100px] sm:max-w-none">{String(row[c] ?? '')}</TableCell>
                 ))}
               </TableRow>
             ))}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   );
@@ -421,12 +424,12 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
 
   if (!items.length) {
     return (
-      <Card className="bg-card/80 backdrop-blur-xl border-dashed border-2 border-border/50 shadow-lg p-10 text-center animate-fade-in">
-        <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-          <BarChart3 className="h-6 w-6 text-primary" />
+      <Card className="bg-card/80 backdrop-blur-xl border-dashed border-2 border-border/50 shadow-lg p-6 sm:p-10 text-center animate-fade-in">
+        <div className="mx-auto h-8 sm:h-12 w-8 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
+          <BarChart3 className="h-4 sm:h-6 w-4 sm:w-6 text-primary" />
         </div>
-        <h3 className="text-base font-semibold text-foreground mb-1">{t('emptyDashboardTitle')}</h3>
-        <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">{t('emptyDashboardDesc')}</p>
+        <h3 className="text-sm sm:text-base font-semibold text-foreground mb-1">{t('emptyDashboardTitle')}</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-5 max-w-md mx-auto">{t('emptyDashboardDesc')}</p>
         {emptyAction}
       </Card>
     );
