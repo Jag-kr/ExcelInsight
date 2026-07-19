@@ -452,30 +452,30 @@ export default function Index() {
   if (!mounted || !data.length) {
     return (
       <div className="min-h-screen" style={{ background: 'var(--gradient-glow)' }}>
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10">
           <ThemeLangSwitcher />
         </div>
         <main>
-          <section className="w-full max-w-xl mx-auto px-6 pt-16 pb-12 space-y-6 animate-fade-in">
+          <section className="w-full max-w-xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-8 sm:pb-12 space-y-4 sm:space-y-6 animate-fade-in">
             <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary mb-4">
-                <BarChart3 className="h-4 w-4" /> {t('analyticsEngine')}
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm text-primary mb-3 sm:mb-4">
+                <BarChart3 className="h-3 sm:h-4 w-3 sm:w-4" /> {t('analyticsEngine')}
               </div>
-              <img src={logo.src} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-16 w-16 mx-auto mb-2" />
-              <h1 className="text-4xl font-bold gradient-text">ExcelInsight – Excel Charts &amp; Dashboards</h1>
-              <p className="text-muted-foreground">{t('uploadSubtitle')}</p>
+              <img src={logo.src} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-12 sm:h-16 w-12 sm:w-16 mx-auto mb-1 sm:mb-2" />
+              <h1 className="text-2xl sm:text-4xl font-bold gradient-text">ExcelInsight – Excel Charts &amp; Dashboards</h1>
+              <p className="text-xs sm:text-base text-muted-foreground">{t('uploadSubtitle')}</p>
             </div>
             <FileUpload onDataLoaded={handleDataLoaded} />
-            <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
               {[
                 { icon: Database, label: t('smartDetection'), desc: t('smartDetectionDesc') },
                 { icon: BarChart3, label: t('autoCharts'), desc: t('autoChartsDesc') },
                 { icon: LayoutDashboard, label: t('dashboards'), desc: t('dashboardsDesc') },
               ].map(({ icon: Icon, label, desc }) => (
-                <div key={label} className="glass-card rounded-lg p-3">
-                  <Icon className="h-5 w-5 text-primary mx-auto mb-1" />
-                  <p className="text-xs font-medium text-foreground">{label}</p>
-                  <p className="text-[10px] text-muted-foreground">{desc}</p>
+                <div key={label} className="glass-card rounded-lg p-2 sm:p-3">
+                  <Icon className="h-4 sm:h-5 w-4 sm:w-5 text-primary mx-auto mb-1" />
+                  <p className="text-[10px] sm:text-xs font-medium text-foreground">{label}</p>
+                  <p className="text-[8px] sm:text-[10px] text-muted-foreground">{desc}</p>
                 </div>
               ))}
             </div>
@@ -494,12 +494,12 @@ export default function Index() {
     <div className="min-h-screen bg-background pb-16 md:pb-0">
       {/* ─── Sticky Header ─── */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-3">
-            <img src={logo.src} alt="ExcelInsight" width="24" height="24" decoding="async" className="h-6 w-6" />
-            <span className="font-bold gradient-text hidden sm:inline">{t('appName')}</span>
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-secondary pl-2 pr-1 py-0.5 rounded">
-              <span className="truncate max-w-[120px] sm:max-w-[200px]">{fileName}</span>
+        <div className="container flex items-center justify-between h-12 sm:h-14 px-2 sm:px-4 gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <img src={logo.src} alt="ExcelInsight" width="24" height="24" decoding="async" className="h-5 sm:h-6 w-5 sm:w-6 flex-shrink-0" />
+            <span className="font-bold gradient-text hidden sm:inline text-sm lg:text-base">{t('appName')}</span>
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground bg-secondary pl-1.5 sm:pl-2 pr-0.5 sm:pr-1 py-0.5 rounded min-w-0">
+              <span className="truncate max-w-[80px] sm:max-w-[200px]">{fileName}</span>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <button
@@ -524,8 +524,8 @@ export default function Index() {
               </AlertDialog>
             </span>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 sm:gap-3">
+            <div className="hidden md:flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
               <span>{filteredData.length} {t('rows')}</span>
               <span>•</span>
               <span>{columns.length} {t('cols')}</span>
@@ -541,33 +541,33 @@ export default function Index() {
         </div>
       </header>
 
-      <main className="container px-3 sm:px-4 py-4 sm:py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+      <main className="container px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 sm:space-y-4 md:space-y-6">
           {/* ─── Desktop Tabs ─── */}
           {!isMobile && (
-            <TabsList className="bg-secondary border border-border flex-wrap h-auto gap-1 p-1">
-              <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <LayoutDashboard className="h-4 w-4 mr-1" /> {t('dashboard')}
+            <TabsList className="bg-secondary border border-border flex-wrap h-auto gap-0.5 sm:gap-1 p-0.5 sm:p-1">
+              <TabsTrigger value="dashboard" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <LayoutDashboard className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-1" /> {t('dashboard')}
                 {dashboardItems.length > 0 && (
-                  <Badge variant="secondary" className="ml-1.5 text-[10px] px-1 py-0 h-4 min-w-4 bg-primary/10 text-primary border-0">
+                  <Badge variant="secondary" className="ml-1 sm:ml-1.5 text-[8px] sm:text-[10px] px-0.5 sm:px-1 py-0 h-4 min-w-4 bg-primary/10 text-primary border-0">
                     {dashboardItems.length}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="explore" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <BarChart3 className="h-4 w-4 mr-1" /> {t('explore')}
+              <TabsTrigger value="explore" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <BarChart3 className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-1" /> {t('explore')}
               </TabsTrigger>
-              <TabsTrigger value="insights" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Lightbulb className="h-4 w-4 mr-1" /> {t('insights')}
+              <TabsTrigger value="insights" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Lightbulb className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-1" /> {t('insights')}
               </TabsTrigger>
-              <TabsTrigger value="build" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Wrench className="h-4 w-4 mr-1" /> {t('build')}
+              <TabsTrigger value="build" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Wrench className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-1" /> {t('build')}
               </TabsTrigger>
-              <TabsTrigger value="filter" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Filter className="h-4 w-4 mr-1" /> {t('filter')}
+              <TabsTrigger value="filter" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Filter className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-1" /> {t('filter')}
               </TabsTrigger>
-              <TabsTrigger value="data" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Database className="h-4 w-4 mr-1" /> {t('data')}
+              <TabsTrigger value="data" className="text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Database className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-1" /> {t('data')}
               </TabsTrigger>
             </TabsList>
           )}
@@ -576,16 +576,16 @@ export default function Index() {
           {isMobile && (
             <div className="w-full">
               <Select value={activeTab} onValueChange={setActiveTab}>
-                <SelectTrigger className="w-full bg-secondary border-border h-10 font-medium">
+                <SelectTrigger className="w-full bg-secondary border-border h-9 sm:h-10 text-xs sm:text-sm font-medium">
                   <SelectValue placeholder="Select tab" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dashboard"><span className="flex items-center"><LayoutDashboard className="h-4 w-4 mr-2" /> {t('dashboard')}</span></SelectItem>
-                  <SelectItem value="explore"><span className="flex items-center"><BarChart3 className="h-4 w-4 mr-2" /> {t('explore')}</span></SelectItem>
-                  <SelectItem value="insights"><span className="flex items-center"><Lightbulb className="h-4 w-4 mr-2" /> {t('insights')}</span></SelectItem>
-                  <SelectItem value="build"><span className="flex items-center"><Wrench className="h-4 w-4 mr-2" /> {t('build')}</span></SelectItem>
-                  <SelectItem value="filter"><span className="flex items-center"><Filter className="h-4 w-4 mr-2" /> {t('filter')}</span></SelectItem>
-                  <SelectItem value="data"><span className="flex items-center"><Database className="h-4 w-4 mr-2" /> {t('data')}</span></SelectItem>
+                <SelectContent className="w-full sm:w-auto">
+                  <SelectItem value="dashboard"><span className="flex items-center"><LayoutDashboard className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-2" /> {t('dashboard')}</span></SelectItem>
+                  <SelectItem value="explore"><span className="flex items-center"><BarChart3 className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-2" /> {t('explore')}</span></SelectItem>
+                  <SelectItem value="insights"><span className="flex items-center"><Lightbulb className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-2" /> {t('insights')}</span></SelectItem>
+                  <SelectItem value="build"><span className="flex items-center"><Wrench className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-2" /> {t('build')}</span></SelectItem>
+                  <SelectItem value="filter"><span className="flex items-center"><Filter className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-2" /> {t('filter')}</span></SelectItem>
+                  <SelectItem value="data"><span className="flex items-center"><Database className="h-3.5 sm:h-4 w-3.5 sm:w-4 mr-2" /> {t('data')}</span></SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -594,43 +594,43 @@ export default function Index() {
           {/* ═══════════════ DASHBOARD TAB ═══════════════ */}
           <TabsContent value="dashboard" className="space-y-4">
             {/* ─── Enhanced Toolbar ─── */}
-            <Card className="sticky top-[57px] z-30 flex flex-wrap items-center justify-between gap-2 sm:gap-3 bg-card/90 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-2.5 sm:p-3">
+            <Card className="sticky top-[48px] sm:top-[56px] md:top-[57px] z-30 flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 md:gap-3 bg-card/90 backdrop-blur-xl border-border/50 shadow-lg rounded-xl p-2 sm:p-2.5 md:p-3">
               {/* Primary actions */}
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 md:gap-2">
                 <Button
                   size="sm"
                   onClick={() => setQuickAddOpen(true)}
-                  className="gap-1.5 shadow-sm"
+                  className="gap-1 sm:gap-1.5 text-xs sm:text-sm shadow-sm h-8 sm:h-9"
                 >
-                  <Plus className="h-3.5 w-3.5" /> {t('quickAdd') || 'Quick Add'}
+                  <Plus className="h-3 sm:h-3.5 w-3 sm:w-3.5" /> <span className="hidden sm:inline">{t('quickAdd') || 'Quick Add'}</span>
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={handleExportPdf}
                   disabled={exporting || !dashboardItems.length}
-                  className="gap-1.5"
+                  className="gap-1 sm:gap-1.5 text-xs sm:text-sm h-8 sm:h-9"
                 >
-                  <FileDown className="h-3.5 w-3.5" />
+                  <FileDown className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
                   <span className="hidden sm:inline">{exporting ? t('generatingPdf') : t('exportPdf')}</span>
-                  <span className="sm:hidden">PDF</span>
+                  <span className="sm:hidden text-xs">PDF</span>
                 </Button>
               </div>
 
               {/* Stats + secondary actions */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 {dashboardItems.length > 0 && (
-                  <div className="hidden sm:flex items-center gap-1.5">
-                    <Badge variant="secondary" className="text-[10px] font-normal gap-1 px-1.5 py-0.5">
+                  <div className="hidden md:flex items-center gap-1">
+                    <Badge variant="secondary" className="text-[9px] sm:text-[10px] font-normal gap-0.5 px-1 sm:px-1.5 py-0.5 h-5 sm:h-6">
                       {chartCount} {t('charts')}
                     </Badge>
                     {tableCount > 0 && (
-                      <Badge variant="secondary" className="text-[10px] font-normal gap-1 px-1.5 py-0.5">
+                      <Badge variant="secondary" className="text-[9px] sm:text-[10px] font-normal gap-0.5 px-1 sm:px-1.5 py-0.5 h-5 sm:h-6">
                         {tableCount} {t('tables')}
                       </Badge>
                     )}
                     {insightCount > 0 && (
-                      <Badge variant="secondary" className="text-[10px] font-normal gap-1 px-1.5 py-0.5">
+                      <Badge variant="secondary" className="text-[9px] sm:text-[10px] font-normal gap-0.5 px-1 sm:px-1.5 py-0.5 h-5 sm:h-6">
                         {insightCount} {t('insightsLabel')}
                       </Badge>
                     )}
@@ -639,28 +639,28 @@ export default function Index() {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
+                    <Button variant="ghost" size="sm" className="h-7 sm:h-8 w-7 sm:w-8 p-0">
+                      <MoreHorizontal className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-44">
-                    <DropdownMenuItem onClick={handleResetLayout} className="text-xs">
-                      <RotateCcw className="h-3.5 w-3.5 mr-2" />
+                  <DropdownMenuContent align="end" className="w-40 sm:w-44">
+                    <DropdownMenuItem onClick={handleResetLayout} className="text-xs sm:text-sm">
+                      <RotateCcw className="h-3 sm:h-3.5 w-3 sm:w-3.5 mr-2" />
                       {t('resetLayout')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setActiveTab('build')} className="text-xs">
-                      <Wrench className="h-3.5 w-3.5 mr-2" />
+                    <DropdownMenuItem onClick={() => setActiveTab('build')} className="text-xs sm:text-sm">
+                      <Wrench className="h-3 sm:h-3.5 w-3 sm:w-3.5 mr-2" />
                       {t('build')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setActiveTab('insights')} className="text-xs">
-                      <Lightbulb className="h-3.5 w-3.5 mr-2" />
+                    <DropdownMenuItem onClick={() => setActiveTab('insights')} className="text-xs sm:text-sm">
+                      <Lightbulb className="h-3 sm:h-3.5 w-3 sm:w-3.5 mr-2" />
                       {t('insights')}
                     </DropdownMenuItem>
                     {dashboardItems.length > 0 && (
                       <>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleClearAll} className="text-xs text-destructive focus:text-destructive">
-                          <Trash2 className="h-3.5 w-3.5 mr-2" />
+                        <DropdownMenuItem onClick={handleClearAll} className="text-xs sm:text-sm text-destructive focus:text-destructive">
+                          <Trash2 className="h-3 sm:h-3.5 w-3 sm:w-3.5 mr-2" />
                           {t('clearAll')}
                         </DropdownMenuItem>
                       </>
@@ -679,12 +679,12 @@ export default function Index() {
                   onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
                   onDuplicate={handleDuplicate}
                   emptyAction={
-                    <div className="flex flex-wrap items-center justify-center gap-2">
-                      <Button size="sm" onClick={() => setQuickAddOpen(true)} className="gap-1.5">
-                        <Plus className="h-3.5 w-3.5" /> {t('quickAdd') || 'Quick Add'}
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+                      <Button size="sm" onClick={() => setQuickAddOpen(true)} className="gap-1 sm:gap-1.5 text-xs sm:text-sm h-8 sm:h-9">
+                        <Plus className="h-3 sm:h-3.5 w-3 sm:w-3.5" /> {t('quickAdd') || 'Quick Add'}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={handleResetLayout} className="gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5" /> {t('autoGenerate')}
+                      <Button size="sm" variant="outline" onClick={handleResetLayout} className="gap-1 sm:gap-1.5 text-xs sm:text-sm h-8 sm:h-9">
+                        <Sparkles className="h-3 sm:h-3.5 w-3 sm:w-3.5" /> {t('autoGenerate')}
                       </Button>
                     </div>
                   }

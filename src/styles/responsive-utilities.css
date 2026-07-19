@@ -1,0 +1,112 @@
+/* Responsive Design Utilities & Best Practices */
+
+/**
+ * Add these utility classes to your globals.css or tailwind config
+ * to support responsive design patterns
+ */
+
+@layer utilities {
+  /* Responsive Text Truncation with Tooltip Support */
+  .truncate-responsive {
+    @apply truncate;
+  }
+
+  .line-clamp-2-responsive {
+    @apply line-clamp-2 sm:line-clamp-none;
+  }
+
+  .line-clamp-3-responsive {
+    @apply line-clamp-3 sm:line-clamp-none;
+  }
+
+  /* Responsive Typography */
+  .text-h1 {
+    @apply text-2xl sm:text-3xl lg:text-4xl font-bold;
+  }
+
+  .text-h2 {
+    @apply text-xl sm:text-2xl lg:text-3xl font-semibold;
+  }
+
+  .text-h3 {
+    @apply text-lg sm:text-xl lg:text-2xl font-semibold;
+  }
+
+  .text-body {
+    @apply text-sm sm:text-base;
+  }
+
+  .text-body-sm {
+    @apply text-xs sm:text-sm;
+  }
+
+  /* Responsive Padding Stack */
+  .px-responsive {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .py-responsive {
+    @apply py-3 sm:py-4 lg:py-6;
+  }
+
+  .p-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+
+  /* Responsive Gap */
+  .gap-responsive {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+
+  /* Responsive Grid - commonly used */
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2;
+  }
+
+  .grid-responsive-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .grid-responsive-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  /* Responsive Flex Stack */
+  .flex-responsive {
+    @apply flex flex-col sm:flex-row;
+  }
+
+  /* Touch Target Size (minimum 44x44px for mobile accessibility) */
+  .touch-target {
+    @apply h-11 w-11 sm:h-10 sm:w-10;
+  }
+
+  /* Mobile Safe Area */
+  .mobile-safe {
+    @apply pb-8 sm:pb-0;
+  }
+
+  /* Hide on mobile, show on desktop */
+  .hidden-mobile {
+    @apply sm:block;
+  }
+
+  .visible-mobile {
+    @apply sm:hidden;
+  }
+
+  /* Responsive Container */
+  .container-responsive {
+    @apply w-full max-w-full sm:max-w-full lg:max-w-[1200px] mx-auto;
+  }
+
+  /* Responsive Scroll Container */
+  .scroll-responsive {
+    @apply overflow-x-auto sm:overflow-x-visible;
+  }
+
+  /* Chart Container Responsive */
+  .chart-container-responsive {
+    @apply w-full h-[250px] sm:h-[300px] lg:h-[400px];
+  }
+}

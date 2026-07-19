@@ -30,9 +30,9 @@ interface DynamicChartProps {
 }
 
 const SIZE_CLASSES: Record<'sm' | 'md' | 'lg', string> = {
-  sm: 'h-[200px]',
-  md: 'h-[250px] sm:h-[300px]',
-  lg: 'h-[300px] sm:h-[350px] lg:h-[400px]',
+  sm: 'h-[180px] xs:h-[200px] sm:h-[220px] lg:h-[250px]',
+  md: 'h-[220px] xs:h-[240px] sm:h-[280px] lg:h-[350px]',
+  lg: 'h-[250px] xs:h-[280px] sm:h-[320px] lg:h-[420px]',
 };
 
 /* Quick chart type pills — show the first 4 as icon buttons, rest in overflow */
@@ -201,8 +201,8 @@ export function DynamicChart({
 
   return (
     <Card ref={chartRef} className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full flex flex-col">
-      <CardHeader className="p-3 sm:p-4 pb-0">
-        <div className="flex items-start justify-between gap-2">
+      <CardHeader className="p-2 sm:p-3 lg:p-4 pb-0">
+        <div className="flex flex-col xs:flex-row items-start justify-between gap-1.5 xs:gap-2">
           <div className="min-w-0 flex-1">
             {editing && onRenameTitle ? (
               <Input
@@ -221,15 +221,22 @@ export function DynamicChart({
                 className="h-7 text-sm font-semibold"
               />
             ) : (
-              <h3
-                className={`text-sm font-semibold text-foreground truncate ${onRenameTitle ? 'cursor-pointer hover:underline decoration-dotted underline-offset-2' : ''}`}
-                onClick={() => { if (onRenameTitle) { setDraft(title); setEditing(true); } }}
-                title={onRenameTitle ? 'Click to rename' : undefined}
-              >
-                {title}
-              </h3>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <h3
+                      className={`text-xs sm:text-sm lg:text-base font-semibold text-foreground truncate ${onRenameTitle ? 'cursor-pointer hover:underline decoration-dotted underline-offset-2' : ''}`}
+                      onClick={() => { if (onRenameTitle) { setDraft(title); setEditing(true); } }}
+                      title={onRenameTitle ? 'Click to rename' : undefined}
+                    >
+                      {title}
+                    </h3>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs text-xs">{title}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
-            {description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{description}</p>}
+            {description && <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">{description}</p>}
           </div>
           <div className="flex items-center gap-0.5 shrink-0" data-export-hide data-pdf-hide>
             {showControls && onChangeType && (
