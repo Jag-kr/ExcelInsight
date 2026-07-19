@@ -150,6 +150,22 @@
     @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg;
   }
 
+  .dashboard-surface {
+    border: 1px solid hsl(var(--border) / 0.7);
+    border-radius: 1rem;
+    background: linear-gradient(145deg, hsl(var(--card) / 0.95), hsl(var(--muted) / 0.35));
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(16px);
+  }
+
+  .dashboard-panel {
+    border: 1px solid hsl(var(--border) / 0.6);
+    border-radius: 1.1rem;
+    background: hsl(var(--card) / 0.85);
+    box-shadow: 0 12px 30px -18px hsl(var(--foreground) / 0.18);
+    backdrop-filter: blur(16px);
+  }
+
   .gradient-text {
     background: var(--gradient-primary);
     -webkit-background-clip: text;
