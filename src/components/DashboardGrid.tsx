@@ -89,7 +89,7 @@ function EditableTitle({ value, onChange, className }: { value: string; onChange
 function DashboardTable({ item, onRename }: { item: DashboardItem; onRename: (v: string) => void }) {
   const cols = item.tableColumns || (item.data.length > 0 ? Object.keys(item.data[0]) : []);
   return (
-    <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full flex flex-col">
+    <Card className="dashboard-panel animate-fade-in h-full flex flex-col">
       <CardHeader className="p-3 sm:p-4 pb-0">
         <CardTitle className="text-xs sm:text-sm font-semibold truncate">
           <EditableTitle value={item.title} onChange={onRename} />
@@ -127,7 +127,7 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
 
   if (item.insightType === 'repeating' && content) {
     return (
-      <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full space-y-2 p-4">
+      <Card className="dashboard-panel animate-fade-in h-full space-y-2 p-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 min-w-0 flex-1">
             <Repeat2 className="h-4 w-4 text-accent shrink-0" />
@@ -156,7 +156,7 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
 
   if (item.insightType === 'stats' && Array.isArray(content)) {
     return (
-      <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full flex flex-col">
+      <Card className="dashboard-panel animate-fade-in h-full flex flex-col">
         <CardHeader className="p-4 pb-0">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-primary" />
@@ -195,7 +195,7 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
 
   if (item.insightType === 'quality' && Array.isArray(content)) {
     return (
-      <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full space-y-2 p-4">
+      <Card className="dashboard-panel animate-fade-in h-full space-y-2 p-4">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-warning" />
           <EditableTitle value={item.title} onChange={onRename} />
@@ -424,7 +424,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
 
   if (!items.length) {
     return (
-      <Card className="bg-card/80 backdrop-blur-xl border-dashed border-2 border-border/50 shadow-lg p-6 sm:p-10 text-center animate-fade-in">
+      <Card className="dashboard-surface border-dashed border-2 border-primary/20 p-6 sm:p-10 text-center animate-fade-in">
         <div className="mx-auto h-8 sm:h-12 w-8 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
           <BarChart3 className="h-4 sm:h-6 w-4 sm:w-6 text-primary" />
         </div>
@@ -465,7 +465,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
         easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
       }}>
         {activeItem ? (
-          <div className="opacity-80 scale-[1.02] shadow-2xl ring-2 ring-primary/40 rounded-lg pointer-events-none">
+          <div className="dashboard-panel opacity-80 scale-[1.02] pointer-events-none">
             {activeItem.displayAs === 'insight' ? (
               <DashboardInsightCard item={activeItem} onRename={() => {}} />
             ) : activeItem.displayAs === 'table' ? (

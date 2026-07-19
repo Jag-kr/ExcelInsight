@@ -81,14 +81,14 @@ const PanelFallback = () => (
 );
 
 // Lazy-load heavy components (recharts, drag-and-drop, pdf libs) so they don't block initial paint.
-const DataSummary = dynamic(() => import('@/components/DataSummary').then(m => m.DataSummary), { ssr: false, loading: () => <PanelFallback /> });
-const DynamicChart = dynamic(() => import('@/components/DynamicChart').then(m => m.DynamicChart), { ssr: false, loading: () => <ChartFallback /> });
-const ManualChartBuilder = dynamic(() => import('@/components/ManualChartBuilder').then(m => m.ManualChartBuilder), { ssr: false, loading: () => <PanelFallback /> });
-const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m => m.ColumnMerger), { ssr: false });
-const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false, loading: () => <ChartFallback /> });
-const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
-const SmartInsights = dynamic(() => import('@/components/SmartInsights').then(m => m.SmartInsights), { ssr: false, loading: () => <PanelFallback /> });
-const QuickAddPanel = dynamic(() => import('@/components/QuickAddPanel').then(m => m.QuickAddPanel), { ssr: false });
+import { DataSummary } from '@/components/DataSummary';
+import { DynamicChart } from '@/components/DynamicChart';
+import { ManualChartBuilder } from '@/components/ManualChartBuilder';
+import { ColumnMerger } from '@/components/ColumnMerger';
+import { DashboardGrid } from '@/components/DashboardGrid';
+import { DataFilter } from '@/components/DataFilter';
+import { SmartInsights } from '@/components/SmartInsights';
+import { QuickAddPanel } from '@/components/QuickAddPanel';
 
 const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
 
@@ -456,23 +456,28 @@ export default function Index() {
           <ThemeLangSwitcher />
         </div>
         <main>
-          <section className="w-full max-w-xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-8 sm:pb-12 space-y-4 sm:space-y-6 animate-fade-in">
-            <div className="text-center space-y-2">
+          <section className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-8 sm:pb-12 space-y-4 sm:space-y-6 animate-fade-in">
+            <div className="dashboard-surface p-5 sm:p-7 text-center">
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm text-primary mb-3 sm:mb-4">
                 <BarChart3 className="h-3 sm:h-4 w-3 sm:w-4" /> {t('analyticsEngine')}
               </div>
-              <img src={logo.src} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-12 sm:h-16 w-12 sm:w-16 mx-auto mb-1 sm:mb-2" />
+              <img src={logo.src} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-12 sm:h-16 w-12 sm:w-16 mx-auto mb-2" />
               <h1 className="text-2xl sm:text-4xl font-bold gradient-text">ExcelInsight – Excel Charts &amp; Dashboards</h1>
-              <p className="text-xs sm:text-base text-muted-foreground">{t('uploadSubtitle')}</p>
+              <p className="mx-auto mt-2 max-w-2xl text-xs sm:text-base text-muted-foreground">{t('uploadSubtitle')}</p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground">
+                <span className="rounded-full bg-secondary/70 px-2.5 py-1">Private in browser</span>
+                <span className="rounded-full bg-secondary/70 px-2.5 py-1">Instant charts</span>
+                <span className="rounded-full bg-secondary/70 px-2.5 py-1">Export-ready dashboards</span>
+              </div>
             </div>
             <FileUpload onDataLoaded={handleDataLoaded} />
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-center">
               {[
                 { icon: Database, label: t('smartDetection'), desc: t('smartDetectionDesc') },
                 { icon: BarChart3, label: t('autoCharts'), desc: t('autoChartsDesc') },
                 { icon: LayoutDashboard, label: t('dashboards'), desc: t('dashboardsDesc') },
               ].map(({ icon: Icon, label, desc }) => (
-                <div key={label} className="glass-card rounded-lg p-2 sm:p-3">
+                <div key={label} className="dashboard-panel rounded-xl p-2 sm:p-3">
                   <Icon className="h-4 sm:h-5 w-4 sm:w-5 text-primary mx-auto mb-1" />
                   <p className="text-[10px] sm:text-xs font-medium text-foreground">{label}</p>
                   <p className="text-[8px] sm:text-[10px] text-muted-foreground">{desc}</p>
@@ -542,6 +547,33 @@ export default function Index() {
       </header>
 
       <main className="container px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6">
+        <Card className="dashboard-surface mb-4 sm:mb-5 p-4 sm:p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Workspace</p>
+              <h2 className="text-lg font-semibold text-foreground">{fileName || t('dashboard')}</h2>
+              <p className="text-sm text-muted-foreground">
+                {fileName
+                  ? `${filteredData.length} ${t('rows')} • ${columns.length} ${t('cols')} • ${dashboardItems.length} ${t('dashboard')}`
+                  : 'Upload a file to start building a polished dashboard.'}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary" className="rounded-full border-0 bg-primary/10 px-2.5 py-1 text-[11px] text-primary">
+                {filteredData.length} {t('rows')}
+              </Badge>
+              <Badge variant="secondary" className="rounded-full border-0 bg-accent/10 px-2.5 py-1 text-[11px] text-accent">
+                {columns.length} {t('cols')}
+              </Badge>
+              {dashboardItems.length > 0 && (
+                <Badge variant="secondary" className="rounded-full border-0 bg-success/10 px-2.5 py-1 text-[11px] text-success">
+                  {dashboardItems.length} cards
+                </Badge>
+              )}
+            </div>
+          </div>
+        </Card>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 sm:space-y-4 md:space-y-6">
           {/* ─── Desktop Tabs ─── */}
           {!isMobile && (
