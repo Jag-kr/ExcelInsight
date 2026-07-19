@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ArrowRight, Check, ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { FaqAccordion } from '@/components/FaqAccordion';
 import { useI18n } from '@/lib/i18n';
 import { type SeoPage, seoPageMap, seoPagesByCategory } from '@/content/seo-pages';
 import { getSeoPageTranslated, getSeoUiStrings } from '@/content/seo-i18n';
@@ -200,14 +201,7 @@ export function SeoPageContent({ basePage }: { basePage: SeoPage }) {
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">
             {ui.frequentlyAskedQuestions}
           </h2>
-          <div className="space-y-6">
-            {page.faqs.map((f, i) => (
-              <article key={i} className="space-y-3">
-                <h3 className="text-lg font-semibold text-foreground">{f.q}</h3>
-                <p className="text-muted-foreground leading-relaxed">{f.a}</p>
-              </article>
-            ))}
-          </div>
+          <FaqAccordion faqs={page.faqs} />
         </section>
 
         {/* Related tools */}

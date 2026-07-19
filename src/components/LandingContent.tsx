@@ -2,6 +2,7 @@
 
 import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download, ArrowRight } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
+import { FaqAccordion } from '@/components/FaqAccordion';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import { seoPagesByCategory, categoryLabel, type SeoCategory } from '@/content/seo-pages';
@@ -166,13 +167,8 @@ export function LandingContent() {
           </h2>
           <p className="text-muted-foreground">{t('faqIntro')}</p>
         </div>
-        <div className="max-w-3xl mx-auto space-y-6">
-          {faqs.map((f, i) => (
-            <article key={i} className="space-y-3">
-              <h3 className="text-lg font-semibold text-foreground">{f.q}</h3>
-              <p className="text-muted-foreground leading-relaxed">{f.a}</p>
-            </article>
-          ))}
+        <div className="max-w-3xl mx-auto">
+          <FaqAccordion faqs={faqs} />
         </div>
       </section>
 
