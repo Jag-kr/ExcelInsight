@@ -72,9 +72,9 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
-      className={`flex cursor-pointer flex-col items-center justify-center gap-2 sm:gap-4 rounded-xl border-2 border-dashed p-6 sm:p-12 transition-all duration-300 ${
-        isDragging ? 'border-primary bg-primary/10 scale-[1.02]' : 'border-border hover:border-primary/50 hover:bg-secondary/50'
-      }`}
+      className={`flex cursor-pointer flex-col items-center justify-center gap-2 sm:gap-4 rounded-2xl border-2 border-dashed p-6 sm:p-12 transition-all duration-300 ${
+        isDragging ? 'border-primary bg-primary/10 scale-[1.02]' : 'border-border/70 hover:border-primary/50 hover:bg-secondary/40'
+      } dashboard-surface`}
     >
       <div className="rounded-full bg-primary/10 p-3 sm:p-4">
         <Upload className={`h-6 sm:h-8 w-6 sm:w-8 text-primary ${loading ? 'animate-pulse' : ''}`} />
@@ -86,6 +86,11 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
         <p className="mt-1 text-sm text-muted-foreground">
           {t('orClickBrowse')}
         </p>
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground">
+          <span className="rounded-full bg-secondary/70 px-2.5 py-1">.xlsx • .xls • .csv</span>
+          <span className="rounded-full bg-secondary/70 px-2.5 py-1">Private in browser</span>
+          <span className="rounded-full bg-secondary/70 px-2.5 py-1">Instant insights</span>
+        </div>
       </div>
       <input
         type="file"
