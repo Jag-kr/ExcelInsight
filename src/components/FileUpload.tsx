@@ -72,15 +72,15 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
-      className={`flex cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-12 transition-all duration-300 ${
+      className={`flex cursor-pointer flex-col items-center justify-center gap-2 sm:gap-4 rounded-xl border-2 border-dashed p-6 sm:p-12 transition-all duration-300 ${
         isDragging ? 'border-primary bg-primary/10 scale-[1.02]' : 'border-border hover:border-primary/50 hover:bg-secondary/50'
       }`}
     >
-      <div className="rounded-full bg-primary/10 p-4">
-        <Upload className={`h-8 w-8 text-primary ${loading ? 'animate-pulse' : ''}`} />
+      <div className="rounded-full bg-primary/10 p-3 sm:p-4">
+        <Upload className={`h-6 sm:h-8 w-6 sm:w-8 text-primary ${loading ? 'animate-pulse' : ''}`} />
       </div>
       <div className="text-center">
-        <p className="text-lg font-semibold text-foreground">
+        <p className="text-base sm:text-lg font-semibold text-foreground">
           {loading ? t('processing') : t('dropFile')}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
