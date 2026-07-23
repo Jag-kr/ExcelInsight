@@ -44,11 +44,11 @@ export function LandingContent() {
       {/* SEO-rich intro */}
       <section aria-label="ExcelInsight overview" className="text-center max-w-3xl mx-auto pt-4">
         <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-          <strong className="text-foreground">ExcelInsight</strong> is the fastest way to turn an Excel spreadsheet into beautiful{' '}
-          <strong className="text-foreground">Excel visualizations</strong>, <strong className="text-foreground">graphs</strong>,{' '}
-          <strong className="text-foreground">plots</strong>, <strong className="text-foreground">dashboards</strong>, and{' '}
-          <strong className="text-foreground">reports</strong>. Get instant <strong className="text-foreground">Excel analytics</strong> and{' '}
-          <strong className="text-foreground">Excel insights</strong> from any .xlsx or .csv file — free, private, and 100% browser-based.
+          <strong className="text-foreground">ExcelInsight</strong> {t('seoHero1')}{' '}
+          <strong className="text-foreground">{t('seoHero2')}</strong>, <strong className="text-foreground">{t('seoHero3')}</strong>,{' '}
+          <strong className="text-foreground">{t('seoHero4')}</strong>, <strong className="text-foreground">{t('seoHero5')}</strong>,{' '}
+          <strong className="text-foreground">{t('seoHero6')}</strong>. {t('seoHero7')} <strong className="text-foreground">{t('seoHero8')}</strong>{' '}
+          <strong className="text-foreground">{t('seoHero9')}</strong> {t('seoHero10')}
         </p>
       </section>
 

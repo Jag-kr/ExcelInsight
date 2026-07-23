@@ -283,7 +283,7 @@ export function DynamicChart({
                           </button>
                         </PopoverTrigger>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom"><span className="text-xs">More types</span></TooltipContent>
+                      <TooltipContent side="bottom"><span className="text-xs">{t('moreTypes') || 'More types'}</span></TooltipContent>
                     </Tooltip>
                     <PopoverContent side="bottom" align="end" className="w-auto p-1 flex gap-0.5">
                       {OVERFLOW_CHART_TYPES.map(ct => {

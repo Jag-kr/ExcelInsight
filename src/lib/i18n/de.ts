@@ -147,6 +147,28 @@ export const de: Record<TranslationKey, string> = {
   feat8Title: '100% Browser-Basiert',
   feat8Desc: 'Ihre Datei verlässt nie Ihr Gerät. Alles läuft lokal für vollständige Privatsphäre.',
 
+  heroTitle: 'ExcelInsight – Excel Diagramme & Dashboards',
+  badgePrivate: 'Privat im Browser',
+  badgeInstant: 'Sofortige Diagramme',
+  badgeInstantInsights: 'Sofortige Erkenntnisse',
+  badgeExport: 'Exportfertige Dashboards',
+  workspace: 'Arbeitsbereich',
+  uploadToStart: 'Laden Sie eine Datei hoch, um ein professionelles Dashboard zu erstellen.',
+  repeatingValuesSuffix: ' — Wiederkehrende Werte',
+  moreTypes: 'Weitere Typen',
+  
+  // SEO Hero terms
+  seoHero1: 'ist der schnellste Weg, eine Excel-Tabelle in schöne',
+  seoHero2: 'Excel-Visualisierungen',
+  seoHero3: 'Graphen',
+  seoHero4: 'Plots',
+  seoHero5: 'Dashboards',
+  seoHero6: 'Berichte',
+  seoHero7: 'Erhalten Sie sofort',
+  seoHero8: 'Excel-Analysen',
+  seoHero9: 'Excel-Erkenntnisse',
+  seoHero10: 'aus jeder .xlsx- oder .csv-Datei — kostenlos, privat und zu 100% browserbasiert.',
+
   howTitle: 'Wie es funktioniert',
   howIntro: 'In weniger als einer Minute von der Roh-Tabelle zum interaktiven Dashboard.',
   step1Title: 'Datei hochladen',

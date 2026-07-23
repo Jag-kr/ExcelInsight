@@ -88,8 +88,8 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
         </p>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground">
           <span className="rounded-full bg-secondary/70 px-2.5 py-1">.xlsx • .xls • .csv</span>
-          <span className="rounded-full bg-secondary/70 px-2.5 py-1">Private in browser</span>
-          <span className="rounded-full bg-secondary/70 px-2.5 py-1">Instant insights</span>
+          <span className="rounded-full bg-secondary/70 px-2.5 py-1">{t('badgePrivate')}</span>
+          <span className="rounded-full bg-secondary/70 px-2.5 py-1">{t('badgeInstantInsights')}</span>
         </div>
       </div>
       <input
