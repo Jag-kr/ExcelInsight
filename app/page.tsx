@@ -96,6 +96,7 @@ function buildDefaultDashboard(
   newData: Record<string, any>[],
   cols: ColumnMeta[],
   charts: ChartSuggestion[],
+  t: (key: any) => string
 ): { items: DashboardItem[]; usedChartIds: Set<string> } {
   const items: DashboardItem[] = [];
   const usedChartIds = new Set<string>();
@@ -118,7 +119,7 @@ function buildDefaultDashboard(
   if (numericCols.length > 0) {
     items.push({
       id: 'insight-stats-chart',
-      title: 'Column Statistics',
+      title: t('columnStats'),
       description: '',
       type: 'bar', data: [], dataKeys: [], xKey: '',
       displayAs: 'insight', insightType: 'stats', insightContent: numericCols, size: 'lg',
@@ -150,7 +151,7 @@ function buildDefaultDashboard(
   repeating.slice(0, 2).forEach(col => {
     items.push({
       id: `insight-repeat-chart-${col.name}`,
-      title: `${col.name} — Repeating Values`, description: '',
+      title: `${col.name}${t('repeatingValuesSuffix')}`, description: '',
       type: 'bar', data: [], dataKeys: [], xKey: '',
       displayAs: 'insight', insightType: 'repeating', insightContent: col,
     });
@@ -163,7 +164,7 @@ function buildDefaultDashboard(
   })).filter(c => c.nullCount > 0);
   if (quality.length > 0) {
     items.push({
-      id: 'insight-quality-chart', title: 'Data Quality', description: '',
+      id: 'insight-quality-chart', title: t('dataQuality'), description: '',
       type: 'bar', data: [], dataKeys: [], xKey: '',
       displayAs: 'insight', insightType: 'quality', insightContent: quality,
     });
@@ -267,19 +268,19 @@ export default function Index() {
     const charts = generateChartSuggestions(newData, cols);
     setSuggestions(charts);
 
-    const { items, usedChartIds } = buildDefaultDashboard(newData, cols, charts);
+    const { items, usedChartIds } = buildDefaultDashboard(newData, cols, charts, t);
     setDashboardItems(items);
     setAddedChartIds(usedChartIds);
     setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
-  }, []);
+  }, [t]);
 
   const handleResetLayout = useCallback(() => {
-    const { items, usedChartIds } = buildDefaultDashboard(data, columns, suggestions);
+    const { items, usedChartIds } = buildDefaultDashboard(data, columns, suggestions, t);
     setDashboardItems(items);
     setAddedChartIds(usedChartIds);
     setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
-    toast.success('Layout reset');
-  }, [data, columns, suggestions]);
+    toast.success(t('resetLayout'));
+  }, [data, columns, suggestions, t]);
 
   const handleClearAll = useCallback(() => {
     setDashboardItems([]);
@@ -297,8 +298,8 @@ export default function Index() {
     setAddedChartIds(new Set());
     setAddedInsightIds(new Set());
     setActiveTab('dashboard');
-    toast.success('File cleared');
-  }, []);
+    toast.success(t('clearFile'));
+  }, [t]);
 
   const handleDuplicate = useCallback((id: string) => {
     setDashboardItems(prev => {
@@ -462,12 +463,12 @@ export default function Index() {
                 <BarChart3 className="h-3 sm:h-4 w-3 sm:w-4" /> {t('analyticsEngine')}
               </div>
               <img src={logo.src} alt="ExcelInsight logo" width="64" height="64" fetchPriority="high" decoding="async" className="h-12 sm:h-16 w-12 sm:w-16 mx-auto mb-2" />
-              <h1 className="text-2xl sm:text-4xl font-bold gradient-text">ExcelInsight – Excel Charts &amp; Dashboards</h1>
+              <h1 className="text-2xl sm:text-4xl font-bold gradient-text">{t('heroTitle')}</h1>
               <p className="mx-auto mt-2 max-w-2xl text-xs sm:text-base text-muted-foreground">{t('uploadSubtitle')}</p>
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground">
-                <span className="rounded-full bg-secondary/70 px-2.5 py-1">Private in browser</span>
-                <span className="rounded-full bg-secondary/70 px-2.5 py-1">Instant charts</span>
-                <span className="rounded-full bg-secondary/70 px-2.5 py-1">Export-ready dashboards</span>
+                <span className="rounded-full bg-secondary/70 px-2.5 py-1">{t('badgePrivate')}</span>
+                <span className="rounded-full bg-secondary/70 px-2.5 py-1">{t('badgeInstant')}</span>
+                <span className="rounded-full bg-secondary/70 px-2.5 py-1">{t('badgeExport')}</span>
               </div>
             </div>
             <FileUpload onDataLoaded={handleDataLoaded} />
@@ -550,12 +551,12 @@ export default function Index() {
         <Card className="dashboard-surface mb-4 sm:mb-5 p-4 sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Workspace</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">{t('workspace')}</p>
               <h2 className="text-lg font-semibold text-foreground">{fileName || t('dashboard')}</h2>
               <p className="text-sm text-muted-foreground">
                 {fileName
                   ? `${filteredData.length} ${t('rows')} • ${columns.length} ${t('cols')} • ${dashboardItems.length} ${t('dashboard')}`
-                  : 'Upload a file to start building a polished dashboard.'}
+                  : t('uploadToStart')}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -724,7 +725,7 @@ export default function Index() {
               </Suspense>
             </div>
             <div className="min-h-[100px]">
-              <AdSlot slot="" label="Sponsored" />
+              <AdSlot slot="" label={t('sponsored')} />
             </div>
           </TabsContent>
 

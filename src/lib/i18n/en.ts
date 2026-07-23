@@ -157,6 +157,28 @@ export const en = {
   feat8Title: '100% Browser-Based',
   feat8Desc: 'Your file never leaves your device. Everything runs locally for complete privacy.',
 
+  heroTitle: 'ExcelInsight – Excel Charts & Dashboards',
+  badgePrivate: 'Private in browser',
+  badgeInstant: 'Instant charts',
+  badgeInstantInsights: 'Instant insights',
+  badgeExport: 'Export-ready dashboards',
+  workspace: 'Workspace',
+  uploadToStart: 'Upload a file to start building a polished dashboard.',
+  repeatingValuesSuffix: ' — Repeating Values',
+  moreTypes: 'More types',
+  
+  // SEO Hero terms
+  seoHero1: 'is the fastest way to turn an Excel spreadsheet into beautiful',
+  seoHero2: 'Excel visualizations',
+  seoHero3: 'graphs',
+  seoHero4: 'plots',
+  seoHero5: 'dashboards',
+  seoHero6: 'reports',
+  seoHero7: 'Get instant',
+  seoHero8: 'Excel analytics',
+  seoHero9: 'Excel insights',
+  seoHero10: 'from any .xlsx or .csv file — free, private, and 100% browser-based.',
+
   howTitle: 'How it works',
   howIntro: 'Go from raw spreadsheet to interactive dashboard in under a minute.',
   step1Title: 'Upload your file',
