@@ -26,13 +26,13 @@ export async function generateMetadata({
   const page = seoPageMap[slug];
   if (!page) return {};
 
-  const url = `${SITE_URL}/${page.slug}`;
+  const url = `${SITE_URL}/${page.slug}/`;
 
   return {
     title: page.title,
     description: page.description,
     alternates: {
-      canonical: `/${page.slug}`,
+      canonical: url,
     },
     openGraph: {
       title: page.title,
