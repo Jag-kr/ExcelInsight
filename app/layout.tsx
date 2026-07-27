@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "Analyse Excel data and plot Excel charts instantly. Turn your spreadsheet into a free dashboard from Excel. ExcelInsight is private and browser-based.",
   metadataBase: new URL(SITE_URL),
   alternates: {
-    canonical: '/',
+    canonical: SITE_URL,
   },
   openGraph: {
     title: "ExcelInsight – Analyse Excel & Plot Excel Data | Free Dashboard from Excel",
