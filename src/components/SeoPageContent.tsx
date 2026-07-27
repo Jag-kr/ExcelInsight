@@ -69,7 +69,7 @@ function CategoryNav({ ui }: { ui: ReturnType<typeof getSeoUiStrings> }) {
               {seoPagesByCategory[cat].map((p) => (
                 <li key={p.slug}>
                   <Link
-                    href={`/${p.slug}`}
+                    href={`/${p.slug}/`}
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
                     {p.h1}
@@ -216,7 +216,7 @@ export function SeoPageContent({ basePage }: { basePage: SeoPage }) {
                 return (
                   <Link
                     key={s}
-                    href={`/${rel.slug}`}
+                    href={`/${rel.slug}/`}
                     className="glass-card rounded-xl p-4 hover:scale-[1.01] transition-transform flex items-start justify-between gap-3 group"
                   >
                     <div>
@@ -243,11 +243,11 @@ export function SeoPageContent({ basePage }: { basePage: SeoPage }) {
               Home
             </Link>
             <span className="text-border">•</span>
-            <Link href="/privacy" className="hover:text-primary">
+            <Link href="/privacy/" className="hover:text-primary">
               Privacy
             </Link>
             <span className="text-border">•</span>
-            <Link href="/terms" className="hover:text-primary">
+            <Link href="/terms/" className="hover:text-primary">
               Terms
             </Link>
           </nav>
