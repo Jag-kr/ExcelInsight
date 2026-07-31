@@ -109,13 +109,6 @@ export default async function SeoLandingPage({ params }: { params: Promise<{ slu
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Any',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.9',
-        ratingCount: '247',
-        bestRating: '5',
-        worstRating: '1',
-      },
     },
   ];
 

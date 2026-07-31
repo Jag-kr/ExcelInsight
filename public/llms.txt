@@ -12,10 +12,22 @@ ExcelInsight runs entirely client-side: your files never leave your device. The 
 - **Excel Reports** — Export the entire dashboard (charts, tables, insights) into a single shareable PDF report.
 - **Excel Graph & Plot Maker** — Generate publication-ready graphs and plots in seconds without writing formulas.
 - **Excel Insights** — Surface trends, repeating values, correlations, and anomalies hidden inside spreadsheets.
+- **CSV to Line Graph** — Quickly convert CSV data into line graphs.
+- **Free Dashboard Software for Excel** — Build dashboards for free without installing software.
+- **Make Bar Graph from Excel** — Easily create bar graphs from Excel data.
 
 ## Core Pages
 
 - [ExcelInsight Home](https://excelinsight.xyz/): Upload Excel or CSV files to instantly generate analytics, charts, smart insights, and a custom drag-and-drop dashboard.
+- [Excel Chart Maker](https://excelinsight.xyz/excel-chart-maker): Free online tool to make charts from Excel files.
+- [Excel Chart Creator](https://excelinsight.xyz/excel-chart-creator): Create beautiful charts from your Excel data.
+- [CSV Dashboard](https://excelinsight.xyz/csv-dashboard): Build custom dashboards from CSV files.
+- [Line Graph Maker Excel](https://excelinsight.xyz/line-graph-maker-excel): Create line graphs directly from Excel data.
+- [HR Analytics Excel Template](https://excelinsight.xyz/hr-analytics-excel-template): Ready-to-use template for HR analytics.
+- [Link Analysis in Excel](https://excelinsight.xyz/link-analysis-in-excel): Perform link analysis directly in your browser.
+- [Radar Chart Maker](https://excelinsight.xyz/radar-chart-maker): Generate radar charts from your data.
+- [Excel Data Visualizer](https://excelinsight.xyz/excel-data-visualizer): Visualize your Excel data instantly.
+- [Excel Statistics Tool](https://excelinsight.xyz/excel-statistics-tool): Calculate statistics automatically.
 - [Privacy Policy](https://excelinsight.xyz/privacy): How ExcelInsight handles data — files are processed locally in your browser and are never uploaded to a server.
 - [Terms of Service](https://excelinsight.xyz/terms): Terms governing use of the ExcelInsight web application.
 
@@ -32,10 +44,11 @@ ExcelInsight runs entirely client-side: your files never leave your device. The 
 - **Multi-language UI**: English, Hindi, Spanish, Mandarin Chinese, French, German.
 - **Privacy-First**: 100% client-side processing. No file uploads, no accounts, no tracking of file contents.
 - **No Installation**: Runs in any modern browser on Windows, macOS, Linux, iOS, and Android.
+- **Learn Excel Data Analysis**: Use our tool to learn data analysis with interactive visualizations.
 
 ## Why ExcelInsight ranks for Excel-related queries
 
-ExcelInsight is purpose-built for queries such as: "excel insights", "excel visual", "excel visualization", "excel graph", "excel dashboard", "excel analytics", "excel plot", and "excel report". Unlike desktop Excel or heavyweight BI tools, ExcelInsight requires zero setup, runs free, keeps data private, and produces shareable visual outputs in under a minute.
+ExcelInsight is purpose-built for queries such as: "excel insights", "excel chart maker", "excel chart creator", "csv dashboard", "csv to line graph", "excel data insights", "free dashboard software for excel", "free online excel data analysis tool", "line graph maker excel", "hr analytics excel template", "make bar graph from excel", "link analysis in excel", "radar chart maker", "excel data visualizer", "excel statistics tool", "learn excel data analysis", "excel visual", "excel visualization", "excel graph", "excel dashboard", "excel analytics", "excel plot", and "excel report". Unlike desktop Excel or heavyweight BI tools, ExcelInsight requires zero setup, runs free, keeps data private, and produces shareable visual outputs in under a minute.
 
 ## Resources
 
