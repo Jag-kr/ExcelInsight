@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, getChartColor, getChartVarColor } from '@/lib/chart-themes';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useI18n } from '@/lib/i18n';
 
 interface DynamicChartProps {
   title: string;
@@ -53,6 +54,7 @@ export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
   onChangeType, onRenameTitle, showControls = true, size = 'md',
 }: DynamicChartProps) {
+  const { t } = useI18n();
   const chartRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(title);
