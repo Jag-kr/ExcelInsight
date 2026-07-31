@@ -698,4 +698,411 @@ export const fr: Record<
       { q: "Mes données sont-elles privées ?", a: "Oui." },
     ],
   },
+
+  'make-bar-graph-from-excel': {
+    h1: "Créer un graphique à barres à partir d'Excel",
+    intro:
+      "Vous vous demandez comment créer un graphique à barres à partir d'Excel en ligne gratuitement ? ExcelInsight rend cela incroyablement simple. Déposez simplement votre fichier Excel dans votre navigateur, et regardez-le générer automatiquement de superbes graphiques à barres en quelques secondes, sans configuration complexe.",
+    sections: [
+      {
+        heading: "Générez des graphiques à barres sans effort",
+        body: "Vous n'avez plus besoin de passer des heures à configurer les paramètres des axes dans Excel. ExcelInsight analyse automatiquement vos données et structure le graphique à barres parfait pour n'importe quelle répartition catégorielle.",
+        bullets: [
+          "Créer instantanément un graphique à barres à partir d'Excel",
+          "Détection automatique des colonnes pour les catégories et les valeurs",
+          "Export direct en PNG ou en rapport PDF complet",
+        ],
+      },
+      {
+        heading: "100 % privé et sécurisé",
+        body: "La confidentialité de vos données est garantie. Puisqu'ExcelInsight s'exécute entièrement dans votre navigateur, vous pouvez visualiser en toute sécurité des tableurs sensibles sans qu'ils ne soient jamais envoyés sur un serveur.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Comment créer un graphique à barres à partir d'un fichier Excel ?",
+        a: "Importez simplement votre fichier .xlsx ou .csv dans ExcelInsight. Il détecte instantanément vos colonnes et génère de superbes graphiques à barres sans aucune formule ni tableau croisé dynamique.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'excel-chart-maker': {
+    h1: "Créateur de graphiques Excel gratuit en ligne",
+    intro:
+      "ExcelInsight est un puissant créateur de graphiques Excel gratuit en ligne. Que vous ayez besoin de graphiques à barres, en courbes, en secteurs ou de nuages de points, vous pouvez les créer instantanément en important votre tableur dans notre outil web sécurisé.",
+    sections: [
+      {
+        heading: "Créez des graphiques sans tracas",
+        body: "Évitez la courbe d'apprentissage abrupte des logiciels tableurs traditionnels. Notre créateur de graphiques Excel associe automatiquement vos données aux formats visuels les plus appropriés, vous faisant gagner du temps et des efforts.",
+        bullets: [
+          "Supporte tous les principaux types de graphiques : barres, courbes, secteurs, aires et nuages de points",
+          "Aucune formule, aucun tableau croisé dynamique requis",
+          "Thèmes et couleurs personnalisables",
+        ],
+      },
+      {
+        heading: "Parfait pour les présentations",
+        body: "Besoin d'un graphique pour un diaporama ou un rapport ? Utilisez ce créateur de graphiques Excel pour générer rapidement des visuels de qualité professionnelle et les exporter en haute résolution en un seul clic.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Qu'est-ce qui fait de cet outil le meilleur créateur de graphiques Excel ?",
+        a: "Il ne nécessite aucune configuration, s'exécute entièrement localement dans votre navigateur pour des raisons de confidentialité et sélectionne automatiquement les meilleurs types de graphiques pour vos données.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'csv-dashboard': {
+    h1: "Créateur de tableau de bord CSV gratuit en ligne",
+    intro:
+      "Besoin de visualiser des valeurs séparées par des virgules ? ExcelInsight est un outil de tableau de bord CSV rapide et gratuit. Créez un tableau de bord CSV interactif directement dans votre navigateur sans envoyer vos données sensibles dans le cloud.",
+    sections: [
+      {
+        heading: "Du texte brut aux visuels riches",
+        body: "Un fichier CSV n'est que du texte brut, mais avec notre outil de tableau de bord CSV, il se transforme en un rapport visuel complet. Glissez-déposez des tuiles, explorez les valeurs récurrentes et analysez les tendances sans effort.",
+        bullets: [
+          "Analyse les fichiers CSV standard et irréguliers de manière fluide",
+          "Génère automatiquement des KPI et des graphiques",
+          "Filtrez les données de manière interactive sur l'ensemble du tableau de bord",
+        ],
+      },
+      {
+        heading: "Aucune compétence en codage requise",
+        body: "Vous n'avez pas besoin de connaître Python ou Pandas pour analyser un fichier CSV. Déposez-le simplement dans ExcelInsight et laissez le profilage automatique des colonnes faire le gros du travail pour vous.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Puis-je créer un tableau de bord directement à partir d'un CSV ?",
+        a: "Oui, importez simplement votre fichier CSV et ExcelInsight créera automatiquement un tableau de bord avec des graphiques, des métriques et des insights basés sur vos données.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'csv-to-line-graph': {
+    h1: "Convertir un CSV en graphique linéaire en ligne",
+    intro:
+      "Vous cherchez à convertir un CSV en graphique linéaire en ligne ? ExcelInsight analyse vos valeurs séparées par des virgules et les trace sous forme de superbes graphiques linéaires multi-séries dans votre navigateur, de manière totalement gratuite.",
+    sections: [
+      {
+        heading: "Tracez des séries temporelles instantanément",
+        body: "Si votre CSV contient une colonne de dates et des valeurs numériques, ExcelInsight les détecte automatiquement. Il trace des graphiques linéaires fluides pour que vous puissiez suivre les tendances, le trafic web ou les performances financières au fil du temps.",
+        bullets: [
+          "Détection automatique des formats de dates",
+          "Comparez plusieurs séries numériques sur un seul graphique",
+          "Info-bulles interactives au survol pour des valeurs exactes",
+        ],
+      },
+      {
+        heading: "Exportez et partagez",
+        body: "Une fois que vous avez converti votre CSV en graphique linéaire, vous pouvez facilement exporter la visualisation sous forme d'image PNG ou l'intégrer dans un tableau de bord PDF complet.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Comment convertir un CSV en graphique linéaire ?",
+        a: "Déposez simplement votre fichier CSV dans ExcelInsight. L'outil identifiera les colonnes de dates et numériques pour générer automatiquement un graphique linéaire interactif.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'excel-data-insights': {
+    h1: "Insights automatisés sur les données Excel",
+    intro:
+      "Débloquez de puissants insights de données Excel avec ExcelInsight. Cet outil gratuit profile automatiquement vos tableurs pour fournir des insights profonds dont les utilisateurs d'Excel ont besoin, de la détection d'anomalies au résumé des tendances clés.",
+    sections: [
+      {
+        heading: "Découvrez des modèles cachés",
+        body: "Vous n'avez pas besoin d'être un data scientist pour obtenir des insights intelligents à partir de vos données. ExcelInsight analyse vos colonnes, identifiant automatiquement les valeurs récurrentes, les données manquantes et les corrélations.",
+        bullets: [
+          "Profilage automatique des colonnes et statistiques",
+          "Mettez en évidence les valeurs manquantes et les problèmes de qualité des données",
+          "Suggestions intelligentes de graphiques basées sur les types de données",
+        ],
+      },
+      {
+        heading: "Intelligence de données instantanée",
+        body: "Obtenez une intelligence exploitable immédiatement. L'outil fournit un résumé visuel clair de votre jeu de données afin que vous puissiez prendre des décisions éclairées sans écrire une seule formule Excel.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Quel type d'insights de données l'outil fournit-il ?",
+        a: "ExcelInsight fournit des statistiques de colonnes, identifie les valeurs catégorielles récurrentes, signale les données manquantes et suggère les graphiques les plus pertinents pour votre jeu de données.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'free-dashboard-software-excel': {
+    h1: "Logiciel gratuit de tableau de bord pour Excel",
+    intro:
+      "Si vous recherchez un logiciel gratuit de tableau de bord pour Excel, ExcelInsight est la solution parfaite. Il s'exécute entièrement dans votre navigateur, ne nécessitant aucune installation, aucune inscription et aucune licence payante.",
+    sections: [
+      {
+        heading: "Une alternative BI légère",
+        body: "Les outils BI d'entreprise sont coûteux et complexes à configurer. ExcelInsight fournit les fonctionnalités essentielles de tableau de bord dont vous avez besoin — disposition par glisser-déposer, multiples types de graphiques et filtrage — tout cela gratuitement.",
+        bullets: [
+          "Aucune installation requise",
+          "Fonctionne sur Windows, Mac et Linux",
+          "100 % gratuit, sans péages cachés",
+        ],
+      },
+      {
+        heading: "Sécurisé et privé",
+        body: "Contrairement à d'autres logiciels de tableau de bord cloud, ExcelInsight traite tout côté client. Vos données Excel restent strictement sur votre appareil, garantissant une confidentialité totale pour les informations commerciales sensibles.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Ce logiciel de tableau de bord est-il vraiment gratuit ?",
+        a: "Oui, ExcelInsight est entièrement gratuit. Il n'y a pas de niveaux premium, d'abonnements ou de limitations de fonctionnalités.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'free-excel-data-analysis-tool': {
+    h1: "Outil gratuit d'analyse de données Excel en ligne",
+    intro:
+      "ExcelInsight est un puissant outil gratuit d'analyse de données Excel en ligne qui vous aide à comprendre vos jeux de données en quelques secondes. Effectuez des analyses approfondies sur n'importe quel tableur sans écrire de formules ou de code VBA.",
+    sections: [
+      {
+        heading: "Analysez les données sans la complexité",
+        body: "Arrêtez de vous battre avec les tableaux croisés dynamiques. Notre outil automatise le processus d'analyse en identifiant les types de données et en générant automatiquement des résumés statistiques complets et des graphiques visuels.",
+        bullets: [
+          "Statistiques descriptives instantanées",
+          "Détection automatisée des tendances et des corrélations",
+          "Interface visuelle facile à utiliser",
+        ],
+      },
+      {
+        heading: "Conçu pour la rapidité et la confidentialité",
+        body: "Parce qu'il s'exécute entièrement dans votre navigateur, cet outil d'analyse traite les fichiers instantanément sans aucun envoi vers un serveur. Analysez vos données financières ou RH confidentielles en toute tranquillité d'esprit.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Dois-je installer un logiciel pour analyser les données ?",
+        a: "Non, c'est un outil basé sur le web. Il fonctionne directement dans votre navigateur sur n'importe quel système d'exploitation sans nécessiter de téléchargements ou d'installations.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'excel-statistics-tool': {
+    h1: "Outil de statistiques Excel en ligne",
+    intro:
+      "ExcelInsight sert d'outil de statistiques Excel robuste, vous permettant de lire des statistiques commerciales avec Excel en ligne gratuitement. Obtenez des résumés statistiques immédiats et des analyses descriptives directement dans votre navigateur.",
+    sections: [
+      {
+        heading: "Statistiques descriptives instantanées",
+        body: "Comprendre la distribution de vos données est essentiel. ExcelInsight calcule les minimums, les maximums, les moyennes et identifie automatiquement les valeurs aberrantes pour chaque colonne numérique de votre fichier.",
+        bullets: [
+          "Statistiques récapitulatives automatisées",
+          "Détection des valeurs aberrantes et vérification de la qualité des données",
+          "Distributions visuelles via des histogrammes et des boîtes à moustaches",
+        ],
+      },
+      {
+        heading: "Parfait pour l'analytique commerciale",
+        body: "Que vous analysiez les performances de vente ou l'efficacité opérationnelle, cet outil vous donne les bases statistiques dont vous avez besoin pour prendre des décisions basées sur les données rapidement et précisément.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Cet outil peut-il remplacer l'utilitaire d'analyse Excel ?",
+        a: "Pour les statistiques descriptives de base, les distributions et les visuels de corrélation, ExcelInsight offre une alternative plus rapide et plus conviviale aux compléments Excel traditionnels.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'learn-excel-data-analysis': {
+    h1: "Apprendre l'analyse de données Excel gratuitement",
+    intro:
+      "Si vous apprenez l'analyse de données sur Excel gratuitement, ExcelInsight est l'environnement d'apprentissage parfait. Importez un jeu de données et apprenez de manière interactive comment différents types de données se traduisent par des graphiques et des insights pertinents.",
+    sections: [
+      {
+        heading: "Une expérience d'apprentissage pratique",
+        body: "La meilleure façon d'apprendre l'analyse de données est de pratiquer. En déposant un tableur dans ExcelInsight, vous voyez immédiatement comment des lignes et des colonnes brutes sont transformées en intelligence commerciale exploitable.",
+        bullets: [
+          "Découvrez comment les structures de données affectent les options de visualisation",
+          "Apprenez à identifier visuellement les tendances et les valeurs aberrantes",
+          "Comprenez la corrélation grâce aux nuages de points",
+        ],
+      },
+      {
+        heading: "Aucun risque de casser des formules",
+        body: "Contrairement au travail sur un tableur maître complexe, ExcelInsight fournit une couche visuelle en lecture seule sur vos données. Vous pouvez expérimenter différents types de graphiques et d'agrégations sans altérer votre fichier source.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Cet outil est-il adapté aux étudiants apprenant l'analyse de données ?",
+        a: "Absolument. Il fournit un moyen intuitif et visuel de comprendre les distributions de données, les relations et les statistiques de base sans avoir besoin d'apprendre d'abord un logiciel complexe.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'line-graph-maker-excel': {
+    h1: "Créateur de graphiques linéaires pour Excel",
+    intro:
+      "ExcelInsight est un outil dédié à la création de graphiques linéaires pour Excel. Il vous permet de créer des graphiques linéaires précis et multi-séries directement à partir de vos tableurs en quelques secondes, sans aucun téléchargement de logiciel.",
+    sections: [
+      {
+        heading: "Parfait pour le suivi des tendances",
+        body: "Les graphiques linéaires sont la norme pour visualiser les changements au fil du temps. Notre outil analyse automatiquement les colonnes de dates et trace vos métriques de manière fluide afin que vous puissiez vous concentrer sur l'analyse de la tendance plutôt que sur le formatage de l'axe.",
+        bullets: [
+          "Gère automatiquement plusieurs formats de dates",
+          "Trace plusieurs colonnes numériques sur un seul graphique",
+          "Thèmes clairs et personnalisables",
+        ],
+      },
+      {
+        heading: "Exportez facilement",
+        body: "Une fois que vous avez personnalisé votre graphique linéaire, vous pouvez le télécharger au format PNG de haute qualité pour vos présentations ou l'inclure dans un rapport de tableau de bord PDF complet.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Comment le créateur de graphiques linéaires gère-t-il les différents formats de dates ?",
+        a: "L'outil dispose d'un analyseur robuste qui reconnaît et normalise automatiquement les formats de dates courants (comme JJ/MM/AAAA ou ISO 8601) pour créer un axe chronologique précis.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'hr-analytics-excel': {
+    h1: "Modèle Excel gratuit d'analytique RH",
+    intro:
+      "Visualisez instantanément vos données de personnel avec notre modèle Excel d'analytique RH. ExcelInsight transforme vos exports RH standards en un tableau de bord analytique complet, tout en gardant vos données strictement privées.",
+    sections: [
+      {
+        heading: "Rationalisez vos analyses RH",
+        body: "Importez votre liste d'employés et générez instantanément des graphiques suivant les effectifs, la répartition par département et les taux de rétention. Il agit comme un modèle Excel d'analytique RH dynamique sans les formules fragiles.",
+        bullets: [
+          "Suivez la croissance des effectifs et des départements",
+          "Analysez les tendances d'ancienneté et d'attrition",
+          "Identifiez visuellement les indicateurs de diversité",
+        ],
+      },
+      {
+        heading: "100 % sécurisé pour les données sensibles",
+        body: "Les données RH sont hautement confidentielles. Puisqu'ExcelInsight traite tout côté client dans votre navigateur, les informations de vos employés ne sont jamais envoyées sur un serveur externe.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Dois-je formater mes données RH d'une manière spécifique ?",
+        a: "Assurez-vous simplement que votre fichier comporte des en-têtes de colonnes clairs comme Département, Date d'embauche ou Statut. L'outil les associera automatiquement aux meilleures visualisations.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'excel-link-analysis': {
+    h1: "Analyse des liens dans Excel",
+    intro:
+      "Découvrez des connexions cachées avec notre outil gratuit d'analyse de liens dans Excel. ExcelInsight vous permet d'explorer visuellement les relations de données et les connexions d'entités à travers votre jeu de données, directement dans votre navigateur.",
+    sections: [
+      {
+        heading: "Explorez les relations de données",
+        body: "Comprendre comment différentes entités de vos données sont liées les unes aux autres est crucial. Bien qu'il ne s'agisse pas d'un outil de graphes de réseau, ExcelInsight vous aide à effectuer des analyses relationnelles en mettant en évidence les connexions catégorielles récurrentes et les corrélations de variables.",
+        bullets: [
+          "Identifiez les attributs communs à travers les segments de données",
+          "Utilisez des nuages de points pour trouver des corrélations de variables",
+          "Filtrez de manière interactive pour tracer les relations entre les entités",
+        ],
+      },
+      {
+        heading: "Une approche visuelle des connexions",
+        body: "En croisant les filtres des graphiques et en examinant les insights sur les valeurs récurrentes, vous pouvez découvrir des modèles et des relations qu'il serait impossible de repérer dans une grille brute de lignes de tableur.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Cet outil génère-t-il des graphes de réseau nœud-lien ?",
+        a: "Non, il se concentre sur l'analyse de données relationnelles à travers le filtrage croisé, les corrélations et les répartitions catégorielles plutôt que sur les graphiques spécialisés de topologie de réseau.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'radar-chart-maker': {
+    h1: "Créateur de graphiques en radar gratuit en ligne",
+    intro:
+      "ExcelInsight propose un puissant créateur de graphiques en radar pour comparer plusieurs variables à la fois. Importez vos données pour générer des graphiques en toile d'araignée détaillés qui mettent en évidence les profils de performance et les métriques multidimensionnelles.",
+    sections: [
+      {
+        heading: "Visualisez des données multidimensionnelles",
+        body: "Les graphiques en radar (ou en toile d'araignée) sont idéaux pour comparer une entité à travers plusieurs catégories différentes simultanément, comme l'évaluation des compétences des employés, des fonctionnalités d'un produit ou des résultats d'un sondage.",
+        bullets: [
+          "Comparez plusieurs profils sur un seul graphique",
+          "Mise à l'échelle automatique des axes pour une visualisation équilibrée",
+          "Couleurs et thèmes personnalisables",
+        ],
+      },
+      {
+        heading: "Génération rapide et privée",
+        body: "Créez vos graphiques en radar en toute sécurité dans votre navigateur. Sans aucun envoi vers un serveur, vous pouvez analyser des profils commerciaux propriétaires en toute sécurité et exporter les résultats en PDF ou PNG.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Quand dois-je utiliser un graphique en radar ?",
+        a: "Les graphiques en radar sont les mieux adaptés lorsque vous devez afficher des données multivariées sous la forme d'un graphique bidimensionnel de trois variables quantitatives ou plus représentées sur des axes partant du même point.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
+
+  'excel-data-visualizer': {
+    h1: "Visualisateur de données Excel gratuit",
+    intro:
+      "Profitez d'une visualisation fluide des données Excel avec ExcelInsight. Cet outil gratuit de visualisation en ligne convertit automatiquement vos lignes et colonnes brutes en un tableau de bord visuel, complet et interactif.",
+    sections: [
+      {
+        heading: "Visualisation automatisée",
+        body: "Vous n'avez pas besoin de choisir quel graphique correspond le mieux à vos données. Le visualisateur de données Excel profile votre tableur et sélectionne automatiquement les graphiques optimaux — qu'il s'agisse d'un graphique à barres, en courbes, en secteurs ou d'un nuage de points.",
+        bullets: [
+          "Recommandations intelligentes de graphiques basées sur les types de colonnes",
+          "Visualisations interactives et réactives",
+          "Disposition du tableau de bord par glisser-déposer",
+        ],
+      },
+      {
+        heading: "Exportez vos visualisations",
+        body: "Après avoir exploré visuellement vos données, vous pouvez exporter l'intégralité du tableau de bord sous forme de rapport PDF propre et multipage pour partager facilement des insights avec votre équipe ou vos parties prenantes.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Ce visualisateur de données est-il gratuit ?",
+        a: "Oui, ExcelInsight est entièrement gratuit. Il n'y a pas de frais cachés ni d'abonnements pour visualiser et exporter vos données.",
+      },
+      { q: "Est-ce gratuit ?", a: "Oui." },
+      { q: "Mes données sont-elles privées ?", a: "Oui." },
+    ],
+  },
 };
+
