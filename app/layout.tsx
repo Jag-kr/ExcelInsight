@@ -7,15 +7,15 @@ const SITE_URL = 'https://excelinsight.xyz';
 const OG_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/neEqO6MCG2bHfGf0v6pME35dIMA2/social-images/social-1774898677243-ExcelInsight.webp';
 
 export const metadata: Metadata = {
-  title: "ExcelInsight – Analyse Excel & Plot Excel Data | Free Dashboard from Excel",
-  description: "Analyse Excel data and plot Excel charts instantly. Turn your spreadsheet into a free dashboard from Excel. ExcelInsight is private and browser-based.",
+  title: "ExcelInsight – Excel Insights, Chart Maker & Free Dashboard Builder Online",
+  description: "Free online Excel insights, chart maker & dashboard builder. Analyse Excel data, make bar graphs, line charts & CSV dashboards instantly. No signup, 100% private.",
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: SITE_URL,
   },
   openGraph: {
-    title: "ExcelInsight – Analyse Excel & Plot Excel Data | Free Dashboard from Excel",
-    description: "Analyse Excel data and plot Excel charts instantly. Turn your spreadsheet into a free dashboard from Excel. ExcelInsight is private and browser-based.",
+    title: "ExcelInsight – Excel Insights, Chart Maker & Free Dashboard Builder Online",
+    description: "Free online Excel insights, chart maker & dashboard builder. Analyse Excel data, make bar graphs, line charts & CSV dashboards instantly. No signup, 100% private.",
     url: SITE_URL,
     siteName: "ExcelInsight",
     locale: "en_US",
@@ -31,8 +31,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ExcelInsight – Analyse Excel & Plot Excel Data | Free Dashboard from Excel",
-    description: "Analyse Excel data and plot Excel charts instantly. Turn your spreadsheet into a free dashboard from Excel. ExcelInsight is private and browser-based.",
+    title: "ExcelInsight – Excel Insights, Chart Maker & Free Dashboard Builder Online",
+    description: "Free online Excel insights, chart maker & dashboard builder. Analyse Excel data, make bar graphs, line charts & CSV dashboards instantly. No signup, 100% private.",
     images: [OG_IMAGE],
   },
   robots: {
