@@ -129,10 +129,10 @@ export function LandingContent() {
       <section aria-labelledby="tools-heading">
         <div className="text-center mb-10">
           <h2 id="tools-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
-            Tools, templates & guides
+            Free Excel & CSV Tools — Chart Makers, Dashboards & Data Insights
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Free Excel and CSV tools built on the same engine — pick the one that matches your job.
+            Make bar graphs, line charts, dashboards and get data insights from Excel & CSV files — all free, all private, all browser-based.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -183,6 +183,38 @@ export function LandingContent() {
           © {new Date().getFullYear()} ExcelInsight — {t('footerCopy')}
         </p>
       </footer>
+
+      {/* WebApplication structured data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: 'ExcelInsight',
+            url: 'https://excelinsight.xyz',
+            applicationCategory: 'BusinessApplication',
+            operatingSystem: 'Any',
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+            description: 'Free online Excel insights, chart maker & dashboard builder. Analyse Excel data, make bar graphs, line charts & CSV dashboards instantly.',
+            featureList: [
+              'Excel Chart Maker',
+              'Bar Graph from Excel',
+              'CSV Dashboard Builder',
+              'Excel Data Insights',
+              'Line Graph Maker',
+              'Free Dashboard Software for Excel',
+              'Excel Data Analysis Tool',
+              'CSV Visualization',
+              'PDF Report Export',
+              'Excel Statistics Tool',
+              'HR Analytics Excel Template',
+              'Scatter Plot Generator',
+              'Radar Chart Maker',
+            ],
+          }),
+        }}
+      />
 
       {/* FAQ structured data for SEO */}
       <script
