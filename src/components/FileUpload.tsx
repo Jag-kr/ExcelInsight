@@ -27,8 +27,12 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(firstSheet);
         onDataLoaded(jsonData, file.name);
-      } catch {
-        console.error('Failed to parse file');
+      } catch (err: any) {
+        console.error('Failed to parse file:', err);
+        // If it's a ReferenceError, we definitely want to log it specifically
+        if (err instanceof ReferenceError) {
+          console.error('ReferenceError stack:', err.stack);
+        }
       } finally {
         setLoading(false);
       }
