@@ -24,6 +24,7 @@ export const en = {
   dropFile: 'Drop your Excel file here',
   orClickBrowse: 'or click to browse • .xlsx, .xls, .csv',
   processing: 'Processing...',
+  invalidFileType: 'Invalid file type. Please upload an .xlsx, .xls, or .csv file.',
 
   // Dashboard
   noDashboardCharts: 'No charts on dashboard yet',
