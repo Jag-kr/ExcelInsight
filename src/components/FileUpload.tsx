@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Upload, FileSpreadsheet, X } from 'lucide-react';
+import { Upload, FileSpreadsheet, X, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n';
 
@@ -13,27 +13,36 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const processFile = useCallback((file: File) => {
     setLoading(true);
+    setProgress(0);
     setFileName(file.name);
+
+    // Simulate progress for UX
+    const interval = setInterval(() => {
+      setProgress(p => Math.min(p + Math.random() * 15, 85));
+    }, 120);
+
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        // Lazy-load XLSX (~400KB) only when a file is actually picked.
         const XLSX = await import('xlsx');
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(firstSheet);
-        onDataLoaded(jsonData, file.name);
+        clearInterval(interval);
+        setProgress(100);
+        setTimeout(() => {
+          onDataLoaded(jsonData, file.name);
+          setLoading(false);
+        }, 400);
       } catch (err: any) {
+        clearInterval(interval);
         console.error('Failed to parse file:', err);
-        // If it's a ReferenceError, we definitely want to log it specifically
-        if (err instanceof ReferenceError) {
-          console.error('ReferenceError stack:', err.stack);
-        }
-      } finally {
+        if (err instanceof ReferenceError) console.error('ReferenceError stack:', err.stack);
         setLoading(false);
       }
     };
@@ -54,13 +63,18 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
 
   if (fileName && !loading) {
     return (
-      <div className="flex items-center gap-3 rounded-lg bg-secondary px-4 py-2">
-        <FileSpreadsheet className="h-5 w-5 text-primary" />
-        <span className="text-sm text-foreground">{fileName}</span>
+      <div className="elevated-card flex items-center gap-3 px-4 py-3 animate-[fade-in_0.3s_ease-out]">
+        <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0">
+          <CheckCircle2 className="h-4.5 w-4.5 text-success" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground truncate">{fileName}</p>
+          <p className="text-xs text-muted-foreground">Loaded successfully</p>
+        </div>
         <Button
           variant="ghost"
           size="sm"
-          className="ml-auto h-6 w-6 p-0"
+          className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
           onClick={() => { setFileName(null); onClear?.(); }}
           aria-label={t('clearFile')}
           title={t('clearFile')}
@@ -76,26 +90,89 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
-      className={`flex cursor-pointer flex-col items-center justify-center gap-2 sm:gap-4 rounded-2xl border-2 border-dashed p-6 sm:p-12 transition-all duration-300 ${
-        isDragging ? 'border-primary bg-primary/10 scale-[1.02]' : 'border-border/70 hover:border-primary/50 hover:bg-secondary/40'
-      } dashboard-surface`}
+      className={`relative flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-10 sm:p-14 transition-all duration-300 overflow-hidden ${
+        isDragging
+          ? 'border-primary bg-primary/6 scale-[1.01]'
+          : 'border-border/60 hover:border-primary/40 hover:bg-secondary/20'
+      }`}
+      style={{
+        background: isDragging
+          ? 'linear-gradient(135deg, hsl(var(--primary)/0.06), hsl(var(--accent)/0.04))'
+          : undefined,
+      }}
     >
-      <div className="rounded-full bg-primary/10 p-3 sm:p-4">
-        <Upload className={`h-6 sm:h-8 w-6 sm:w-8 text-primary ${loading ? 'animate-pulse' : ''}`} />
+      {/* Animated gradient border effect on drag */}
+      {isDragging && (
+        <div
+          className="absolute inset-0 rounded-2xl pointer-events-none"
+          style={{
+            background: 'linear-gradient(90deg, hsl(var(--primary)/0.15), hsl(var(--accent)/0.15), hsl(var(--primary)/0.15))',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 1.5s linear infinite',
+          }}
+        />
+      )}
+
+      {/* Upload icon */}
+      <div
+        className={`relative z-10 rounded-2xl p-4 transition-all duration-300 ${
+          isDragging ? 'bg-primary/15 scale-110' : 'bg-primary/8'
+        }`}
+      >
+        {loading ? (
+          <Upload className="h-8 w-8 text-primary animate-bounce" />
+        ) : (
+          <Upload
+            className={`h-8 w-8 text-primary transition-transform duration-300 ${isDragging ? 'scale-110' : ''}`}
+          />
+        )}
       </div>
-      <div className="text-center">
+
+      {/* Text */}
+      <div className="relative z-10 text-center space-y-1">
         <p className="text-base sm:text-lg font-semibold text-foreground">
-          {loading ? t('processing') : t('dropFile')}
+          {loading ? t('processing') : isDragging ? 'Drop your file here' : t('dropFile')}
         </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t('orClickBrowse')}
-        </p>
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground">
-          <span className="rounded-full bg-secondary/70 px-2.5 py-1">.xlsx • .xls • .csv</span>
-          <span className="rounded-full bg-secondary/70 px-2.5 py-1">{t('badgePrivate')}</span>
-          <span className="rounded-full bg-secondary/70 px-2.5 py-1">{t('badgeInstantInsights')}</span>
-        </div>
+        {!loading && (
+          <p className="text-sm text-muted-foreground">{t('orClickBrowse')}</p>
+        )}
+
+        {/* Format badges */}
+        {!loading && (
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            {['.xlsx', '.xls', '.csv'].map((fmt) => (
+              <span
+                key={fmt}
+                className="rounded-lg bg-secondary px-2.5 py-1 text-[11px] font-medium text-muted-foreground border border-border/50"
+              >
+                {fmt}
+              </span>
+            ))}
+            <span className="rounded-lg bg-primary/8 px-2.5 py-1 text-[11px] font-medium text-primary border border-primary/15">
+              {t('badgePrivate')}
+            </span>
+          </div>
+        )}
       </div>
+
+      {/* Progress bar */}
+      {loading && (
+        <div className="relative z-10 w-full max-w-xs">
+          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300 ease-out"
+              style={{
+                width: `${progress}%`,
+                background: 'var(--gradient-primary)',
+              }}
+            />
+          </div>
+          <p className="text-[11px] text-muted-foreground text-center mt-1.5">
+            {Math.round(progress)}% — parsing your file…
+          </p>
+        </div>
+      )}
+
       <input
         type="file"
         accept=".xlsx,.xls,.csv"

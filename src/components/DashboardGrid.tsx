@@ -9,13 +9,11 @@ import { CSS } from '@dnd-kit/utilities';
 import { DynamicChart } from './DynamicChart';
 import { ChartType } from '@/lib/chart-themes';
 import {
-  GripVertical, Trash2, Maximize2, Minimize2, Square, Repeat2, BarChart3, AlertTriangle,
+  Trash2, Maximize2, Minimize2, Square, Repeat2, BarChart3, AlertTriangle,
   Copy, MoreHorizontal, RectangleHorizontal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -232,7 +230,7 @@ const sizeClasses: Record<string, string> = {
 const sizeFractionLabel: Record<'sm' | 'md' | 'lg', string> = {
   sm: '⅓',
   md: '½',
-  lg: 'full',
+  lg: 'Full',
 };
 
 const sizeIcons = {
@@ -283,95 +281,90 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
       ref={setNodeRef}
       style={style}
       data-pdf-card
-      className={`relative group ${sizeClasses[size]} ${isDragging ? 'scale-[1.02] shadow-2xl ring-2 ring-primary/30' : ''} transition-all duration-200`}
+      className={`relative group ${sizeClasses[size]} ${
+        isDragging ? 'scale-[1.02] shadow-2xl ring-2 ring-primary/30 z-50' : ''
+      } transition-all duration-200`}
     >
-      {/* ─── Top bar: drag handle + actions ─── */}
+      {/* ─── Left-edge drag rail (always visible on hover) ─── */}
       <div
         data-pdf-hide
-        className="absolute top-1.5 left-1.5 right-1.5 z-10 flex items-center justify-between pointer-events-none"
+        {...attributes}
+        {...listeners}
+        aria-label={t('dragToReorder')}
+        title={t('dragToReorder')}
+        className="absolute left-0 top-2 bottom-2 w-1 rounded-full z-20 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-150 cursor-grab active:cursor-grabbing touch-none"
+        style={{
+          background: 'linear-gradient(180deg, hsl(var(--primary)/0.6), hsl(var(--accent)/0.6))',
+        }}
+      />
+
+      {/* ─── Action pill (top-right, appears on hover) ─── */}
+      <div
+        data-pdf-hide
+        className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150 pointer-events-none"
       >
-        {/* Drag handle — always visible */}
-        <TooltipProvider delayDuration={300}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                {...attributes}
-                {...listeners}
-                aria-label={t('dragToReorder')}
-                className="pointer-events-auto cursor-grab active:cursor-grabbing rounded-md bg-secondary/90 backdrop-blur px-1.5 py-1 hover:bg-secondary border border-border/50 transition-colors touch-none"
-              >
-                <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom"><span className="text-xs">{t('dragToReorder')}</span></TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {/* Size badge */}
+        <span className="pointer-events-auto inline-flex items-center gap-0.5 rounded-lg bg-background/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/60 shadow-sm">
+          <SizeIcon className="h-2.5 w-2.5" />
+          {sizeFractionLabel[size]}
+        </span>
 
-        {/* Actions: size badge + dropdown */}
-        <div className="pointer-events-auto flex items-center gap-1">
-          {/* Size badge */}
-          <span className="inline-flex items-center gap-0.5 rounded-md bg-secondary/80 backdrop-blur px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/50 uppercase tracking-wide">
-            <SizeIcon className="h-2.5 w-2.5" />
-            {sizeFractionLabel[size]}
-          </span>
+        {/* Actions dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="pointer-events-auto h-6 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border/60 hover:bg-secondary shadow-sm rounded-lg"
+            >
+              <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44 rounded-xl">
+            {/* Resize submenu */}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="text-xs rounded-lg">
+                <RectangleHorizontal className="h-3.5 w-3.5 mr-2" />
+                {t('resize')}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="rounded-xl">
+                {([
+                  { v: 'sm' as const, Icon: Minimize2, label: t('small'), fraction: '⅓' },
+                  { v: 'md' as const, Icon: Square, label: t('medium'), fraction: '½' },
+                  { v: 'lg' as const, Icon: Maximize2, label: t('large'), fraction: 'Full' },
+                ]).map(({ v, Icon, label, fraction }) => (
+                  <DropdownMenuItem
+                    key={v}
+                    onClick={() => setSize(v)}
+                    className="text-xs rounded-lg"
+                  >
+                    <Icon className="h-3.5 w-3.5 mr-2" />
+                    {label}
+                    <span className="ml-auto text-[10px] text-muted-foreground">{fraction}</span>
+                    {size === v && <span className="ml-1 text-primary">✓</span>}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
 
-          {/* Actions dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 bg-secondary/90 backdrop-blur border border-border/50 hover:bg-secondary opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100 transition-opacity"
-              >
-                <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
-              {/* Resize submenu */}
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger className="text-xs">
-                  <RectangleHorizontal className="h-3.5 w-3.5 mr-2" />
-                  {t('resize')}
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  {([
-                    { v: 'sm' as const, Icon: Minimize2, label: t('small'), fraction: '⅓' },
-                    { v: 'md' as const, Icon: Square, label: t('medium'), fraction: '½' },
-                    { v: 'lg' as const, Icon: Maximize2, label: t('large'), fraction: 'Full' },
-                  ]).map(({ v, Icon, label, fraction }) => (
-                    <DropdownMenuItem
-                      key={v}
-                      onClick={() => setSize(v)}
-                      className="text-xs"
-                    >
-                      <Icon className="h-3.5 w-3.5 mr-2" />
-                      {label}
-                      <span className="ml-auto text-[10px] text-muted-foreground">{fraction}</span>
-                      {size === v && <span className="ml-1 text-primary">✓</span>}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-
-              {onDuplicate && (
-                <DropdownMenuItem onClick={onDuplicate} className="text-xs">
-                  <Copy className="h-3.5 w-3.5 mr-2" />
-                  {t('duplicate')}
-                </DropdownMenuItem>
-              )}
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem
-                onClick={handleRemoveClick}
-                className="text-xs text-destructive focus:text-destructive"
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-2" />
-                {confirmRemove ? t('clickAgainToRemove') : t('remove')}
+            {onDuplicate && (
+              <DropdownMenuItem onClick={onDuplicate} className="text-xs rounded-lg">
+                <Copy className="h-3.5 w-3.5 mr-2" />
+                {t('duplicate')}
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+            )}
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem
+              onClick={handleRemoveClick}
+              className="text-xs text-destructive focus:text-destructive rounded-lg"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-2" />
+              {confirmRemove ? t('clickAgainToRemove') : t('remove')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {item.displayAs === 'insight' ? (
@@ -424,14 +417,30 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
 
   if (!items.length) {
     return (
-      <Card className="dashboard-surface border-dashed border-2 border-primary/20 p-6 sm:p-10 text-center animate-fade-in">
-        <div className="mx-auto h-8 sm:h-12 w-8 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
-          <BarChart3 className="h-4 sm:h-6 w-4 sm:w-6 text-primary" />
+      <div
+        className="rounded-2xl border-2 border-dashed border-primary/15 p-8 sm:p-14 text-center animate-[fade-in_0.4s_ease-out] relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)/0.3))',
+        }}
+      >
+        {/* Decorative blob */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.04]"
+          style={{ background: 'radial-gradient(ellipse at 50% 0%, hsl(var(--primary)), transparent 70%)' }}
+        />
+        <div
+          className="mx-auto h-16 w-16 rounded-2xl flex items-center justify-center mb-5 relative"
+          style={{
+            background: 'linear-gradient(135deg, hsl(var(--primary)/0.12), hsl(var(--accent)/0.08))',
+            border: '1px solid hsl(var(--primary)/0.15)',
+          }}
+        >
+          <BarChart3 className="h-7 w-7 text-primary" />
         </div>
-        <h3 className="text-sm sm:text-base font-semibold text-foreground mb-1">{t('emptyDashboardTitle')}</h3>
-        <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-5 max-w-md mx-auto">{t('emptyDashboardDesc')}</p>
+        <h3 className="text-base font-bold text-foreground mb-2">{t('emptyDashboardTitle')}</h3>
+        <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto leading-relaxed">{t('emptyDashboardDesc')}</p>
         {emptyAction}
-      </Card>
+      </div>
     );
   }
 

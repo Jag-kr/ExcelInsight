@@ -1,6 +1,6 @@
 "use client";
 
-import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download, ArrowRight } from 'lucide-react';
+import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
 import { FaqAccordion } from '@/components/FaqAccordion';
 import Link from 'next/link';
@@ -11,14 +11,14 @@ export function LandingContent() {
   const { t } = useI18n();
 
   const features = [
-    { icon: FileSpreadsheet, title: t('feat1Title'), desc: t('feat1Desc') },
-    { icon: Sparkles, title: t('feat2Title'), desc: t('feat2Desc') },
-    { icon: LayoutDashboard, title: t('feat3Title'), desc: t('feat3Desc') },
-    { icon: Lightbulb, title: t('feat4Title'), desc: t('feat4Desc') },
-    { icon: Combine, title: t('feat5Title'), desc: t('feat5Desc') },
-    { icon: Filter, title: t('feat6Title'), desc: t('feat6Desc') },
-    { icon: Download, title: t('feat7Title'), desc: t('feat7Desc') },
-    { icon: Upload, title: t('feat8Title'), desc: t('feat8Desc') },
+    { icon: FileSpreadsheet, title: t('feat1Title'), desc: t('feat1Desc'), color: 'hsl(217,91%,60%)' },
+    { icon: Sparkles,        title: t('feat2Title'), desc: t('feat2Desc'), color: 'hsl(262,83%,65%)' },
+    { icon: LayoutDashboard, title: t('feat3Title'), desc: t('feat3Desc'), color: 'hsl(172,66%,50%)' },
+    { icon: Lightbulb,       title: t('feat4Title'), desc: t('feat4Desc'), color: 'hsl(38,92%,50%)' },
+    { icon: Combine,         title: t('feat5Title'), desc: t('feat5Desc'), color: 'hsl(262,83%,65%)' },
+    { icon: Filter,          title: t('feat6Title'), desc: t('feat6Desc'), color: 'hsl(217,91%,60%)' },
+    { icon: Download,        title: t('feat7Title'), desc: t('feat7Desc'), color: 'hsl(142,71%,45%)' },
+    { icon: Upload,          title: t('feat8Title'), desc: t('feat8Desc'), color: 'hsl(316,72%,51%)' },
   ];
 
   const steps = [
@@ -40,9 +40,10 @@ export function LandingContent() {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 pb-20 space-y-20">
-      {/* SEO-rich intro */}
-      <section aria-label="ExcelInsight overview" className="text-center max-w-3xl mx-auto pt-4">
+    <div className="w-full max-w-6xl mx-auto px-4 pb-20 space-y-24">
+
+      {/* ── SEO-rich intro ── */}
+      <section aria-label="ExcelInsight overview" className="text-center max-w-3xl mx-auto">
         <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
           <strong className="text-foreground">ExcelInsight</strong> {t('seoHero1')}{' '}
           <strong className="text-foreground">{t('seoHero2')}</strong>, <strong className="text-foreground">{t('seoHero3')}</strong>,{' '}
@@ -52,82 +53,113 @@ export function LandingContent() {
         </p>
       </section>
 
-      {/* Features */}
+      {/* ── Features ── */}
       <section aria-labelledby="features-heading">
-        <div className="text-center mb-10">
+        <div className="text-center mb-12">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium mb-4">
+            <Sparkles className="h-3.5 w-3.5" />
+            Everything you need
+          </span>
           <h2 id="features-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
             {t('featuresTitle')}
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            {t('featuresIntro')}
-          </p>
+          <p className="text-muted-foreground max-w-2xl mx-auto">{t('featuresIntro')}</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {features.map(({ icon: Icon, title, desc }) => (
-            <article key={title} className="glass-card rounded-xl p-5 hover:scale-[1.02] transition-transform">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                <Icon className="h-5 w-5 text-primary" />
+          {features.map(({ icon: Icon, title, desc, color }) => (
+            <article
+              key={title}
+              className="elevated-card p-5 group hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200"
+            >
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-transform duration-200 group-hover:scale-110"
+                style={{ background: `${color}18` }}
+              >
+                <Icon className="h-5 w-5" style={{ color }} />
               </div>
-              <h3 className="font-semibold text-foreground mb-1">{title}</h3>
+              <h3 className="font-semibold text-foreground mb-1.5 text-sm">{title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
             </article>
           ))}
         </div>
       </section>
 
-      {/* Ad slot — between Features and How it works */}
+      {/* ── Ad slot ── */}
       <AdSlot slot="" label={t('sponsored')} />
 
-      {/* How it works */}
+      {/* ── How it works ── */}
       <section aria-labelledby="how-heading">
-        <div className="text-center mb-10">
+        <div className="text-center mb-12">
+          <span className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-1.5 text-sm text-accent font-medium mb-4">
+            Get started in minutes
+          </span>
           <h2 id="how-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
             {t('howTitle')}
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            {t('howIntro')}
-          </p>
+          <p className="text-muted-foreground max-w-2xl mx-auto">{t('howIntro')}</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {steps.map(({ n, title, desc }) => (
-            <article key={n} className="glass-card rounded-xl p-6 flex gap-4">
-              <div className="text-3xl font-bold text-primary/40 shrink-0">{n}</div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">{title}</h3>
+
+        {/* Steps with connecting line */}
+        <div className="relative">
+          {/* Desktop connector line */}
+          <div className="hidden md:block absolute top-8 left-[calc(12.5%+20px)] right-[calc(12.5%+20px)] h-px bg-gradient-to-r from-primary/20 via-accent/40 to-primary/20" />
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {steps.map(({ n, title, desc }) => (
+              <article key={n} className="flex flex-col items-center text-center md:items-center">
+                <div className="relative mb-4">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br from-primary to-accent text-primary-foreground font-bold text-xl shadow-lg shadow-primary/20">
+                    {n}
+                  </div>
+                </div>
+                <h3 className="font-semibold text-foreground mb-1.5 text-sm">{title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Use cases ── */}
+      <section aria-labelledby="usecases-heading">
+        <div
+          className="rounded-2xl p-8 md:p-10 relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, hsl(var(--primary)/0.06), hsl(var(--accent)/0.06))',
+            border: '1px solid hsl(var(--border)/0.6)',
+          }}
+        >
+          {/* Decorative */}
+          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full opacity-[0.06]"
+            style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
+
+          <h2 id="usecases-heading" className="text-2xl md:text-3xl font-bold gradient-text mb-6">
+            {t('useCasesTitle')}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { title: t('useCase1Title'), desc: t('useCase1Desc'), accent: 'hsl(217,91%,60%)' },
+              { title: t('useCase2Title'), desc: t('useCase2Desc'), accent: 'hsl(262,83%,65%)' },
+              { title: t('useCase3Title'), desc: t('useCase3Desc'), accent: 'hsl(142,71%,45%)' },
+            ].map(({ title, desc, accent }) => (
+              <div key={title} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: accent }} />
+                  <h3 className="font-semibold text-foreground text-sm">{title}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed pl-6">{desc}</p>
               </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* Use cases / SEO content */}
-      <section aria-labelledby="usecases-heading" className="glass-card rounded-2xl p-8 md:p-10">
-        <h2 id="usecases-heading" className="text-2xl md:text-3xl font-bold gradient-text mb-4">
-          {t('useCasesTitle')}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-muted-foreground leading-relaxed">
-          <div>
-            <h3 className="font-semibold text-foreground mb-2">{t('useCase1Title')}</h3>
-            <p>{t('useCase1Desc')}</p>
-          </div>
-          <div>
-            <h3 className="font-semibold text-foreground mb-2">{t('useCase2Title')}</h3>
-            <p>{t('useCase2Desc')}</p>
-          </div>
-          <div>
-            <h3 className="font-semibold text-foreground mb-2">{t('useCase3Title')}</h3>
-            <p>{t('useCase3Desc')}</p>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Ad slot — between Use Cases and FAQ */}
+      {/* ── Ad slot ── */}
       <AdSlot slot="" label={t('sponsored')} />
 
-      {/* Tools & resources — internal linking hub for programmatic SEO landing pages */}
+      {/* ── Tools hub ── */}
       <section aria-labelledby="tools-heading">
-        <div className="text-center mb-10">
+        <div className="text-center mb-12">
           <h2 id="tools-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
             Free Excel & CSV Tools — Chart Makers, Dashboards & Data Insights
           </h2>
@@ -135,21 +167,21 @@ export function LandingContent() {
             Make bar graphs, line charts, dashboards and get data insights from Excel & CSV files — all free, all private, all browser-based.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {(Object.keys(seoPagesByCategory) as SeoCategory[]).map((cat) => (
-            <div key={cat} className="glass-card rounded-xl p-5">
-              <h3 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide text-primary/80">
+            <div key={cat} className="elevated-card p-5">
+              <h3 className="font-bold text-foreground mb-3 text-xs uppercase tracking-widest text-primary/80">
                 {categoryLabel[cat]}
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-1.5">
                 {seoPagesByCategory[cat].map((p) => (
                   <li key={p.slug}>
                     <Link
                       href={`/${p.slug}/`}
-                      className="group flex items-center justify-between gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                      className="group flex items-center justify-between gap-2 text-sm text-muted-foreground hover:text-primary transition-colors py-0.5"
                     >
                       <span>{p.h1}</span>
-                      <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                      <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-0.5 shrink-0" />
                     </Link>
                   </li>
                 ))}
@@ -159,9 +191,9 @@ export function LandingContent() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* ── FAQ ── */}
       <section aria-labelledby="faq-heading">
-        <div className="text-center mb-10">
+        <div className="text-center mb-12">
           <h2 id="faq-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
             {t('faqTitle')}
           </h2>
@@ -172,19 +204,29 @@ export function LandingContent() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="text-center pt-10 border-t border-border space-y-3">
-        <nav className="flex items-center justify-center gap-4 text-sm">
-          <Link href="/privacy/" className="text-muted-foreground hover:text-primary transition-colors">{t('privacyPolicy')}</Link>
-          <span className="text-border">•</span>
-          <Link href="/terms/" className="text-muted-foreground hover:text-primary transition-colors">{t('termsOfService')}</Link>
-        </nav>
-        <p className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} ExcelInsight — {t('footerCopy')}
+      {/* ── Footer ── */}
+      <footer className="border-t border-border pt-10 pb-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-center sm:text-left">
+            <p className="text-sm font-semibold gradient-text">ExcelInsight</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('footerCopy')}</p>
+          </div>
+          <nav className="flex items-center gap-4 text-sm">
+            <Link href="/privacy/" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              {t('privacyPolicy')}
+            </Link>
+            <span className="text-border">•</span>
+            <Link href="/terms/" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              {t('termsOfService')}
+            </Link>
+          </nav>
+        </div>
+        <p className="text-xs text-muted-foreground text-center mt-4">
+          © {new Date().getFullYear()} ExcelInsight
         </p>
       </footer>
 
-      {/* WebApplication structured data for SEO */}
+      {/* WebApplication structured data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -196,27 +238,16 @@ export function LandingContent() {
             applicationCategory: 'BusinessApplication',
             operatingSystem: 'Any',
             offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-            description: 'Free online Excel insights, chart maker & dashboard builder. Analyse Excel data, make bar graphs, line charts & CSV dashboards instantly.',
+            description: 'Free online Excel insights, chart maker & dashboard builder.',
             featureList: [
-              'Excel Chart Maker',
-              'Bar Graph from Excel',
-              'CSV Dashboard Builder',
-              'Excel Data Insights',
-              'Line Graph Maker',
-              'Free Dashboard Software for Excel',
-              'Excel Data Analysis Tool',
-              'CSV Visualization',
-              'PDF Report Export',
-              'Excel Statistics Tool',
-              'HR Analytics Excel Template',
-              'Scatter Plot Generator',
-              'Radar Chart Maker',
+              'Excel Chart Maker', 'Bar Graph from Excel', 'CSV Dashboard Builder',
+              'Excel Data Insights', 'Line Graph Maker', 'Free Dashboard Software for Excel',
+              'Excel Data Analysis Tool', 'CSV Visualization', 'PDF Report Export',
             ],
           }),
         }}
       />
-
-      {/* FAQ structured data for SEO */}
+      {/* FAQ structured data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
