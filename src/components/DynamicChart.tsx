@@ -88,11 +88,12 @@ export function DynamicChart({
   const handleTypeChange = (newType: ChartType) => {
     if (newType === type || !onChangeType) return;
     setTransitioning(true);
-    // Brief transition effect
     setTimeout(() => {
       onChangeType(newType);
-      setTimeout(() => setTransitioning(false), 150);
-    }, 100);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setTransitioning(false));
+      });
+    }, 120);
   };
 
   const renderChart = () => {
@@ -245,7 +246,7 @@ export function DynamicChart({
               <TooltipProvider delayDuration={300}>
                 {/* Primary chart type pills */}
                 <div className="hidden sm:flex items-center gap-0.5 bg-secondary/50 rounded-md p-0.5">
-                  {PRIMARY_CHART_TYPES.map(ct => {
+                    {PRIMARY_CHART_TYPES.map(ct => {
                     const Icon = CHART_TYPE_ICONS[ct];
                     const label = chartTypeOptions.find(o => o.value === ct)?.label || ct;
                     return (
@@ -254,6 +255,8 @@ export function DynamicChart({
                           <button
                             type="button"
                             onClick={() => handleTypeChange(ct)}
+                            aria-label={`Switch to ${label} chart`}
+                            aria-pressed={type === ct}
                             className={`p-1 rounded transition-all ${
                               type === ct
                                 ? 'bg-primary text-primary-foreground shadow-sm'
@@ -297,6 +300,8 @@ export function DynamicChart({
                               <button
                                 type="button"
                                 onClick={() => handleTypeChange(ct)}
+                                aria-label={`Switch to ${label} chart`}
+                                aria-pressed={type === ct}
                                 className={`p-1.5 rounded transition-all ${
                                   type === ct
                                     ? 'bg-primary text-primary-foreground shadow-sm'
@@ -334,6 +339,8 @@ export function DynamicChart({
                               <button
                                 type="button"
                                 onClick={() => handleTypeChange(opt.value)}
+                                aria-label={`Switch to ${opt.label} chart`}
+                                aria-pressed={type === opt.value}
                                 className={`p-2 rounded transition-all ${
                                   type === opt.value
                                     ? 'bg-primary text-primary-foreground shadow-sm'
@@ -359,7 +366,10 @@ export function DynamicChart({
         </div>
       </CardHeader>
       <CardContent className="p-3 sm:p-4 pt-2 flex-1">
-        <div className={`transition-opacity duration-150 ${transitioning ? 'opacity-30' : 'opacity-100'}`}>
+        <div
+          className="transition-opacity duration-200"
+          style={{ opacity: transitioning ? 0 : 1 }}
+        >
           <ChartContainer config={chartConfig} className={`w-full ${SIZE_CLASSES[size]}`}>
             {renderChart() || <div />}
           </ChartContainer>

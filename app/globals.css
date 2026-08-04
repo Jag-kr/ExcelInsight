@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,127 +6,168 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 222 47% 11%;
+    /* ── Core palette — Crisp Minimalist Azure (Light) ── */
+    --background: 220 20% 98%;
+    --foreground: 224 47% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 224 47% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 224 47% 10%;
 
-    --primary: 199 89% 48%;
+    --primary: 195 85% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 20% 93%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 220 16% 94%;
+    --secondary-foreground: 224 47% 10%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 16% 94%;
+    --muted-foreground: 220 14% 46%;
 
-    --accent: 262 83% 58%;
+    --accent: 270 85% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 80% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 88%;
-    --input: 214 20% 88%;
-    --ring: 199 89% 48%;
+    --border: 220 16% 87%;
+    --input: 220 16% 87%;
+    --ring: 195 85% 45%;
 
     --radius: 0.75rem;
 
-    --chart-1: 199 89% 48%;
-    --chart-2: 262 83% 58%;
-    --chart-3: 142 71% 45%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 0 72% 51%;
-    --chart-6: 316 72% 51%;
-    --chart-7: 172 66% 50%;
-    --chart-8: 25 95% 53%;
+    /* ── Chart palette (Curated for Data Viz) ── */
+    --chart-1: 195 85% 45%; /* Azure Primary */
+    --chart-2: 270 85% 55%; /* Violet */
+    --chart-3: 150 75% 45%; /* Emerald */
+    --chart-4: 40 90% 55%;  /* Amber */
+    --chart-5: 340 85% 60%; /* Pink/Crimson */
+    --chart-6: 210 90% 60%; /* Bright Blue */
+    --chart-7: 10 85% 55%;  /* Coral/Orange */
+    --chart-8: 170 80% 45%; /* Mint/Teal */
 
-    --success: 142 71% 45%;
+    /* ── Semantic states ── */
+    --success: 150 75% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 11%;
-    --info: 199 89% 48%;
+    --warning: 40 90% 55%;
+    --warning-foreground: 224 47% 10%;
+    --info: 195 85% 45%;
     --info-foreground: 0 0% 100%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(199, 89%, 48%), hsl(262, 83%, 58%));
-    --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%), hsl(210, 20%, 97%));
-    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(199, 89%, 48%, 0.1), transparent 60%);
-    --shadow-glow: 0 0 20px -5px hsl(199, 89%, 48%, 0.2);
-    --shadow-card: 0 4px 24px -4px hsl(222, 47%, 80%, 0.3);
+    /* ── Surface hierarchy (4 levels) ── */
+    --surface-0: 220 20% 98%;
+    --surface-1: 0 0% 100%;
+    --surface-2: 220 16% 98%;
+    --surface-3: 220 20% 96%;
 
-    --sidebar-background: 0 0% 97%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 199 89% 48%;
+    /* ── Gradients ── */
+    --gradient-primary: linear-gradient(135deg, hsl(195, 85%, 45%), hsl(270, 85%, 55%));
+    --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%), hsl(220, 16%, 98%));
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(195, 85%, 45%, 0.12) 0%, transparent 60%),
+                     radial-gradient(ellipse 50% 40% at 90% 20%, hsl(270, 85%, 55%, 0.08) 0%, transparent 50%),
+                     hsl(220, 20%, 98%);
+    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(195, 85%, 45%, 0.12), transparent 65%);
+
+    /* ── Shadows ── */
+    --shadow-glow: 0 0 24px -6px hsl(195, 85%, 45%, 0.25);
+    --shadow-card: 0 1px 3px hsl(220, 47%, 60%, 0.08), 0 4px 16px -4px hsl(220, 47%, 60%, 0.12);
+    --shadow-elevated: 0 2px 8px hsl(220, 47%, 60%, 0.08), 0 8px 32px -8px hsl(220, 47%, 60%, 0.18);
+    --shadow-floating: 0 4px 16px hsl(220, 47%, 40%, 0.1), 0 16px 48px -8px hsl(220, 47%, 40%, 0.2);
+
+    /* ── Layout ── */
+    --sidebar-width: 240px;
+    --sidebar-collapsed-width: 56px;
+    --header-height: 56px;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.5rem;
+
+    /* ── Sidebar tokens ── */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 224 47% 10%;
+    --sidebar-primary: 195 85% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 93%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 20% 88%;
-    --sidebar-ring: 199 89% 48%;
+    --sidebar-accent: 220 16% 94%;
+    --sidebar-accent-foreground: 224 47% 10%;
+    --sidebar-border: 220 16% 90%;
+    --sidebar-ring: 195 85% 45%;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
+    /* ── Core palette — Onyx & Electric Cyan (Dark) ── */
+    --background: 224 28% 4%; /* Deep Onyx */
+    --foreground: 216 32% 94%;
 
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 96%;
+    --card: 224 28% 8%; /* Slightly elevated Onyx */
+    --card-foreground: 216 32% 94%;
 
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 224 28% 9%;
+    --popover-foreground: 216 32% 94%;
 
-    --primary: 199 89% 48%;
-    --primary-foreground: 222 47% 6%;
+    --primary: 190 90% 50%; /* Electric Cyan */
+    --primary-foreground: 224 28% 4%;
 
-    --secondary: 222 30% 14%;
-    --secondary-foreground: 210 40% 90%;
+    --secondary: 224 22% 13%;
+    --secondary-foreground: 216 32% 88%;
 
-    --muted: 222 30% 12%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 224 22% 13%;
+    --muted-foreground: 220 16% 60%;
 
-    --accent: 262 83% 58%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 270 90% 65%; /* Bright Violet */
+    --accent-foreground: 216 32% 98%;
 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 80% 60%;
+    --destructive-foreground: 216 32% 98%;
 
-    --border: 222 30% 16%;
-    --input: 222 30% 16%;
-    --ring: 199 89% 48%;
+    --border: 224 22% 15%;
+    --input: 224 22% 15%;
+    --ring: 190 90% 50%;
 
-    --chart-1: 199 89% 48%;
-    --chart-2: 262 83% 58%;
-    --chart-3: 142 71% 45%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 0 72% 51%;
-    --chart-6: 316 72% 51%;
-    --chart-7: 172 66% 50%;
-    --chart-8: 25 95% 53%;
+    --chart-1: 190 90% 50%; /* Cyan */
+    --chart-2: 270 90% 65%; /* Violet */
+    --chart-3: 150 80% 50%; /* Emerald */
+    --chart-4: 40 90% 55%;  /* Amber */
+    --chart-5: 340 85% 65%; /* Pink/Crimson */
+    --chart-6: 210 90% 65%; /* Azure */
+    --chart-7: 10 85% 60%;  /* Coral/Orange */
+    --chart-8: 170 80% 50%; /* Mint/Teal */
 
-    --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 6%;
-    --info: 199 89% 48%;
-    --info-foreground: 222 47% 6%;
+    --success: 150 80% 50%;
+    --success-foreground: 224 28% 4%;
+    --warning: 40 90% 55%;
+    --warning-foreground: 224 28% 4%;
+    --info: 190 90% 50%;
+    --info-foreground: 224 28% 4%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(199, 89%, 48%), hsl(262, 83%, 58%));
-    --gradient-card: linear-gradient(145deg, hsl(222, 47%, 10%), hsl(222, 47%, 7%));
-    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(199, 89%, 48%, 0.15), transparent 60%);
-    --shadow-glow: 0 0 20px -5px hsl(199, 89%, 48%, 0.3);
-    --shadow-card: 0 4px 24px -4px hsl(222, 47%, 3%, 0.6);
+    /* ── Surface hierarchy (dark) ── */
+    --surface-0: 224 28% 4%;
+    --surface-1: 224 28% 8%;
+    --surface-2: 224 28% 10%;
+    --surface-3: 224 28% 12%;
 
-    --sidebar-background: 222 47% 7%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 199 89% 48%;
-    --sidebar-primary-foreground: 222 47% 6%;
-    --sidebar-accent: 222 30% 14%;
-    --sidebar-accent-foreground: 210 40% 90%;
-    --sidebar-border: 222 30% 16%;
-    --sidebar-ring: 199 89% 48%;
+    /* ── Gradients (dark) ── */
+    --gradient-primary: linear-gradient(135deg, hsl(190, 90%, 50%), hsl(270, 90%, 65%));
+    --gradient-card: linear-gradient(145deg, hsl(224, 28%, 9%), hsl(224, 28%, 7%));
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(190, 90%, 50%, 0.15) 0%, transparent 65%),
+                     radial-gradient(ellipse 50% 40% at 90% 20%, hsl(270, 90%, 65%, 0.1) 0%, transparent 55%),
+                     hsl(224, 28%, 4%);
+    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(190, 90%, 50%, 0.15), transparent 65%);
+
+    /* ── Shadows (dark) ── */
+    --shadow-glow: 0 0 28px -6px hsl(190, 90%, 50%, 0.35);
+    --shadow-card: 0 1px 3px hsl(0, 0%, 0%, 0.4), 0 4px 16px -4px hsl(0, 0%, 0%, 0.5);
+    --shadow-elevated: 0 2px 8px hsl(0, 0%, 0%, 0.5), 0 8px 32px -8px hsl(0, 0%, 0%, 0.6);
+    --shadow-floating: 0 4px 16px hsl(0, 0%, 0%, 0.6), 0 16px 48px -8px hsl(0, 0%, 0%, 0.7);
+
+    /* ── Sidebar tokens (dark) ── */
+    --sidebar-background: 224 28% 5%;
+    --sidebar-foreground: 216 32% 90%;
+    --sidebar-primary: 190 90% 50%;
+    --sidebar-primary-foreground: 224 28% 4%;
+    --sidebar-accent: 224 22% 13%;
+    --sidebar-accent-foreground: 216 32% 90%;
+    --sidebar-border: 224 22% 15%;
+    --sidebar-ring: 190 90% 50%;
   }
 }
 
@@ -135,9 +176,16 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   code, pre {
@@ -145,27 +193,82 @@
   }
 }
 
+/* ══════════════════════════════════════════
+   UTILITY CLASSES
+══════════════════════════════════════════ */
 @layer utilities {
+
+  /* ── Glassmorphism surface ── */
   .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg;
+    background: hsl(var(--card) / 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow: var(--shadow-card);
   }
 
+  /* ── Main dashboard surface (hero cards, workspace header) ── */
   .dashboard-surface {
     border: 1px solid hsl(var(--border) / 0.7);
-    border-radius: 1rem;
-    background: linear-gradient(145deg, hsl(var(--card) / 0.95), hsl(var(--muted) / 0.35));
+    border-radius: var(--radius-xl);
+    background: var(--gradient-card);
     box-shadow: var(--shadow-card);
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
+  /* ── Elevated card (charts, panels) ── */
+  .elevated-card {
+    background: hsl(var(--surface-1));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-elevated);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .elevated-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--gradient-primary);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 250ms ease;
+    pointer-events: none;
+  }
+
+  .elevated-card:hover::before {
+    opacity: 0.4;
+  }
+
+  /* ── Panel (secondary content areas) ── */
   .dashboard-panel {
     border: 1px solid hsl(var(--border) / 0.6);
-    border-radius: 1.1rem;
-    background: hsl(var(--card) / 0.85);
-    box-shadow: 0 12px 30px -18px hsl(var(--foreground) / 0.18);
+    border-radius: var(--radius-xl);
+    background: hsl(var(--surface-1));
+    box-shadow: var(--shadow-card);
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
+  /* ── Sidebar ── */
+  .sidebar-surface {
+    background: hsl(var(--sidebar-background));
+    border-right: 1px solid hsl(var(--sidebar-border));
+    box-shadow: 2px 0 16px hsl(220, 47%, 40%, 0.04);
+  }
+
+  /* ── Hero gradient background ── */
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+
+  /* ── Gradient text ── */
   .gradient-text {
     background: var(--gradient-primary);
     -webkit-background-clip: text;
@@ -173,28 +276,201 @@
     background-clip: text;
   }
 
+  /* ── Stat chip (data badges in header) ── */
+  .stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  /* ── Sidebar nav item ── */
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.625rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--sidebar-foreground) / 0.7);
+    transition: background 150ms ease, color 150ms ease;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-decoration: none;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+  }
+
+  .sidebar-nav-item > svg {
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+  }
+
+  .sidebar-nav-item:hover > svg {
+    transform: scale(1.1);
+  }
+
+  .sidebar-nav-item.active > svg {
+    transform: scale(1.05);
+  }
+
+  /* ── Stagger animation helpers ── */
+  .stagger-1 { animation: stagger-fade-up 0.5s ease-out 0.05s both; }
+  .stagger-2 { animation: stagger-fade-up 0.5s ease-out 0.10s both; }
+  .stagger-3 { animation: stagger-fade-up 0.5s ease-out 0.15s both; }
+  .stagger-4 { animation: stagger-fade-up 0.5s ease-out 0.20s both; }
+  .stagger-5 { animation: stagger-fade-up 0.5s ease-out 0.25s both; }
+  .stagger-6 { animation: stagger-fade-up 0.5s ease-out 0.30s both; }
+  .stagger-7 { animation: stagger-fade-up 0.5s ease-out 0.35s both; }
+  .stagger-8 { animation: stagger-fade-up 0.5s ease-out 0.40s both; }
+
+  .sidebar-nav-item:hover {
+    background: hsl(var(--sidebar-accent));
+    color: hsl(var(--sidebar-foreground));
+  }
+
+  .sidebar-nav-item.active {
+    background: hsl(var(--primary) / 0.12);
+    color: hsl(var(--primary));
+    font-weight: 600;
+  }
+
+  .dark .sidebar-nav-item.active {
+    background: hsl(var(--primary) / 0.18);
+  }
+
+  /* ── Glow border ── */
   .glow-border {
     box-shadow: var(--shadow-glow);
   }
 
+  /* ── Chart container ── */
   .chart-container {
-    @apply rounded-lg bg-card border border-border/50 p-4;
+    @apply rounded-xl bg-card border border-border/50 p-4;
   }
 
-  /* Safe area inset for mobile bottom nav */
+  /* ── Drag handle rail (left edge of cards) ── */
+  .drag-rail {
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 4px;
+    border-radius: 9999px;
+    background: hsl(var(--border));
+    opacity: 0;
+    transition: opacity 200ms ease, background 200ms ease;
+    cursor: grab;
+  }
+
+  .group:hover .drag-rail,
+  .group:focus-within .drag-rail {
+    opacity: 1;
+  }
+
+  .drag-rail:active {
+    background: hsl(var(--primary));
+    cursor: grabbing;
+  }
+
+  /* ── Mobile safe area ── */
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
-/* ─── Smooth card transitions for drag-and-drop ─── */
+/* ══════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════ */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px -5px hsl(217, 91%, 60%, 0.3); }
+  50% { box-shadow: 0 0 40px -5px hsl(217, 91%, 60%, 0.6); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.97); }
+}
+
+@keyframes stagger-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* ══════════════════════════════════════════
+   COMPONENT OVERRIDES
+══════════════════════════════════════════ */
+
+/* ── PDF card transitions ── */
 [data-pdf-card] {
   transition: transform 200ms cubic-bezier(0.25, 1, 0.5, 1),
               opacity 200ms ease,
               box-shadow 200ms ease;
 }
 
-/* ─── Touch behavior for drag handles ─── */
+/* ── Touch behavior for drag ── */
 [data-pdf-card] button[aria-label*="Drag"],
 [data-pdf-card] button[aria-label*="drag"] {
   touch-action: none;
@@ -203,61 +479,126 @@
   user-select: none;
 }
 
-/* ─── Sheet slide-in/out animations ─── */
+/* ── Sheet slide-in ── */
 [data-state="open"][role="dialog"] {
-  animation: sheet-slide-in 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slide-in-right 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes sheet-slide-in {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* ─── Collapsible section content transition ─── */
+/* ── Collapsible ── */
 [data-radix-collapsible-content] {
   overflow: hidden;
   transition: height 250ms cubic-bezier(0.87, 0, 0.13, 1);
 }
 
-/* ─── Mobile optimizations ─── */
-@media (max-width: 767px) {
-  /* Ensure cards don't overflow viewport */
-  [data-pdf-card] {
-    max-width: 100vw;
-  }
-
-  /* Larger touch targets on mobile */
-  [data-pdf-card] button {
-    min-height: 36px;
-    min-width: 36px;
-  }
-
-  /* Ensure sheet takes full width on mobile */
-  [role="dialog"][data-state="open"] {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
+/* ── Scrollbar styling ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
 }
 
-/* ─── Drag overlay styling ─── */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* ── Drag overlay ── */
 [data-dnd-overlay] {
   pointer-events: none;
   cursor: grabbing;
 }
 
-/* ─── Smooth scroll behavior ─── */
-html {
-  scroll-behavior: smooth;
+/* ══════════════════════════════════════════
+   MODERN NATIVE ANIMATIONS
+══════════════════════════════════════════ */
+@layer utilities {
+  /* 1. Scroll-Driven Animations (Native CSS View Timeline) */
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes reveal-up {
+      from {
+        opacity: 0;
+        translate: 0 40px;
+        scale: 0.95;
+      }
+      to {
+        opacity: 1;
+        translate: 0 0;
+        scale: 1;
+      }
+    }
+
+    .scroll-reveal {
+      animation: reveal-up auto linear both;
+      animation-timeline: view();
+      /* 
+       * Starts when element enters viewport. 
+       * Ends when element is 20% into the viewport. 
+       */
+      animation-range: entry 5% cover 25%;
+    }
+  }
+
+  /* 2. Discrete Transitions / Entry Effects */
+  .discrete-transition {
+    /* 
+     * Requires the layout to define its visible state (e.g., opacity: 1, display: block).
+     * And a hidden state (e.g., via a `.hidden` class or inline `display: none`). 
+     */
+    transition: 
+      display 0.4s, 
+      opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+      transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+      filter 0.4s ease-out;
+    transition-behavior: allow-discrete;
+  }
+
+  @starting-style {
+    .discrete-transition {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+      filter: blur(4px);
+    }
+  }
+
+  /* Exit state for the discrete transition when toggled hidden */
+  .discrete-transition.hidden {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    filter: blur(4px);
+  }
 }
 
-/* ─── Chart container responsive aspect ratio on mobile ─── */
-@media (max-width: 640px) {
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 767px) {
+  [data-pdf-card] {
+    max-width: 100vw;
+  }
+
+  [data-pdf-card] button {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  [role="dialog"][data-state="open"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
   .recharts-wrapper {
     max-height: 250px;
   }
