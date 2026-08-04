@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from 'react';
 import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
 import { FaqAccordion } from '@/components/FaqAccordion';
@@ -11,14 +12,14 @@ export function LandingContent() {
   const { t } = useI18n();
 
   const features = [
-    { icon: FileSpreadsheet, title: t('feat1Title'), desc: t('feat1Desc'), color: 'hsl(217,91%,60%)' },
-    { icon: Sparkles,        title: t('feat2Title'), desc: t('feat2Desc'), color: 'hsl(262,83%,65%)' },
-    { icon: LayoutDashboard, title: t('feat3Title'), desc: t('feat3Desc'), color: 'hsl(172,66%,50%)' },
-    { icon: Lightbulb,       title: t('feat4Title'), desc: t('feat4Desc'), color: 'hsl(38,92%,50%)' },
-    { icon: Combine,         title: t('feat5Title'), desc: t('feat5Desc'), color: 'hsl(262,83%,65%)' },
-    { icon: Filter,          title: t('feat6Title'), desc: t('feat6Desc'), color: 'hsl(217,91%,60%)' },
-    { icon: Download,        title: t('feat7Title'), desc: t('feat7Desc'), color: 'hsl(142,71%,45%)' },
-    { icon: Upload,          title: t('feat8Title'), desc: t('feat8Desc'), color: 'hsl(316,72%,51%)' },
+    { icon: FileSpreadsheet, title: t('feat1Title'), desc: t('feat1Desc'), color: 'hsl(var(--chart-1))' },
+    { icon: Sparkles,        title: t('feat2Title'), desc: t('feat2Desc'), color: 'hsl(var(--chart-2))' },
+    { icon: LayoutDashboard, title: t('feat3Title'), desc: t('feat3Desc'), color: 'hsl(var(--chart-8))' },
+    { icon: Lightbulb,       title: t('feat4Title'), desc: t('feat4Desc'), color: 'hsl(var(--chart-4))' },
+    { icon: Combine,         title: t('feat5Title'), desc: t('feat5Desc'), color: 'hsl(var(--chart-2))' },
+    { icon: Filter,          title: t('feat6Title'), desc: t('feat6Desc'), color: 'hsl(var(--chart-1))' },
+    { icon: Download,        title: t('feat7Title'), desc: t('feat7Desc'), color: 'hsl(var(--chart-3))' },
+    { icon: Upload,          title: t('feat8Title'), desc: t('feat8Desc'), color: 'hsl(var(--chart-5))' },
   ];
 
   const steps = [
@@ -39,9 +40,37 @@ export function LandingContent() {
     { q: t('faq8Q'), a: t('faq8A') },
   ];
 
+  useEffect(() => {
+    // JS Fallback for browsers that don't support animation-timeline: view()
+    if (typeof CSS === 'undefined' || !CSS.supports('(animation-timeline: view()) and (animation-range: entry)')) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              const el = entry.target as HTMLElement;
+              // Add a simple fade-in up effect manually
+              el.style.opacity = (entry.intersectionRatio).toString();
+              el.style.transform = `translateY(${(1 - entry.intersectionRatio) * 20}px)`;
+            }
+          }
+        },
+        { threshold: Array.from({ length: 11 }, (_, i) => i / 10) }
+      );
+
+      document.querySelectorAll('.scroll-reveal').forEach((el) => {
+        // Initial setup for JS fallback
+        (el as HTMLElement).style.opacity = '0.1';
+        (el as HTMLElement).style.transform = 'translateY(20px)';
+        (el as HTMLElement).style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
+        observer.observe(el);
+      });
+
+      return () => observer.disconnect();
+    }
+  }, []);
+
   return (
     <div className="w-full max-w-6xl mx-auto px-4 pb-20 space-y-24">
-
       {/* ── SEO-rich intro ── */}
       <section aria-label="ExcelInsight overview" className="text-center max-w-3xl mx-auto">
         <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
@@ -69,7 +98,7 @@ export function LandingContent() {
           {features.map(({ icon: Icon, title, desc, color }) => (
             <article
               key={title}
-              className="elevated-card p-5 group hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200"
+              className="elevated-card scroll-reveal p-5 group hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200"
             >
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-transform duration-200 group-hover:scale-110"
@@ -106,7 +135,7 @@ export function LandingContent() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {steps.map(({ n, title, desc }) => (
-              <article key={n} className="flex flex-col items-center text-center md:items-center">
+              <article key={n} className="scroll-reveal flex flex-col items-center text-center md:items-center">
                 <div className="relative mb-4">
                   <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br from-primary to-accent text-primary-foreground font-bold text-xl shadow-lg shadow-primary/20">
                     {n}
@@ -138,9 +167,9 @@ export function LandingContent() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { title: t('useCase1Title'), desc: t('useCase1Desc'), accent: 'hsl(217,91%,60%)' },
-              { title: t('useCase2Title'), desc: t('useCase2Desc'), accent: 'hsl(262,83%,65%)' },
-              { title: t('useCase3Title'), desc: t('useCase3Desc'), accent: 'hsl(142,71%,45%)' },
+              { title: t('useCase1Title'), desc: t('useCase1Desc'), accent: 'hsl(var(--chart-1))' },
+              { title: t('useCase2Title'), desc: t('useCase2Desc'), accent: 'hsl(var(--chart-2))' },
+              { title: t('useCase3Title'), desc: t('useCase3Desc'), accent: 'hsl(var(--chart-3))' },
             ].map(({ title, desc, accent }) => (
               <div key={title} className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -169,7 +198,7 @@ export function LandingContent() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {(Object.keys(seoPagesByCategory) as SeoCategory[]).map((cat) => (
-            <div key={cat} className="elevated-card p-5">
+            <div key={cat} className="elevated-card scroll-reveal p-5">
               <h3 className="font-bold text-foreground mb-3 text-xs uppercase tracking-widest text-primary/80">
                 {categoryLabel[cat]}
               </h3>

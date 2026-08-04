@@ -6,8 +6,8 @@
 
 @layer base {
   :root {
-    /* ── Core palette — Indigo-Blue primary ── */
-    --background: 220 20% 97%;
+    /* ── Core palette — Crisp Minimalist Azure (Light) ── */
+    --background: 220 20% 98%;
     --foreground: 224 47% 10%;
 
     --card: 0 0% 100%;
@@ -16,61 +16,61 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 47% 10%;
 
-    --primary: 217 91% 60%;
+    --primary: 195 85% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 16% 92%;
+    --secondary: 220 16% 94%;
     --secondary-foreground: 224 47% 10%;
 
     --muted: 220 16% 94%;
     --muted-foreground: 220 14% 46%;
 
-    --accent: 262 83% 65%;
+    --accent: 270 85% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 80% 55%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 16% 87%;
     --input: 220 16% 87%;
-    --ring: 217 91% 60%;
+    --ring: 195 85% 45%;
 
     --radius: 0.75rem;
 
-    /* ── Chart palette ── */
-    --chart-1: 217 91% 60%;
-    --chart-2: 262 83% 65%;
-    --chart-3: 142 71% 45%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 0 72% 51%;
-    --chart-6: 316 72% 51%;
-    --chart-7: 172 66% 50%;
-    --chart-8: 25 95% 53%;
+    /* ── Chart palette (Curated for Data Viz) ── */
+    --chart-1: 195 85% 45%; /* Azure Primary */
+    --chart-2: 270 85% 55%; /* Violet */
+    --chart-3: 150 75% 45%; /* Emerald */
+    --chart-4: 40 90% 55%;  /* Amber */
+    --chart-5: 340 85% 60%; /* Pink/Crimson */
+    --chart-6: 210 90% 60%; /* Bright Blue */
+    --chart-7: 10 85% 55%;  /* Coral/Orange */
+    --chart-8: 170 80% 45%; /* Mint/Teal */
 
     /* ── Semantic states ── */
-    --success: 142 71% 45%;
+    --success: 150 75% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 40 90% 55%;
     --warning-foreground: 224 47% 10%;
-    --info: 217 91% 60%;
+    --info: 195 85% 45%;
     --info-foreground: 0 0% 100%;
 
     /* ── Surface hierarchy (4 levels) ── */
-    --surface-0: 220 20% 97%;
+    --surface-0: 220 20% 98%;
     --surface-1: 0 0% 100%;
     --surface-2: 220 16% 98%;
     --surface-3: 220 20% 96%;
 
     /* ── Gradients ── */
-    --gradient-primary: linear-gradient(135deg, hsl(217, 91%, 60%), hsl(262, 83%, 65%));
+    --gradient-primary: linear-gradient(135deg, hsl(195, 85%, 45%), hsl(270, 85%, 55%));
     --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%), hsl(220, 16%, 98%));
-    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(217, 91%, 60%, 0.12) 0%, transparent 60%),
-                     radial-gradient(ellipse 50% 40% at 90% 20%, hsl(262, 83%, 65%, 0.08) 0%, transparent 50%),
-                     hsl(220, 20%, 97%);
-    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(217, 91%, 60%, 0.12), transparent 65%);
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(195, 85%, 45%, 0.12) 0%, transparent 60%),
+                     radial-gradient(ellipse 50% 40% at 90% 20%, hsl(270, 85%, 55%, 0.08) 0%, transparent 50%),
+                     hsl(220, 20%, 98%);
+    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(195, 85%, 45%, 0.12), transparent 65%);
 
     /* ── Shadows ── */
-    --shadow-glow: 0 0 24px -6px hsl(217, 91%, 60%, 0.25);
+    --shadow-glow: 0 0 24px -6px hsl(195, 85%, 45%, 0.25);
     --shadow-card: 0 1px 3px hsl(220, 47%, 60%, 0.08), 0 4px 16px -4px hsl(220, 47%, 60%, 0.12);
     --shadow-elevated: 0 2px 8px hsl(220, 47%, 60%, 0.08), 0 8px 32px -8px hsl(220, 47%, 60%, 0.18);
     --shadow-floating: 0 4px 16px hsl(220, 47%, 40%, 0.1), 0 16px 48px -8px hsl(220, 47%, 40%, 0.2);
@@ -85,88 +85,89 @@
     /* ── Sidebar tokens ── */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 224 47% 10%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary: 195 85% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 16% 94%;
     --sidebar-accent-foreground: 224 47% 10%;
     --sidebar-border: 220 16% 90%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-ring: 195 85% 45%;
   }
 
   .dark {
-    --background: 224 28% 7%;
+    /* ── Core palette — Onyx & Electric Cyan (Dark) ── */
+    --background: 224 28% 4%; /* Deep Onyx */
     --foreground: 216 32% 94%;
 
-    --card: 224 28% 10%;
+    --card: 224 28% 8%; /* Slightly elevated Onyx */
     --card-foreground: 216 32% 94%;
 
-    --popover: 224 28% 11%;
+    --popover: 224 28% 9%;
     --popover-foreground: 216 32% 94%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 224 28% 7%;
+    --primary: 190 90% 50%; /* Electric Cyan */
+    --primary-foreground: 224 28% 4%;
 
-    --secondary: 224 22% 15%;
+    --secondary: 224 22% 13%;
     --secondary-foreground: 216 32% 88%;
 
     --muted: 224 22% 13%;
-    --muted-foreground: 220 16% 52%;
+    --muted-foreground: 220 16% 60%;
 
-    --accent: 262 83% 65%;
+    --accent: 270 90% 65%; /* Bright Violet */
     --accent-foreground: 216 32% 98%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 80% 60%;
     --destructive-foreground: 216 32% 98%;
 
-    --border: 224 22% 17%;
-    --input: 224 22% 17%;
-    --ring: 217 91% 60%;
+    --border: 224 22% 15%;
+    --input: 224 22% 15%;
+    --ring: 190 90% 50%;
 
-    --chart-1: 217 91% 60%;
-    --chart-2: 262 83% 65%;
-    --chart-3: 142 71% 45%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 0 72% 51%;
-    --chart-6: 316 72% 51%;
-    --chart-7: 172 66% 50%;
-    --chart-8: 25 95% 53%;
+    --chart-1: 190 90% 50%; /* Cyan */
+    --chart-2: 270 90% 65%; /* Violet */
+    --chart-3: 150 80% 50%; /* Emerald */
+    --chart-4: 40 90% 55%;  /* Amber */
+    --chart-5: 340 85% 65%; /* Pink/Crimson */
+    --chart-6: 210 90% 65%; /* Azure */
+    --chart-7: 10 85% 60%;  /* Coral/Orange */
+    --chart-8: 170 80% 50%; /* Mint/Teal */
 
-    --success: 142 71% 45%;
-    --success-foreground: 216 32% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 224 28% 7%;
-    --info: 217 91% 60%;
-    --info-foreground: 224 28% 7%;
+    --success: 150 80% 50%;
+    --success-foreground: 224 28% 4%;
+    --warning: 40 90% 55%;
+    --warning-foreground: 224 28% 4%;
+    --info: 190 90% 50%;
+    --info-foreground: 224 28% 4%;
 
     /* ── Surface hierarchy (dark) ── */
-    --surface-0: 224 28% 7%;
-    --surface-1: 224 28% 10%;
-    --surface-2: 224 28% 12%;
-    --surface-3: 224 28% 14%;
+    --surface-0: 224 28% 4%;
+    --surface-1: 224 28% 8%;
+    --surface-2: 224 28% 10%;
+    --surface-3: 224 28% 12%;
 
     /* ── Gradients (dark) ── */
-    --gradient-primary: linear-gradient(135deg, hsl(217, 91%, 60%), hsl(262, 83%, 65%));
-    --gradient-card: linear-gradient(145deg, hsl(224, 28%, 11%), hsl(224, 28%, 9%));
-    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(217, 91%, 60%, 0.18) 0%, transparent 65%),
-                     radial-gradient(ellipse 50% 40% at 90% 20%, hsl(262, 83%, 65%, 0.12) 0%, transparent 55%),
-                     hsl(224, 28%, 7%);
-    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(217, 91%, 60%, 0.18), transparent 65%);
+    --gradient-primary: linear-gradient(135deg, hsl(190, 90%, 50%), hsl(270, 90%, 65%));
+    --gradient-card: linear-gradient(145deg, hsl(224, 28%, 9%), hsl(224, 28%, 7%));
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(190, 90%, 50%, 0.15) 0%, transparent 65%),
+                     radial-gradient(ellipse 50% 40% at 90% 20%, hsl(270, 90%, 65%, 0.1) 0%, transparent 55%),
+                     hsl(224, 28%, 4%);
+    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(190, 90%, 50%, 0.15), transparent 65%);
 
     /* ── Shadows (dark) ── */
-    --shadow-glow: 0 0 28px -6px hsl(217, 91%, 60%, 0.35);
-    --shadow-card: 0 1px 3px hsl(224, 28%, 3%, 0.4), 0 4px 16px -4px hsl(224, 28%, 3%, 0.5);
-    --shadow-elevated: 0 2px 8px hsl(224, 28%, 3%, 0.5), 0 8px 32px -8px hsl(224, 28%, 3%, 0.6);
-    --shadow-floating: 0 4px 16px hsl(224, 28%, 3%, 0.6), 0 16px 48px -8px hsl(224, 28%, 3%, 0.7);
+    --shadow-glow: 0 0 28px -6px hsl(190, 90%, 50%, 0.35);
+    --shadow-card: 0 1px 3px hsl(0, 0%, 0%, 0.4), 0 4px 16px -4px hsl(0, 0%, 0%, 0.5);
+    --shadow-elevated: 0 2px 8px hsl(0, 0%, 0%, 0.5), 0 8px 32px -8px hsl(0, 0%, 0%, 0.6);
+    --shadow-floating: 0 4px 16px hsl(0, 0%, 0%, 0.6), 0 16px 48px -8px hsl(0, 0%, 0%, 0.7);
 
     /* ── Sidebar tokens (dark) ── */
-    --sidebar-background: 224 28% 8%;
+    --sidebar-background: 224 28% 5%;
     --sidebar-foreground: 216 32% 90%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 224 28% 7%;
-    --sidebar-accent: 224 22% 15%;
+    --sidebar-primary: 190 90% 50%;
+    --sidebar-primary-foreground: 224 28% 4%;
+    --sidebar-accent: 224 22% 13%;
     --sidebar-accent-foreground: 216 32% 90%;
-    --sidebar-border: 224 22% 17%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-border: 224 22% 15%;
+    --sidebar-ring: 190 90% 50%;
   }
 }
 
@@ -311,6 +312,29 @@
     text-align: left;
   }
 
+  .sidebar-nav-item > svg {
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+  }
+
+  .sidebar-nav-item:hover > svg {
+    transform: scale(1.1);
+  }
+
+  .sidebar-nav-item.active > svg {
+    transform: scale(1.05);
+  }
+
+  /* ── Stagger animation helpers ── */
+  .stagger-1 { animation: stagger-fade-up 0.5s ease-out 0.05s both; }
+  .stagger-2 { animation: stagger-fade-up 0.5s ease-out 0.10s both; }
+  .stagger-3 { animation: stagger-fade-up 0.5s ease-out 0.15s both; }
+  .stagger-4 { animation: stagger-fade-up 0.5s ease-out 0.20s both; }
+  .stagger-5 { animation: stagger-fade-up 0.5s ease-out 0.25s both; }
+  .stagger-6 { animation: stagger-fade-up 0.5s ease-out 0.30s both; }
+  .stagger-7 { animation: stagger-fade-up 0.5s ease-out 0.35s both; }
+  .stagger-8 { animation: stagger-fade-up 0.5s ease-out 0.40s both; }
+
   .sidebar-nav-item:hover {
     background: hsl(var(--sidebar-accent));
     color: hsl(var(--sidebar-foreground));
@@ -425,6 +449,16 @@
   66% { transform: translate(-20px, 15px) scale(0.97); }
 }
 
+@keyframes stagger-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
 /* ══════════════════════════════════════════
    COMPONENT OVERRIDES
 ══════════════════════════════════════════ */
@@ -484,6 +518,67 @@
 [data-dnd-overlay] {
   pointer-events: none;
   cursor: grabbing;
+}
+
+/* ══════════════════════════════════════════
+   MODERN NATIVE ANIMATIONS
+══════════════════════════════════════════ */
+@layer utilities {
+  /* 1. Scroll-Driven Animations (Native CSS View Timeline) */
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes reveal-up {
+      from {
+        opacity: 0;
+        translate: 0 40px;
+        scale: 0.95;
+      }
+      to {
+        opacity: 1;
+        translate: 0 0;
+        scale: 1;
+      }
+    }
+
+    .scroll-reveal {
+      animation: reveal-up auto linear both;
+      animation-timeline: view();
+      /* 
+       * Starts when element enters viewport. 
+       * Ends when element is 20% into the viewport. 
+       */
+      animation-range: entry 5% cover 25%;
+    }
+  }
+
+  /* 2. Discrete Transitions / Entry Effects */
+  .discrete-transition {
+    /* 
+     * Requires the layout to define its visible state (e.g., opacity: 1, display: block).
+     * And a hidden state (e.g., via a `.hidden` class or inline `display: none`). 
+     */
+    transition: 
+      display 0.4s, 
+      opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+      transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+      filter 0.4s ease-out;
+    transition-behavior: allow-discrete;
+  }
+
+  @starting-style {
+    .discrete-transition {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+      filter: blur(4px);
+    }
+  }
+
+  /* Exit state for the discrete transition when toggled hidden */
+  .discrete-transition.hidden {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    filter: blur(4px);
+  }
 }
 
 /* ══════════════════════════════════════════

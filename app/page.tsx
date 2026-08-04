@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef, useEffect, Suspense } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect, Suspense, startTransition } from 'react';
 import dynamic from 'next/dynamic';
 import { FileUpload } from '@/components/FileUpload';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
@@ -238,6 +238,7 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState<string>(() => initial?.activeTab ?? 'dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => initial?.sidebarCollapsed ?? false);
   const [exporting, setExporting] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -262,14 +263,19 @@ export default function Index() {
     setData(newData);
     setFileName(name);
     setFilters({});
-    const cols = analyzeColumns(newData);
-    setColumns(cols);
-    const charts = generateChartSuggestions(newData, cols);
-    setSuggestions(charts);
-    const { items, usedChartIds } = buildDefaultDashboard(newData, cols, charts, t);
-    setDashboardItems(items);
-    setAddedChartIds(usedChartIds);
-    setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
+    setAnalyzing(true);
+    // Yield to browser before running heavy synchronous analysis
+    startTransition(() => {
+      const cols = analyzeColumns(newData);
+      setColumns(cols);
+      const charts = generateChartSuggestions(newData, cols);
+      setSuggestions(charts);
+      const { items, usedChartIds } = buildDefaultDashboard(newData, cols, charts, t);
+      setDashboardItems(items);
+      setAddedChartIds(usedChartIds);
+      setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
+      setAnalyzing(false);
+    });
   }, [t]);
 
   const handleResetLayout = useCallback(() => {
@@ -306,6 +312,24 @@ export default function Index() {
     });
   }, []);
 
+  // ── Derived filtered data (declared before any callbacks that use it) ──
+  const filteredData = useMemo(() => {
+    if (!Object.keys(filters).length) return data;
+    return data.filter(row => Object.entries(filters).every(([col, val]) => String(row[col]) === val));
+  }, [data, filters]);
+
+  const filteredColumns = useMemo(() => {
+    if (!Object.keys(filters).length) return columns;
+    return analyzeColumns(filteredData);
+  }, [filteredData, columns, filters]);
+
+  const filteredSuggestions = useMemo(() => {
+    if (!Object.keys(filters).length) return suggestions;
+    // Depends on filteredColumns (which already includes filteredData) — no double-compute
+    return generateChartSuggestions(filteredData, filteredColumns);
+  }, [filteredData, filteredColumns, suggestions]);
+
+  // ── PDF export (must come after filteredData is declared) ──
   const handleExportPdf = useCallback(async () => {
     if (!dashboardRef.current || !dashboardItems.length) { toast.error('Nothing to export'); return; }
     setExporting(true);
@@ -327,23 +351,7 @@ export default function Index() {
     } finally {
       setExporting(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dashboardItems, fileName, columns.length, t]);
-
-  const filteredData = useMemo(() => {
-    if (!Object.keys(filters).length) return data;
-    return data.filter(row => Object.entries(filters).every(([col, val]) => String(row[col]) === val));
-  }, [data, filters]);
-
-  const filteredColumns = useMemo(() => {
-    if (!Object.keys(filters).length) return columns;
-    return analyzeColumns(filteredData);
-  }, [filteredData, columns, filters]);
-
-  const filteredSuggestions = useMemo(() => {
-    if (!Object.keys(filters).length) return suggestions;
-    return generateChartSuggestions(filteredData, filteredColumns);
-  }, [filteredData, filteredColumns, filters, suggestions]);
+  }, [dashboardItems, fileName, columns.length, filteredData, t]);
 
   const availableSuggestions = useMemo(() =>
     filteredSuggestions.filter(s => !addedChartIds.has(s.id)),
@@ -400,6 +408,8 @@ export default function Index() {
     });
     setAddedInsightIds(prev => { const next = new Set(prev); next.delete(id); return next; });
   }, []);
+
+  /* ─── ANALYZING SKELETON (Moved to Dashboard Shell) ─── */
 
   /* ─── LANDING PAGE ─── */
   if (!mounted || !data.length) {
@@ -504,7 +514,28 @@ export default function Index() {
   const activeItem = SIDEBAR_ITEMS.find(i => i.value === activeTab);
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <>
+      {/* ─── ANALYZING SKELETON OVERLAY ─── */}
+      <div className={`fixed inset-0 z-50 bg-background flex items-center justify-center discrete-transition ${analyzing ? '' : 'hidden'}`}>
+        <div className="text-center space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+            <Sparkles className="h-7 w-7 text-primary animate-pulse" />
+          </div>
+          <p className="text-base font-semibold text-foreground">Analyzing your data…</p>
+          <p className="text-sm text-muted-foreground">Building charts and insights</p>
+          <div className="flex items-center justify-center gap-1 pt-2">
+            {[0, 1, 2].map(i => (
+              <div
+                key={i}
+                className="w-1.5 h-1.5 rounded-full bg-primary"
+                style={{ animation: `bounce 1s ease-in-out ${i * 0.15}s infinite` }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className={`min-h-screen bg-background flex discrete-transition ${analyzing ? 'hidden' : ''}`}>
 
       {/* ═══════════════ LEFT SIDEBAR ═══════════════ */}
       {!isMobile && (
@@ -904,13 +935,18 @@ export default function Index() {
 
       {/* ─── Mobile Bottom Navigation ─── */}
       {isMobile && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border safe-area-bottom">
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border safe-area-bottom"
+          aria-label="Main navigation"
+        >
           <div className="flex items-center justify-around h-14">
             {MOBILE_TABS.map(({ value, icon: Icon, label }) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => setActiveTab(value)}
+                aria-label={label}
+                aria-current={activeTab === value ? 'page' : undefined}
                 className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
                   activeTab === value ? 'text-primary' : 'text-muted-foreground'
                 }`}
@@ -919,9 +955,38 @@ export default function Index() {
                 <span className="text-[10px] font-medium">{label}</span>
               </button>
             ))}
+
+            {/* More: Build + Filter */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="More tabs"
+                  className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
+                    (activeTab === 'build' || activeTab === 'filter') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  <MoreHorizontal className="h-5 w-5" />
+                  <span className="text-[10px] font-medium">
+                    {activeTab === 'build' ? 'Build' : activeTab === 'filter' ? 'Filter' : 'More'}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="top" align="end" className="w-44 mb-1">
+                <DropdownMenuItem onClick={() => setActiveTab('build')} className="text-xs gap-2">
+                  <Wrench className="h-3.5 w-3.5" /> Build
+                  {activeTab === 'build' && <span className="ml-auto text-primary">✓</span>}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setActiveTab('filter')} className="text-xs gap-2">
+                  <Filter className="h-3.5 w-3.5" /> Filter
+                  {activeTab === 'filter' && <span className="ml-auto text-primary">✓</span>}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </nav>
       )}
     </div>
+    </>
   );
 }

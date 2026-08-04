@@ -1,7 +1,24 @@
-import { useCallback, useState } from 'react';
-import { Upload, FileSpreadsheet, X, CheckCircle2 } from 'lucide-react';
+import { useCallback, useId, useState } from 'react';
+import { Upload, X, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n';
+import { toast } from 'sonner';
+
+const ACCEPTED_EXTENSIONS = ['.xlsx', '.xls', '.csv'];
+const ACCEPTED_MIME_TYPES = new Set([
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
+  'text/csv',
+  'text/plain',
+  'application/csv',
+]);
+
+function isValidFile(file: File): boolean {
+  const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+  if (ACCEPTED_EXTENSIONS.includes(ext)) return true;
+  if (ACCEPTED_MIME_TYPES.has(file.type)) return true;
+  return false;
+}
 
 interface FileUploadProps {
   onDataLoaded: (data: Record<string, any>[], fileName: string) => void;
@@ -10,12 +27,18 @@ interface FileUploadProps {
 
 export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
   const { t } = useI18n();
+  const formatId = useId();
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const processFile = useCallback((file: File) => {
+    if (!isValidFile(file)) {
+      toast.error(t('invalidFileType'));
+      return;
+    }
+
     setLoading(true);
     setProgress(0);
     setFileName(file.name);
@@ -42,12 +65,13 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
       } catch (err: any) {
         clearInterval(interval);
         console.error('Failed to parse file:', err);
-        if (err instanceof ReferenceError) console.error('ReferenceError stack:', err.stack);
+        toast.error('Failed to parse file. Please check it is a valid Excel or CSV file.');
+        setFileName(null);
         setLoading(false);
       }
     };
     reader.readAsArrayBuffer(file);
-  }, [onDataLoaded]);
+  }, [onDataLoaded, t]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -90,6 +114,11 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
+      aria-label={t('dropFile')}
+      aria-describedby={formatId}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.currentTarget.click(); }}
       className={`relative flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-10 sm:p-14 transition-all duration-300 overflow-hidden ${
         isDragging
           ? 'border-primary bg-primary/6 scale-[1.01]'
@@ -139,7 +168,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
 
         {/* Format badges */}
         {!loading && (
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <div id={formatId} className="flex flex-wrap items-center justify-center gap-2 pt-2">
             {['.xlsx', '.xls', '.csv'].map((fmt) => (
               <span
                 key={fmt}
@@ -177,6 +206,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
         type="file"
         accept=".xlsx,.xls,.csv"
         onChange={handleFileInput}
+        aria-hidden="true"
         className="hidden"
       />
     </label>

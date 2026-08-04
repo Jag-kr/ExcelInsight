@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { ChartErrorBoundary } from './ChartErrorBoundary';
 
 export interface DashboardItem {
   id: string;
@@ -368,21 +369,27 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
       </div>
 
       {item.displayAs === 'insight' ? (
-        <DashboardInsightCard item={item} onRename={renameTitle} />
+        <ChartErrorBoundary title={item.title}>
+          <DashboardInsightCard item={item} onRename={renameTitle} />
+        </ChartErrorBoundary>
       ) : item.displayAs === 'table' ? (
-        <DashboardTable item={item} onRename={renameTitle} />
+        <ChartErrorBoundary title={item.title}>
+          <DashboardTable item={item} onRename={renameTitle} />
+        </ChartErrorBoundary>
       ) : (
-        <DynamicChart
-          title={item.title}
-          description={item.description}
-          type={item.type}
-          data={item.data}
-          dataKeys={item.dataKeys}
-          xKey={item.xKey}
-          onChangeType={(type) => onUpdateItem({ type })}
-          onRenameTitle={renameTitle}
-          size={size}
-        />
+        <ChartErrorBoundary title={item.title}>
+          <DynamicChart
+            title={item.title}
+            description={item.description}
+            type={item.type}
+            data={item.data}
+            dataKeys={item.dataKeys}
+            xKey={item.xKey}
+            onChangeType={(type) => onUpdateItem({ type })}
+            onRenameTitle={renameTitle}
+            size={size}
+          />
+        </ChartErrorBoundary>
       )}
     </div>
   );
