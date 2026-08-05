@@ -403,6 +403,12 @@
   to { height: 0; }
 }
 
+/* Zone 1: opacity-only — NEVER uses transform so drag-drop is never blocked */
+@keyframes hero-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -457,6 +463,39 @@
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
+}
+
+/* ── Zone 2: Scroll-driven narrative keyframes ── */
+@keyframes narrative-reveal {
+  from { opacity: 0; translate: 0 48px; scale: 0.97; }
+  to   { opacity: 1; translate: 0 0;    scale: 1; }
+}
+
+@keyframes narrative-reveal-left {
+  from { opacity: 0; translate: -36px 0; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+@keyframes narrative-reveal-right {
+  from { opacity: 0; translate: 36px 0; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+@keyframes problem-pin-line {
+  from { scale: 1 0; }
+  to   { scale: 1 1; }
+}
+
+@keyframes cta-settle {
+  0%   { opacity: 0; translate: 0 24px; scale: 0.97; }
+  60%  { opacity: 1; translate: 0 -4px; scale: 1.01; }
+  80%  { translate: 0 2px; scale: 0.995; }
+  100% { opacity: 1; translate: 0 0;    scale: 1; }
+}
+
+@keyframes cta-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.35); }
+  50%       { box-shadow: 0 0 0 10px hsl(var(--primary) / 0); }
 }
 
 /* ══════════════════════════════════════════
@@ -524,8 +563,42 @@
    MODERN NATIVE ANIMATIONS
 ══════════════════════════════════════════ */
 @layer utilities {
+  /* ── Zone 1: hero-appear — opacity only, no transform ── */
+  .hero-appear {
+    animation: hero-appear 0.45s ease-out both;
+  }
+
+  /* ── Zone 1: hero sub-elements — very fast, opacity-led, no translate ── */
+  .hero-appear-badge  { animation: hero-appear 0.3s ease-out 0.05s both; }
+  .hero-appear-title  { animation: hero-appear 0.35s ease-out 0.1s both; }
+  .hero-appear-sub    { animation: hero-appear 0.35s ease-out 0.15s both; }
+  .hero-appear-pills  { animation: hero-appear 0.3s ease-out 0.2s both; }
+  /* Upload zone: zero delay, opacity-only — drop target is live at frame 1 */
+  .hero-appear-upload { animation: hero-appear 0.25s ease-out 0s both; }
+  .hero-appear-feats  { animation: hero-appear 0.3s ease-out 0.25s both; }
+
+  /* Logo gentle float — starts after hero-appear-title finishes (0.1s + 0.35s = 0.45s) */
+  .logo-float {
+    animation: hero-appear 0.35s ease-out 0.1s both, float 4s ease-in-out 0.45s infinite;
+  }
+
+  /* prefers-reduced-motion: Zone 1 collapses to instant reveal, no float */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-appear,
+    .hero-appear-badge,
+    .hero-appear-title,
+    .hero-appear-sub,
+    .hero-appear-pills,
+    .hero-appear-upload,
+    .hero-appear-feats,
+    .logo-float {
+      animation: none !important;
+      opacity: 1 !important;
+    }
+  }
+
   /* 1. Scroll-Driven Animations (Native CSS View Timeline) */
-  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+  @supports ((animation-timeline: view()) and (animation-range: 0% 100%)) {
     @keyframes reveal-up {
       from {
         opacity: 0;
@@ -542,12 +615,99 @@
     .scroll-reveal {
       animation: reveal-up auto linear both;
       animation-timeline: view();
-      /* 
-       * Starts when element enters viewport. 
-       * Ends when element is 20% into the viewport. 
-       */
       animation-range: entry 5% cover 25%;
     }
+
+    /* ── Zone 2: narrative reveals ── */
+    .narrative-reveal {
+      animation: narrative-reveal auto linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+
+    .narrative-reveal-left {
+      animation: narrative-reveal-left auto linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 28%;
+    }
+
+    .narrative-reveal-right {
+      animation: narrative-reveal-right auto linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 28%;
+    }
+
+    /* Progressive stagger: each card reveals slightly later in the timeline */
+    .narrative-stagger-1 { animation-range: entry 0%   cover 25%; }
+    .narrative-stagger-2 { animation-range: entry 5%   cover 30%; }
+    .narrative-stagger-3 { animation-range: entry 10%  cover 35%; }
+    .narrative-stagger-4 { animation-range: entry 15%  cover 40%; }
+
+    /* Problem section: connector line grows as section enters */
+    .problem-pin-line {
+      transform-origin: top center;
+      animation: problem-pin-line auto linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 60%;
+    }
+
+    /* CTA settle with micro-bounce on entry */
+    .cta-settle {
+      animation: cta-settle 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 50%;
+    }
+  }
+
+  /* ── Zone 2: fallback initial state (hidden until JS observer fires) ── */
+  .narrative-reveal,
+  .narrative-reveal-left,
+  .narrative-reveal-right {
+    /* Will be overridden by scroll-driven animations in supporting browsers */
+  }
+
+  @supports not ((animation-timeline: view()) and (animation-range: 0% 100%)) {
+    .narrative-reveal,
+    .narrative-reveal-left,
+    .narrative-reveal-right {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.55s ease-out, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .narrative-reveal.in-view,
+    .narrative-reveal-left.in-view,
+    .narrative-reveal-right.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .narrative-reveal-left { transform: translateX(-36px); }
+    .narrative-reveal-left.in-view { transform: translateX(0); }
+
+    .narrative-reveal-right { transform: translateX(36px); }
+    .narrative-reveal-right.in-view { transform: translateX(0); }
+  }
+
+  /* CTA pulse (runs after settle, loops slowly) */
+  .cta-pulse-btn {
+    animation: cta-pulse 2.4s ease-in-out 0.8s infinite;
+  }
+
+  /* prefers-reduced-motion: collapse all Zone 2 narrative animations */
+  @media (prefers-reduced-motion: reduce) {
+    .narrative-reveal,
+    .narrative-reveal-left,
+    .narrative-reveal-right,
+    .cta-settle,
+    .problem-pin-line {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      translate: none !important;
+      scale: none !important;
+    }
+    .cta-pulse-btn { animation: none !important; }
   }
 
   /* 2. Discrete Transitions / Entry Effects */

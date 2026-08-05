@@ -439,9 +439,9 @@ export default function Index() {
 
         <main className="relative">
           {/* ── Hero section ── */}
-          <section className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-8 sm:pb-12 space-y-8 animate-[fade-up_0.6s_ease-out]">
+          <section className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-8 sm:pb-12 space-y-8 hero-appear">
             {/* Badge */}
-            <div className="flex justify-center">
+            <div className="flex justify-center hero-appear-badge">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium">
                 <BarChart3 className="h-3.5 w-3.5" />
                 {t('analyticsEngine')}
@@ -457,18 +457,17 @@ export default function Index() {
                 height="72"
                 fetchPriority="high"
                 decoding="async"
-                className="h-16 w-16 mx-auto drop-shadow-lg"
-                style={{ animation: 'float 4s ease-in-out infinite' }}
+                className="h-16 w-16 mx-auto drop-shadow-lg logo-float"
               />
-              <h1 className="text-4xl sm:text-6xl font-bold gradient-text tracking-tight leading-[1.1]">
+              <h1 className="text-4xl sm:text-6xl font-bold gradient-text tracking-tight leading-[1.1] hero-appear-title">
                 {t('heroTitle')}
               </h1>
-              <p className="mx-auto max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
+              <p className="mx-auto max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed hero-appear-sub">
                 {t('uploadSubtitle')}
               </p>
 
               {/* Trust pills */}
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-1 hero-appear-pills">
                 {[t('badgePrivate'), t('badgeInstant'), t('badgeExport')].map((label) => (
                   <span key={label} className="stat-chip">
                     {label}
@@ -477,13 +476,13 @@ export default function Index() {
               </div>
             </div>
 
-            {/* Upload zone */}
-            <div className="max-w-2xl mx-auto">
+            {/* Upload zone — opacity only, zero delay, fully interactive from frame 1 */}
+            <div className="max-w-2xl mx-auto hero-appear-upload">
               <FileUpload onDataLoaded={handleDataLoaded} />
             </div>
 
             {/* Feature pills */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto text-center hero-appear-feats">
               {[
                 { icon: Database, label: t('smartDetection'), desc: t('smartDetectionDesc') },
                 { icon: BarChart3, label: t('autoCharts'), desc: t('autoChartsDesc') },
