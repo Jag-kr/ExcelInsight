@@ -82,6 +82,7 @@ import { DashboardGrid } from '@/components/DashboardGrid';
 import { DataFilter } from '@/components/DataFilter';
 import { SmartInsights } from '@/components/SmartInsights';
 import { QuickAddPanel } from '@/components/QuickAddPanel';
+import { HeroDemoAnimation } from '@/components/HeroDemoAnimation';
 
 const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
 
@@ -438,51 +439,64 @@ export default function Index() {
         </div>
 
         <main className="relative">
-          {/* ── Hero section ── */}
-          <section className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-8 sm:pb-12 space-y-8 hero-appear">
-            {/* Badge */}
-            <div className="flex justify-center hero-appear-badge">
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium">
-                <BarChart3 className="h-3.5 w-3.5" />
-                {t('analyticsEngine')}
-              </span>
-            </div>
+          {/* ── Hero section — two-column split at lg+, stacked on mobile (R1, R2, R4, R6) ── */}
+          <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-10 lg:pt-14 pb-6 lg:pb-10 hero-appear">
 
-            {/* Logo + Headline */}
-            <div className="text-center space-y-4">
-              <img
-                src={logo.src}
-                alt="ExcelInsight logo"
-                width="72"
-                height="72"
-                fetchPriority="high"
-                decoding="async"
-                className="h-16 w-16 mx-auto drop-shadow-lg logo-float"
-              />
-              <h1 className="text-4xl sm:text-6xl font-bold gradient-text tracking-tight leading-[1.1] hero-appear-title">
-                {t('heroTitle')}
-              </h1>
-              <p className="mx-auto max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed hero-appear-sub">
-                {t('uploadSubtitle')}
-              </p>
+            {/* Two-column grid: left = copy + upload | right = demo (desktop only) */}
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
 
-              {/* Trust pills */}
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-1 hero-appear-pills">
-                {[t('badgePrivate'), t('badgeInstant'), t('badgeExport')].map((label) => (
-                  <span key={label} className="stat-chip">
-                    {label}
+              {/* ── LEFT column: identity + headline + upload ── */}
+              <div className="space-y-5 text-center lg:text-left">
+
+                {/* Row 1: logo icon + brand name + analytics badge — all inline (R2) */}
+                <div className="flex items-center gap-3 justify-center lg:justify-start hero-appear-badge">
+                  <img
+                    src={logo.src}
+                    alt="ExcelInsight logo"
+                    width="36"
+                    height="36"
+                    fetchPriority="high"
+                    decoding="async"
+                    className="h-9 w-9 drop-shadow-md flex-shrink-0"
+                  />
+                  <span className="font-bold text-base gradient-text tracking-tight">ExcelInsight</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/8 px-2.5 py-1 text-xs text-primary font-medium">
+                    <BarChart3 className="h-3 w-3" />
+                    {t('analyticsEngine')}
                   </span>
-                ))}
+                </div>
+
+                {/* Headline — tighter size on left column (R2) */}
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold gradient-text tracking-tight leading-[1.1] hero-appear-title">
+                  {t('heroTitle')}
+                </h1>
+
+                {/* Subtext — single quotable claim (R3) */}
+                <p className="text-base lg:text-lg text-muted-foreground leading-relaxed hero-appear-sub">
+                  {t('uploadSubtitle')}
+                </p>
+
+                {/* Trust pills */}
+                <div className="flex flex-wrap items-center gap-2 justify-center lg:justify-start hero-appear-pills">
+                  {[t('badgePrivate'), t('badgeInstant'), t('badgeExport')].map((label) => (
+                    <span key={label} className="stat-chip">{label}</span>
+                  ))}
+                </div>
+
+                {/* Upload zone — zero delay, opacity only, interactive from frame 1 */}
+                <div className="hero-appear-upload">
+                  <FileUpload onDataLoaded={handleDataLoaded} />
+                </div>
+              </div>
+
+              {/* ── RIGHT column: animated demo — desktop only, hidden on mobile (R5, R6) ── */}
+              <div className="hidden lg:block hero-appear-feats">
+                <HeroDemoAnimation />
               </div>
             </div>
 
-            {/* Upload zone — opacity only, zero delay, fully interactive from frame 1 */}
-            <div className="max-w-2xl mx-auto hero-appear-upload">
-              <FileUpload onDataLoaded={handleDataLoaded} />
-            </div>
-
-            {/* Feature pills */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto text-center hero-appear-feats">
+            {/* Feature cards — full-width strip below the two-column grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl lg:max-w-none mx-auto text-center mt-8 lg:mt-10 hero-appear-feats">
               {[
                 { icon: Database, label: t('smartDetection'), desc: t('smartDetectionDesc') },
                 { icon: BarChart3, label: t('autoCharts'), desc: t('autoChartsDesc') },

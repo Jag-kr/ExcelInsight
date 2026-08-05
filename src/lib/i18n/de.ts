@@ -158,16 +158,7 @@ export const de: Record<TranslationKey, string> = {
   moreTypes: 'Weitere Typen',
   
   // SEO Hero terms
-  seoHero1: 'ist der schnellste Weg, eine Excel-Tabelle in schöne',
-  seoHero2: 'Excel-Visualisierungen',
-  seoHero3: 'Graphen',
-  seoHero4: 'Plots',
-  seoHero5: 'Dashboards',
-  seoHero6: 'Berichte',
-  seoHero7: 'Erhalten Sie sofort',
-  seoHero8: 'Excel-Analysen',
-  seoHero9: 'Excel-Erkenntnisse',
-  seoHero10: 'aus jeder .xlsx- oder .csv-Datei — kostenlos, privat und zu 100% browserbasiert.',
+  seoHeroPara: 'ExcelInsight ist ein kostenloses, browserbasiertes Analysetool, das Ihre Excel- oder CSV-Datei direkt auf Ihrem Gerät liest — ohne Upload — und sofort Diagramme, Statistiken und ein interaktives Dashboard erstellt. Es unterstützt .xlsx-, .xls- und .csv-Dateien, läuft ohne Installation auf jedem Gerät und ist in sechs Sprachen verfügbar.',
 
   howTitle: 'Wie es funktioniert',
   howIntro: 'In weniger als einer Minute von der Roh-Tabelle zum interaktiven Dashboard.',

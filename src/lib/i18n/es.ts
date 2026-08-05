@@ -157,16 +157,8 @@ export const es: Record<TranslationKey, string> = {
   repeatingValuesSuffix: ' — Valores Repetidos',
   moreTypes: 'Más tipos',
   
-  seoHero1: 'es la forma más rápida de convertir una hoja de cálculo en hermosas',
-  seoHero2: 'visualizaciones de Excel',
-  seoHero3: 'gráficos',
-  seoHero4: 'trazados',
-  seoHero5: 'dashboards',
-  seoHero6: 'informes',
-  seoHero7: 'Obtén instantáneamente',
-  seoHero8: 'analíticas de Excel',
-  seoHero9: 'insights de Excel',
-  seoHero10: 'desde cualquier archivo .xlsx o .csv — gratis, privado y 100% basado en el navegador.',
+  // SEO Hero terms
+  seoHeroPara: 'ExcelInsight es una herramienta de análisis gratuita que funciona directamente en el navegador: lee tu archivo Excel o CSV en local — sin subir nada — y genera al instante gráficos, estadísticas y un panel interactivo. Admite archivos .xlsx, .xls y .csv, se ejecuta en cualquier dispositivo sin instalación y está disponible en seis idiomas.',
 
   howTitle: 'Cómo funciona',
   howIntro: 'Pasa de hoja de cálculo cruda a panel interactivo en menos de un minuto.',

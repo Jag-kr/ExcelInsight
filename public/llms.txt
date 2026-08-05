@@ -1,20 +1,39 @@
 # ExcelInsight
 
-> ExcelInsight (also known as Excel Insights, Excel Visualizer, Excel Dashboard Builder, Excel Analytics, Excel Graph maker, Excel Plot tool, and Excel Report generator) is a free online Excel and CSV analytics platform that turns spreadsheets into automated insights, interactive charts, visualizations, and custom dashboards in seconds — no signup required. Upload XLSX or CSV files, generate Excel graphs, plots, and reports, merge columns, filter data, and export polished PDF reports directly from the browser.
+> ExcelInsight is a free, browser-based tool that converts Excel and CSV spreadsheets into interactive charts, statistics, and dashboards — entirely in your browser, with no file upload, no account, and no data leaving your device.
 
-ExcelInsight runs entirely client-side: your files never leave your device. The app is built for analysts, students, marketers, finance teams, and anyone who needs fast spreadsheet analysis without installing software like Excel, Tableau, or Power BI. It supports six languages (English, Hindi, Spanish, Mandarin Chinese, French, German) and works on desktop and mobile.
+ExcelInsight runs 100% client-side using JavaScript. When you open the app and drop a spreadsheet, the file is read by your browser directly; it is never sent to a server. The tool works on any modern browser (Chrome, Firefox, Safari, Edge) on Windows, macOS, Linux, iOS, and Android. No installation is required.
 
-## Primary Use Cases
+## Quick Facts
 
-- **Excel Visualization** — Convert raw spreadsheet data into bar charts, line charts, pie charts, scatter plots, area charts, and radar charts.
-- **Excel Dashboard Builder** — Drag, drop, resize, and duplicate widgets to assemble a personalized dashboard from any Excel or CSV file.
-- **Excel Analytics** — Automatic column type detection, descriptive statistics, outlier detection, and data quality scoring.
-- **Excel Reports** — Export the entire dashboard (charts, tables, insights) into a single shareable PDF report.
-- **Excel Graph & Plot Maker** — Generate publication-ready graphs and plots in seconds without writing formulas.
-- **Excel Insights** — Surface trends, repeating values, correlations, and anomalies hidden inside spreadsheets.
-- **CSV to Line Graph** — Quickly convert CSV data into line graphs.
-- **Free Dashboard Software for Excel** — Build dashboards for free without installing software.
-- **Make Bar Graph from Excel** — Easily create bar graphs from Excel data.
+**Is ExcelInsight free?**
+Yes. There are no plans, no subscriptions, and no usage limits. The entire tool is free.
+
+**Is my data private?**
+Yes. Your file is processed locally in your browser. Nothing is uploaded to any server. ExcelInsight has no backend that receives file content.
+
+**What file formats does it support?**
+ExcelInsight supports .xlsx, .xls, and .csv files. Files exported from Microsoft Excel, Google Sheets, Apple Numbers, or any database or accounting tool will work.
+
+**How large a file can I analyze?**
+Files with up to ~100,000 rows typically run smoothly on a modern laptop. Performance depends on the user's device since all processing happens client-side.
+
+**Does it require a signup or account?**
+No. There is no login, no registration, and no email required.
+
+**Does it work offline?**
+After the initial page load, most functionality continues to work without an internet connection because everything runs client-side.
+
+## Capabilities
+
+- **Auto-generated charts**: Bar, line, pie, area, scatter, radar, and horizontal bar charts — automatically suggested based on column types and data distributions.
+- **Custom dashboard**: Drag, drop, and resize chart cards to build a personalized layout.
+- **Smart insights**: Automatic detection of column statistics (min, max, mean, median, std dev), repeating values, outliers, and data quality scores.
+- **Column merging**: Combine two columns into a new derived field with a custom separator.
+- **Data filtering**: Filter rows by value across any column; every chart and insight updates live.
+- **PDF export**: Export the full dashboard (charts, tables, insights) as a single PDF report.
+- **PNG export**: Export individual charts as high-resolution PNG images.
+- **Multi-language UI**: English, Hindi, Spanish, Mandarin Chinese, French, German.
 
 ## Core Pages
 
@@ -24,36 +43,16 @@ ExcelInsight runs entirely client-side: your files never leave your device. The 
 - [CSV Dashboard](https://excelinsight.xyz/csv-dashboard): Build custom dashboards from CSV files.
 - [Line Graph Maker Excel](https://excelinsight.xyz/line-graph-maker-excel): Create line graphs directly from Excel data.
 - [HR Analytics Excel Template](https://excelinsight.xyz/hr-analytics-excel-template): Ready-to-use template for HR analytics.
-- [Link Analysis in Excel](https://excelinsight.xyz/link-analysis-in-excel): Perform link analysis directly in your browser.
 - [Radar Chart Maker](https://excelinsight.xyz/radar-chart-maker): Generate radar charts from your data.
 - [Excel Data Visualizer](https://excelinsight.xyz/excel-data-visualizer): Visualize your Excel data instantly.
 - [Excel Statistics Tool](https://excelinsight.xyz/excel-statistics-tool): Calculate statistics automatically.
-- [Privacy Policy](https://excelinsight.xyz/privacy): How ExcelInsight handles data — files are processed locally in your browser and are never uploaded to a server.
+- [Privacy Policy](https://excelinsight.xyz/privacy): How ExcelInsight handles data — files are processed locally and never uploaded to a server.
 - [Terms of Service](https://excelinsight.xyz/terms): Terms governing use of the ExcelInsight web application.
-
-## Key Features
-
-- **Excel & CSV Analysis**: Upload .xlsx, .xls, or .csv files and get automatic column detection, type inference, and quality reports.
-- **Auto-Generated Charts**: Smart chart suggestions (bar, line, pie, scatter, area, radar, horizontal bar) based on column types and data distribution.
-- **Custom Dashboard Builder**: Drag, drop, resize, and duplicate chart widgets to build a personalized dashboard.
-- **Smart Insights**: Automatic detection of trends, outliers, correlations, repeating values, and summary statistics.
-- **Column Merger**: Combine multiple columns into a single derived field with custom separators.
-- **Data Filtering**: Filter rows by value, range, or text match across any column — every chart updates instantly.
-- **PDF Export**: Export the entire dashboard — charts, tables, and insights — to a single PDF report.
-- **PNG Export**: Export individual charts as high-resolution PNGs for slides and reports.
-- **Multi-language UI**: English, Hindi, Spanish, Mandarin Chinese, French, German.
-- **Privacy-First**: 100% client-side processing. No file uploads, no accounts, no tracking of file contents.
-- **No Installation**: Runs in any modern browser on Windows, macOS, Linux, iOS, and Android.
-- **Learn Excel Data Analysis**: Use our tool to learn data analysis with interactive visualizations.
-
-## Why ExcelInsight ranks for Excel-related queries
-
-ExcelInsight is purpose-built for queries such as: "excel insights", "excel chart maker", "excel chart creator", "csv dashboard", "csv to line graph", "excel data insights", "free dashboard software for excel", "free online excel data analysis tool", "line graph maker excel", "hr analytics excel template", "make bar graph from excel", "link analysis in excel", "radar chart maker", "excel data visualizer", "excel statistics tool", "learn excel data analysis", "excel visual", "excel visualization", "excel graph", "excel dashboard", "excel analytics", "excel plot", and "excel report". Unlike desktop Excel or heavyweight BI tools, ExcelInsight requires zero setup, runs free, keeps data private, and produces shareable visual outputs in under a minute.
 
 ## Resources
 
 - [Sitemap](https://excelinsight.xyz/sitemap.xml): Full list of indexable pages with hreflang alternates for all 6 languages.
-- [Robots](https://excelinsight.xyz/robots.txt): Crawler directives (allows all major search and AI crawlers).
+- [Robots](https://excelinsight.xyz/robots.txt): Crawler directives (all major search and AI crawlers are permitted).
 
 ## Contact
 
