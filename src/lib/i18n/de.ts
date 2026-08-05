@@ -207,6 +207,24 @@ export const de: Record<TranslationKey, string> = {
   clearFileConfirmDesc: 'Dadurch wird die aktuelle Datei entfernt und alle Diagramme, Filter und Dashboards werden zurückgesetzt. Dies kann nicht rückgängig gemacht werden.',
   cancel: 'Abbrechen',
 
+  // Hero demo animation (HeroDemoAnimation.tsx)
+  demoDashboardMeta: '847 Zeilen · 6 Spalten',
+  demoDashboardChartTitle: 'Umsatz nach Quartal',
+  demoDashboardChartSubtitle: 'Verkäufe · 2024',
+  demoDashboardStat1Label: 'Gesamtumsatz',
+  demoDashboardStat1Value: '84,2K\u00a0$',
+  demoDashboardStat2Label: 'Wachstum ggü. Vorperiode',
+  demoDashboardStat2Value: '↑ 23\u00a0%',
+  demoDashboardStat3Label: 'Einträge verarbeitet',
+  demoDashboardStat3Value: '847',
+  demoDashboardTrendLabel: 'Monatlicher Trend',
+  demoDashboardAnalyzed: 'Analysiert',
+  demoDashboardPrivacy: 'Datei lokal verarbeitet · wird nie auf einen Server hochgeladen',
+
+  // "See it in action" section (R7)
+  demoSectionTitle: 'Das Produkt live erleben',
+  demoSectionDesc: 'Lade eine beliebige Excel- oder CSV-Datei hoch und sieh zu, wie Diagramme, Dashboards und Insights in unter 10\u00a0Sekunden entstehen – vollständig im Browser, ohne dass etwas hochgeladen wird.',
+
   // SEO page UI chrome
   categoryFeature: 'Funktionen',
   categoryComparison: 'Vergleiche',

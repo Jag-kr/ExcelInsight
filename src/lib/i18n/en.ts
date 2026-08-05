@@ -232,6 +232,25 @@ export const en = {
   clearFileConfirmTitle: 'Clear uploaded file?',
   clearFileConfirmDesc: 'This will remove the current file and reset all charts, filters, and dashboards. This cannot be undone.',
   cancel: 'Cancel',
+
+  // Hero demo animation (HeroDemoAnimation.tsx)
+  demoDashboardMeta: '847 rows · 6 cols',
+  demoDashboardChartTitle: 'Revenue by Quarter',
+  demoDashboardChartSubtitle: 'Sales · 2024',
+  demoDashboardStat1Label: 'Total Revenue',
+  demoDashboardStat1Value: '$84.2K',
+  demoDashboardStat2Label: 'Growth vs prior',
+  demoDashboardStat2Value: '↑ 23%',
+  demoDashboardStat3Label: 'Records parsed',
+  demoDashboardStat3Value: '847',
+  demoDashboardTrendLabel: 'Monthly Trend',
+  demoDashboardAnalyzed: 'Analyzed',
+  demoDashboardPrivacy: 'File processed locally · never uploaded to any server',
+
+  // "See it in action" section (R7, LandingContent.tsx)
+  // Note: badge uses existing seeItInAction key
+  demoSectionTitle: 'Watch the product work',
+  demoSectionDesc: 'Drop any Excel or CSV file and watch charts, dashboards, and insights build themselves in under 10\u00a0seconds — entirely in your browser, with nothing uploaded.',
 } as const;
 
 export type TranslationKey = keyof typeof en;

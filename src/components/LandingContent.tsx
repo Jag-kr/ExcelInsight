@@ -297,17 +297,16 @@ export function LandingContent() {
         <div className="text-center mb-8">
           <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium mb-4">
             <Sparkles className="h-3.5 w-3.5" />
-            See it in action
+            {t('seeItInAction')}
           </span>
           <h2
             id="demo-section-heading"
             className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3"
           >
-            Watch the product work
+            {t('demoSectionTitle')}
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-xl mx-auto">
-            Drop any Excel or CSV file and watch charts, dashboards, and insights build themselves
-            in under 10&nbsp;seconds — entirely in your browser, with nothing uploaded.
+            {t('demoSectionDesc')}
           </p>
         </div>
         <div className="max-w-2xl mx-auto narrative-reveal">
