@@ -2,7 +2,7 @@ export const en = {
   // App
   appName: 'ExcelInsight',
   analyticsEngine: 'Analytics Engine',
-  uploadSubtitle: 'Upload any Excel file • Instant analytics • Custom dashboards',
+  uploadSubtitle: 'ExcelInsight turns any spreadsheet into charts and dashboards entirely in your browser — no upload, no signup, no data leaving your device.',
   smartDetection: 'Smart Detection',
   smartDetectionDesc: 'Auto-detects data types',
   autoCharts: 'Auto Charts',
@@ -169,16 +169,7 @@ export const en = {
   moreTypes: 'More types',
   
   // SEO Hero terms
-  seoHero1: 'is the fastest way to turn an Excel spreadsheet into beautiful',
-  seoHero2: 'Excel visualizations',
-  seoHero3: 'graphs',
-  seoHero4: 'plots',
-  seoHero5: 'dashboards',
-  seoHero6: 'reports',
-  seoHero7: 'Get instant',
-  seoHero8: 'Excel analytics',
-  seoHero9: 'Excel insights',
-  seoHero10: 'from any .xlsx or .csv file — free, private, and 100% browser-based.',
+  seoHeroPara: 'ExcelInsight is a free, browser-based analytics tool that reads your Excel or CSV file locally — nothing is uploaded — and instantly generates charts, statistics, and an interactive dashboard. It supports .xlsx, .xls, and .csv files, runs on any device without installation, and works in six languages.',
 
   howTitle: 'How it works',
   howIntro: 'Go from raw spreadsheet to interactive dashboard in under a minute.',

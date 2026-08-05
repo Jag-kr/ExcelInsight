@@ -465,6 +465,23 @@
   50% { transform: translateY(-6px); }
 }
 
+/* ── Hero demo animation keyframes ── */
+@keyframes demo-bar-grow {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+
+@keyframes demo-line-draw {
+  from { stroke-dashoffset: 200; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes demo-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
 /* ── Zone 2: Scroll-driven narrative keyframes ── */
 @keyframes narrative-reveal {
   from { opacity: 0; translate: 0 48px; scale: 0.97; }
@@ -594,6 +611,13 @@
     .logo-float {
       animation: none !important;
       opacity: 1 !important;
+    }
+    /* Demo animation: instant-reveal all animated elements */
+    .demo-anim-wrapper * {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      stroke-dashoffset: 0 !important;
     }
   }
 

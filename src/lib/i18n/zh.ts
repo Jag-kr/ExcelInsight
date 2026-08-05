@@ -157,16 +157,8 @@ export const zh: Record<TranslationKey, string> = {
   repeatingValuesSuffix: ' — 重复值',
   moreTypes: '更多类型',
 
-  seoHero1: '是将 Excel 电子表格转换为精美的',
-  seoHero2: 'Excel 可视化',
-  seoHero3: '图形',
-  seoHero4: '绘图',
-  seoHero5: '仪表板',
-  seoHero6: '和报告的最快方式。',
-  seoHero7: '即刻从任何 .xlsx 或 .csv 文件中获取',
-  seoHero8: 'Excel 分析',
-  seoHero9: '和 Excel 洞察',
-  seoHero10: '— 免费、私密、100% 基于浏览器。',
+  // SEO Hero terms
+  seoHeroPara: 'ExcelInsight 是一款免费的浏览器端数据分析工具，可在本地读取您的 Excel 或 CSV 文件——无需上传——并即时生成图表、统计数据和交互式仪表板。它支持 .xlsx、.xls 和 .csv 格式，无需安装即可在任何设备上运行，并提供六种语言版本。',
 
   howTitle: '工作原理',
   howIntro: '在不到一分钟的时间内从原始电子表格转换为交互式仪表板。',
