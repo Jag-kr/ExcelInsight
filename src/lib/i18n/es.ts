@@ -207,6 +207,24 @@ export const es: Record<TranslationKey, string> = {
   clearFileConfirmDesc: 'Esto eliminará el archivo actual y restablecerá todos los gráficos, filtros y paneles. Esta acción no se puede deshacer.',
   cancel: 'Cancelar',
 
+  // Hero demo animation (HeroDemoAnimation.tsx)
+  demoDashboardMeta: '847 filas · 6 columnas',
+  demoDashboardChartTitle: 'Ingresos por trimestre',
+  demoDashboardChartSubtitle: 'Ventas · 2024',
+  demoDashboardStat1Label: 'Ingresos totales',
+  demoDashboardStat1Value: '$84.2K',
+  demoDashboardStat2Label: 'Crecimiento vs. período anterior',
+  demoDashboardStat2Value: '↑ 23%',
+  demoDashboardStat3Label: 'Registros procesados',
+  demoDashboardStat3Value: '847',
+  demoDashboardTrendLabel: 'Tendencia mensual',
+  demoDashboardAnalyzed: 'Analizado',
+  demoDashboardPrivacy: 'Archivo procesado localmente · nunca enviado a ningún servidor',
+
+  // "See it in action" section (R7)
+  demoSectionTitle: 'Mira el producto en acción',
+  demoSectionDesc: 'Sube cualquier archivo Excel o CSV y observa cómo los gráficos, paneles e insights se construyen solos en menos de 10\u00a0segundos — todo en tu navegador, sin subir nada.',
+
   // SEO page UI chrome
   categoryFeature: 'Características',
   categoryComparison: 'Comparaciones',

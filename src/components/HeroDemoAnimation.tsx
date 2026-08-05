@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useId } from 'react';
 import { FileSpreadsheet, Shield } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
 
 const BARS = [
   { label: 'Q1', pct: 52 },
@@ -10,25 +11,29 @@ const BARS = [
   { label: 'Q4', pct: 97 },
 ];
 
-const STATS = [
-  { label: 'Total Revenue',   value: '$84.2K', delay: '0.24s', color: 'hsl(var(--chart-3))' },
-  { label: 'Growth vs prior', value: '↑ 23%',  delay: '0.34s', color: 'hsl(var(--chart-4))' },
-  { label: 'Records parsed',  value: '847',    delay: '0.44s', color: 'hsl(var(--chart-1))' },
-];
+// Q1–Q4 labels are internationally understood abbreviations; pct values are illustrative data.
+// All human-readable text is sourced from useI18n below.
 
 // Smooth upward-trending SVG path (viewBox 0 0 100 44)
 const LINE_D = 'M 2,38 C 10,34 18,26 28,22 S 46,9 58,13 S 74,19 86,11 L 98,5';
 
 export function HeroDemoAnimation({ className = '' }: { className?: string }) {
+  const { t } = useI18n();
   const [cycle, setCycle] = useState(0);
   // useId gives each instance a stable unique prefix — prevents SVG gradient ID collisions
   // when the component is rendered both in the hero and in the below-fold section.
   const uid = useId().replace(/:/g, '');
 
   useEffect(() => {
-    const t = setInterval(() => setCycle((c) => c + 1), 4400);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setCycle((c) => c + 1), 4400);
+    return () => clearInterval(timer);
   }, []);
+
+  const STATS = [
+    { label: t('demoDashboardStat1Label'), value: t('demoDashboardStat1Value'), delay: '0.24s', color: 'hsl(var(--chart-3))' },
+    { label: t('demoDashboardStat2Label'), value: t('demoDashboardStat2Value'), delay: '0.34s', color: 'hsl(var(--chart-4))' },
+    { label: t('demoDashboardStat3Label'), value: t('demoDashboardStat3Value'), delay: '0.44s', color: 'hsl(var(--chart-1))' },
+  ];
 
   return (
     <div
@@ -56,9 +61,10 @@ export function HeroDemoAnimation({ className = '' }: { className?: string }) {
           style={{ animation: 'demo-fade-up 0.4s ease-out 0.05s both' }}
         >
           <FileSpreadsheet className="h-3 w-3 text-primary flex-shrink-0" />
+          {/* Filename is illustrative — kept as a recognisable example, no translation needed */}
           <span className="font-medium truncate">sales_data.xlsx</span>
           <span className="text-border flex-shrink-0">·</span>
-          <span className="flex-shrink-0 whitespace-nowrap">847 rows · 6 cols</span>
+          <span className="flex-shrink-0 whitespace-nowrap">{t('demoDashboardMeta')}</span>
         </div>
 
         {/* "Analyzed" badge */}
@@ -74,7 +80,7 @@ export function HeroDemoAnimation({ className = '' }: { className?: string }) {
               className="w-1.5 h-1.5 rounded-full inline-block"
               style={{ background: 'hsl(var(--primary))', animation: 'pulse 1.5s ease-in-out infinite' }}
             />
-            Analyzed
+            {t('demoDashboardAnalyzed')}
           </span>
         </div>
       </div>
@@ -91,8 +97,10 @@ export function HeroDemoAnimation({ className = '' }: { className?: string }) {
             animation: 'demo-fade-up 0.35s ease-out 0.08s both',
           }}
         >
-          <p className="text-[11px] font-semibold text-foreground leading-tight">Revenue by Quarter</p>
-          <p className="text-[10px] text-muted-foreground mb-3">Sales · 2024</p>
+          <p className="text-[11px] font-semibold text-foreground leading-tight">
+            {t('demoDashboardChartTitle')}
+          </p>
+          <p className="text-[10px] text-muted-foreground mb-3">{t('demoDashboardChartSubtitle')}</p>
 
           {/* Bars */}
           <div className="flex items-end gap-2" style={{ height: '82px' }}>
@@ -110,6 +118,7 @@ export function HeroDemoAnimation({ className = '' }: { className?: string }) {
                     animation: `demo-bar-grow 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) ${0.18 + i * 0.09}s both`,
                   }}
                 />
+                {/* Q1–Q4 are universally understood abbreviations */}
                 <span className="text-[9px] text-muted-foreground leading-none">{bar.label}</span>
               </div>
             ))}
@@ -146,7 +155,7 @@ export function HeroDemoAnimation({ className = '' }: { className?: string }) {
               animation: 'demo-fade-up 0.4s ease-out 0.55s both',
             }}
           >
-            <p className="text-[9px] text-muted-foreground mb-1.5">Monthly Trend</p>
+            <p className="text-[9px] text-muted-foreground mb-1.5">{t('demoDashboardTrendLabel')}</p>
             <svg viewBox="0 0 100 44" className="w-full flex-1" aria-hidden="true">
               <defs>
                 <linearGradient id={`${uid}g`} x1="0" y1="0" x2="0" y2="1">
@@ -194,7 +203,7 @@ export function HeroDemoAnimation({ className = '' }: { className?: string }) {
         }}
       >
         <Shield className="h-2.5 w-2.5 flex-shrink-0" style={{ color: 'hsl(var(--chart-3))' }} />
-        File processed locally · never uploaded to any server
+        {t('demoDashboardPrivacy')}
       </div>
     </div>
   );

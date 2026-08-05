@@ -207,6 +207,24 @@ export const hi: Record<TranslationKey, string> = {
   clearFileConfirmDesc: 'इससे वर्तमान फ़ाइल हट जाएगी और सभी चार्ट, फ़िल्टर और डैशबोर्ड रीसेट हो जाएंगे। इसे पूर्ववत नहीं किया जा सकता।',
   cancel: 'रद्द करें',
 
+  // Hero demo animation (HeroDemoAnimation.tsx)
+  demoDashboardMeta: '847 पंक्तियाँ · 6 स्तंभ',
+  demoDashboardChartTitle: 'तिमाही-वार राजस्व',
+  demoDashboardChartSubtitle: 'बिक्री · 2024',
+  demoDashboardStat1Label: 'कुल राजस्व',
+  demoDashboardStat1Value: '$84.2K',
+  demoDashboardStat2Label: 'पिछले वर्ष की तुलना में वृद्धि',
+  demoDashboardStat2Value: '↑ 23%',
+  demoDashboardStat3Label: 'रिकॉर्ड विश्लेषित',
+  demoDashboardStat3Value: '847',
+  demoDashboardTrendLabel: 'मासिक प्रवृत्ति',
+  demoDashboardAnalyzed: 'विश्लेषित',
+  demoDashboardPrivacy: 'फ़ाइल स्थानीय रूप से प्रोसेस हुई · किसी सर्वर पर अपलोड नहीं',
+
+  // "See it in action" section (R7)
+  demoSectionTitle: 'उत्पाद को काम करते देखें',
+  demoSectionDesc: 'कोई भी Excel या CSV फ़ाइल डालें और देखें कि चार्ट, डैशबोर्ड और इनसाइट्स 10 सेकंड से कम में खुद बन जाते हैं — पूरी तरह आपके ब्राउज़र में, बिना कुछ अपलोड किए।',
+
   // SEO page UI chrome
   categoryFeature: 'विशेषताएँ',
   categoryComparison: 'तुलनाएँ',

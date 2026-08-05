@@ -207,6 +207,24 @@ export const zh: Record<TranslationKey, string> = {
   clearFileConfirmDesc: '这将删除当前文件并重置所有图表、筛选器和仪表板。此操作无法撤销。',
   cancel: '取消',
 
+  // Hero demo animation (HeroDemoAnimation.tsx)
+  demoDashboardMeta: '847 行 · 6 列',
+  demoDashboardChartTitle: '各季度营收',
+  demoDashboardChartSubtitle: '销售额 · 2024',
+  demoDashboardStat1Label: '总营收',
+  demoDashboardStat1Value: '$84.2K',
+  demoDashboardStat2Label: '同比增长',
+  demoDashboardStat2Value: '↑ 23%',
+  demoDashboardStat3Label: '已解析记录',
+  demoDashboardStat3Value: '847',
+  demoDashboardTrendLabel: '月度趋势',
+  demoDashboardAnalyzed: '已分析',
+  demoDashboardPrivacy: '文件在本地处理 · 从不上传至任何服务器',
+
+  // "See it in action" section (R7)
+  demoSectionTitle: '看产品如何运作',
+  demoSectionDesc: '上传任意 Excel 或 CSV 文件，见证图表、仪表盘与数据洞察在不到 10\u00a0秒内自动生成——完全在浏览器中完成，无需上传任何内容。',
+
   // SEO page UI chrome
   categoryFeature: '功能',
   categoryComparison: '对比',
