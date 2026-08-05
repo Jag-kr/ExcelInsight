@@ -1,15 +1,143 @@
 "use client";
 
-import { useEffect } from 'react';
-import { Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb, Combine, Download, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import {
+  Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb,
+  Combine, Download, ArrowRight, CheckCircle2, AlertCircle, Clock, RefreshCw,
+  BarChart3, TrendingUp, ShieldCheck, Zap,
+} from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
 import { FaqAccordion } from '@/components/FaqAccordion';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import { seoPagesByCategory, categoryLabel, type SeoCategory } from '@/content/seo-pages';
 
+/* ─────────────────────────────────────────────────────────────
+   Stat counter hook — counts up once when element enters view
+───────────────────────────────────────────────────────────── */
+function useCountUp(target: number, duration = 1400, start = false) {
+  const [value, setValue] = useState(0);
+  const raf = useRef<number>(0);
+
+  useEffect(() => {
+    if (!start) return;
+    const startTime = performance.now();
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(eased * target));
+      if (progress < 1) raf.current = requestAnimationFrame(tick);
+    };
+    raf.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf.current);
+  }, [target, duration, start]);
+
+  return value;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Individual animated stat card
+───────────────────────────────────────────────────────────── */
+function StatCard({
+  target, suffix, label, icon: Icon, color,
+  inView, delay,
+}: {
+  target: number; suffix: string; label: string;
+  icon: React.ElementType; color: string;
+  inView: boolean; delay: number;
+}) {
+  const value = useCountUp(target, 1400, inView);
+  return (
+    <div
+      className="narrative-reveal elevated-card p-6 text-center flex flex-col items-center gap-3"
+      style={{ transitionDelay: inView ? `${delay}ms` : '0ms' }}
+    >
+      <div
+        className="w-12 h-12 rounded-2xl flex items-center justify-center"
+        style={{ background: `${color}18` }}
+      >
+        <Icon className="h-5 w-5" style={{ color }} />
+      </div>
+      <div>
+        <p
+          className="text-3xl font-bold tabular-nums"
+          style={{
+            background: `linear-gradient(135deg, ${color}, hsl(var(--primary)))`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          {value.toLocaleString()}{suffix}
+        </p>
+        <p className="text-sm text-muted-foreground mt-1 font-medium">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Zone-2 fallback observer for browsers without scroll-driven
+   animations (primarily Firefox). Fires once on entry.
+───────────────────────────────────────────────────────────── */
+function useFallbackReveal(containerRef: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const supportsScrollDriven =
+      typeof CSS !== 'undefined' &&
+      CSS.supports('(animation-timeline: view()) and (animation-range: 0% 100%)');
+    if (supportsScrollDriven) return; // native CSS handles it
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            (entry.target as HTMLElement).classList.add('in-view');
+            observer.unobserve(entry.target); // fire once
+          }
+        }
+      },
+      { threshold: 0.12 }
+    );
+
+    const targets = containerRef.current?.querySelectorAll(
+      '.narrative-reveal, .narrative-reveal-left, .narrative-reveal-right'
+    );
+    targets?.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [containerRef]);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Main component
+───────────────────────────────────────────────────────────── */
 export function LandingContent() {
   const { t } = useI18n();
+  const zone2Ref = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [statsInView, setStatsInView] = useState(false);
+
+  // Zone-2 fallback reveal for Firefox
+  useFallbackReveal(zone2Ref);
+
+  // Stats in-view trigger
+  useEffect(() => {
+    if (statsInView) return;
+    const el = statsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStatsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.25 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [statsInView]);
 
   const features = [
     { icon: FileSpreadsheet, title: t('feat1Title'), desc: t('feat1Desc'), color: 'hsl(var(--chart-1))' },
@@ -40,37 +168,31 @@ export function LandingContent() {
     { q: t('faq8Q'), a: t('faq8A') },
   ];
 
-  useEffect(() => {
-    // JS Fallback for browsers that don't support animation-timeline: view()
-    if (typeof CSS === 'undefined' || !CSS.supports('(animation-timeline: view()) and (animation-range: entry)')) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting) {
-              const el = entry.target as HTMLElement;
-              // Add a simple fade-in up effect manually
-              el.style.opacity = (entry.intersectionRatio).toString();
-              el.style.transform = `translateY(${(1 - entry.intersectionRatio) * 20}px)`;
-            }
-          }
-        },
-        { threshold: Array.from({ length: 11 }, (_, i) => i / 10) }
-      );
-
-      document.querySelectorAll('.scroll-reveal').forEach((el) => {
-        // Initial setup for JS fallback
-        (el as HTMLElement).style.opacity = '0.1';
-        (el as HTMLElement).style.transform = 'translateY(20px)';
-        (el as HTMLElement).style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
-        observer.observe(el);
-      });
-
-      return () => observer.disconnect();
-    }
-  }, []);
+  // Pain points for the problem section
+  const painPoints = [
+    {
+      icon: Clock,
+      label: 'Hours wasted',
+      desc: 'Manually building charts in Excel takes hours you don\'t have.',
+      color: 'hsl(var(--chart-7))',
+    },
+    {
+      icon: AlertCircle,
+      label: 'Human error',
+      desc: 'Copy-paste mistakes corrupt reports before they ever reach stakeholders.',
+      color: 'hsl(var(--chart-5))',
+    },
+    {
+      icon: RefreshCw,
+      label: 'Repeat work',
+      desc: 'Every new file means rebuilding the same layouts from scratch.',
+      color: 'hsl(var(--chart-4))',
+    },
+  ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 pb-20 space-y-24">
+    <div ref={zone2Ref} className="w-full max-w-6xl mx-auto px-4 pb-20 space-y-28">
+
       {/* ── SEO-rich intro ── */}
       <section aria-label="ExcelInsight overview" className="text-center max-w-3xl mx-auto">
         <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
@@ -82,23 +204,83 @@ export function LandingContent() {
         </p>
       </section>
 
-      {/* ── Features ── */}
+      {/* ══════════════════════════════════════════
+          ZONE 2 — SCROLL-DRIVEN NARRATIVE
+      ══════════════════════════════════════════ */}
+
+      {/* ── Section 1: Problem — pins briefly, pain points stagger in ── */}
+      <section aria-labelledby="problem-heading" className="relative">
+
+        {/* Section heading — scrolls normally, never sits behind the cards */}
+        <div className="text-center mb-10">
+          <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-destructive/25 bg-destructive/8 px-4 py-1.5 text-sm text-destructive font-medium mb-4">
+            <AlertCircle className="h-3.5 w-3.5" />
+            Sound familiar?
+          </span>
+          <h2
+            id="problem-heading"
+            className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3"
+          >
+            Spreadsheets shouldn't slow you down
+          </h2>
+          <p className="narrative-reveal text-muted-foreground max-w-xl mx-auto">
+            You have the data. You just need answers — not another afternoon of pivot tables.
+          </p>
+        </div>
+
+        {/* Pain point cards with growing connector line */}
+        <div className="relative mt-8">
+          {/* Vertical connector line — grows as section scrolls in */}
+          <div
+            className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 hidden md:block overflow-hidden"
+            aria-hidden="true"
+          >
+            <div
+              className="problem-pin-line w-full h-full"
+              style={{
+                background: 'linear-gradient(to bottom, hsl(var(--destructive)/0.3), hsl(var(--primary)/0.3))',
+                transformOrigin: 'top center',
+              }}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative z-10">
+            {painPoints.map(({ icon: Icon, label, desc, color }, i) => (
+              <article
+                key={label}
+                className={`narrative-reveal elevated-card p-6 group hover:scale-[1.02] transition-transform duration-200 narrative-stagger-${i + 1}`}
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: `${color}18` }}
+                >
+                  <Icon className="h-5 w-5" style={{ color }} />
+                </div>
+                <h3 className="font-semibold text-foreground mb-1.5 text-sm">{label}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 2: Solution — reveals progressively ── */}
       <section aria-labelledby="features-heading">
         <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium mb-4">
+          <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium mb-4">
             <Sparkles className="h-3.5 w-3.5" />
             Everything you need
           </span>
-          <h2 id="features-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
+          <h2 id="features-heading" className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3">
             {t('featuresTitle')}
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">{t('featuresIntro')}</p>
+          <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">{t('featuresIntro')}</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {features.map(({ icon: Icon, title, desc, color }) => (
+          {features.map(({ icon: Icon, title, desc, color }, i) => (
             <article
               key={title}
-              className="elevated-card scroll-reveal p-5 group hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200"
+              className={`narrative-reveal elevated-card scroll-reveal p-5 group hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 narrative-stagger-${(i % 4) + 1}`}
             >
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-transform duration-200 group-hover:scale-110"
@@ -116,16 +298,38 @@ export function LandingContent() {
       {/* ── Ad slot ── */}
       <AdSlot slot="" label={t('sponsored')} />
 
-      {/* ── How it works ── */}
+      {/* ── Section 3: Proof — stats count up on entry ── */}
+      <section aria-labelledby="proof-heading" ref={statsRef}>
+        <div className="text-center mb-12">
+          <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-1.5 text-sm text-accent font-medium mb-4">
+            <TrendingUp className="h-3.5 w-3.5" />
+            Built for speed
+          </span>
+          <h2 id="proof-heading" className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3">
+            From raw file to full dashboard
+          </h2>
+          <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">
+            No sign-up. No cloud uploads. No waiting. Your data stays in your browser.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard target={100} suffix="%" label="Browser-only" icon={ShieldCheck} color="hsl(var(--chart-3))" inView={statsInView} delay={0} />
+          <StatCard target={0} suffix="" label="Files uploaded to server" icon={Zap} color="hsl(var(--chart-1))" inView={statsInView} delay={120} />
+          <StatCard target={30} suffix="s" label="Time to first chart" icon={Clock} color="hsl(var(--chart-4))" inView={statsInView} delay={240} />
+          <StatCard target={8} suffix="+" label="Chart types auto-generated" icon={BarChart3} color="hsl(var(--chart-2))" inView={statsInView} delay={360} />
+        </div>
+      </section>
+
+      {/* ── Section 4: How it works ── */}
       <section aria-labelledby="how-heading">
         <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-1.5 text-sm text-accent font-medium mb-4">
+          <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-1.5 text-sm text-accent font-medium mb-4">
             Get started in minutes
           </span>
-          <h2 id="how-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
+          <h2 id="how-heading" className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3">
             {t('howTitle')}
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">{t('howIntro')}</p>
+          <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">{t('howIntro')}</p>
         </div>
 
         {/* Steps with connecting line */}
@@ -134,8 +338,11 @@ export function LandingContent() {
           <div className="hidden md:block absolute top-8 left-[calc(12.5%+20px)] right-[calc(12.5%+20px)] h-px bg-gradient-to-r from-primary/20 via-accent/40 to-primary/20" />
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {steps.map(({ n, title, desc }) => (
-              <article key={n} className="scroll-reveal flex flex-col items-center text-center md:items-center">
+            {steps.map(({ n, title, desc }, i) => (
+              <article
+                key={n}
+                className={`narrative-reveal flex flex-col items-center text-center md:items-center narrative-stagger-${i + 1}`}
+              >
                 <div className="relative mb-4">
                   <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br from-primary to-accent text-primary-foreground font-bold text-xl shadow-lg shadow-primary/20">
                     {n}
@@ -152,7 +359,7 @@ export function LandingContent() {
       {/* ── Use cases ── */}
       <section aria-labelledby="usecases-heading">
         <div
-          className="rounded-2xl p-8 md:p-10 relative overflow-hidden"
+          className="narrative-reveal rounded-2xl p-8 md:p-10 relative overflow-hidden"
           style={{
             background: 'linear-gradient(135deg, hsl(var(--primary)/0.06), hsl(var(--accent)/0.06))',
             border: '1px solid hsl(var(--border)/0.6)',
@@ -170,8 +377,8 @@ export function LandingContent() {
               { title: t('useCase1Title'), desc: t('useCase1Desc'), accent: 'hsl(var(--chart-1))' },
               { title: t('useCase2Title'), desc: t('useCase2Desc'), accent: 'hsl(var(--chart-2))' },
               { title: t('useCase3Title'), desc: t('useCase3Desc'), accent: 'hsl(var(--chart-3))' },
-            ].map(({ title, desc, accent }) => (
-              <div key={title} className="space-y-2">
+            ].map(({ title, desc, accent }, i) => (
+              <div key={title} className={`space-y-2 narrative-reveal narrative-stagger-${i + 1}`}>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: accent }} />
                   <h3 className="font-semibold text-foreground text-sm">{title}</h3>
@@ -189,16 +396,19 @@ export function LandingContent() {
       {/* ── Tools hub ── */}
       <section aria-labelledby="tools-heading">
         <div className="text-center mb-12">
-          <h2 id="tools-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
-            Free Excel & CSV Tools — Chart Makers, Dashboards & Data Insights
+          <h2 id="tools-heading" className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3">
+            Free Excel &amp; CSV Tools — Chart Makers, Dashboards &amp; Data Insights
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Make bar graphs, line charts, dashboards and get data insights from Excel & CSV files — all free, all private, all browser-based.
+          <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">
+            Make bar graphs, line charts, dashboards and get data insights from Excel &amp; CSV files — all free, all private, all browser-based.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {(Object.keys(seoPagesByCategory) as SeoCategory[]).map((cat) => (
-            <div key={cat} className="elevated-card scroll-reveal p-5">
+          {(Object.keys(seoPagesByCategory) as SeoCategory[]).map((cat, i) => (
+            <div
+              key={cat}
+              className={`narrative-reveal elevated-card p-5 narrative-stagger-${(i % 4) + 1}`}
+            >
               <h3 className="font-bold text-foreground mb-3 text-xs uppercase tracking-widest text-primary/80">
                 {categoryLabel[cat]}
               </h3>
@@ -223,13 +433,62 @@ export function LandingContent() {
       {/* ── FAQ ── */}
       <section aria-labelledby="faq-heading">
         <div className="text-center mb-12">
-          <h2 id="faq-heading" className="text-3xl md:text-4xl font-bold gradient-text mb-3">
+          <h2 id="faq-heading" className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3">
             {t('faqTitle')}
           </h2>
-          <p className="text-muted-foreground">{t('faqIntro')}</p>
+          <p className="narrative-reveal text-muted-foreground">{t('faqIntro')}</p>
         </div>
         <div className="max-w-3xl mx-auto">
           <FaqAccordion faqs={faqs} />
+        </div>
+      </section>
+
+      {/* ── Zone 2 CTA — settles with micro-bounce, then pulses ── */}
+      <section aria-labelledby="cta-heading" className="text-center">
+        <div className="cta-settle narrative-reveal inline-block rounded-3xl p-10 md:p-14 w-full max-w-2xl mx-auto relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, hsl(var(--primary)/0.08), hsl(var(--accent)/0.08))',
+            border: '1px solid hsl(var(--border)/0.6)',
+          }}
+        >
+          {/* Glow orb */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            aria-hidden="true"
+            style={{
+              background: 'radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--primary)/0.12), transparent 70%)',
+            }}
+          />
+          <div className="relative z-10 space-y-5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium">
+              <Sparkles className="h-3.5 w-3.5" />
+              No account needed
+            </div>
+            <h2
+              id="cta-heading"
+              className="text-3xl md:text-4xl font-bold gradient-text"
+            >
+              Your data. Your answers. Instantly.
+            </h2>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Drop any Excel or CSV file above and watch charts, insights, and dashboards build themselves — in seconds, in your browser.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className="cta-pulse-btn inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+                aria-label="Scroll to top to upload your file"
+              >
+                <Upload className="h-4 w-4" />
+                Upload a file — it's free
+              </a>
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <ShieldCheck className="h-3.5 w-3.5 text-success" />
+                Never leaves your browser
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
