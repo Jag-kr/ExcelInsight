@@ -236,7 +236,7 @@ export const de: Record<TranslationKey, string> = {
   clearFileConfirmDesc: 'Dadurch wird die aktuelle Datei entfernt und alle Diagramme, Filter und Dashboards werden zurückgesetzt. Dies kann nicht rückgängig gemacht werden.',
   cancel: 'Abbrechen',
 
-  // Hero demo animation (HeroDemoAnimation.tsx)
+  // Chart showcase demo (src/components/chart-showcase/ChartShowcase.tsx)
   demoDashboardMeta: '847 Zeilen · 6 Spalten',
   demoDashboardChartTitle: 'Umsatz nach Quartal',
   demoDashboardChartSubtitle: 'Verkäufe · 2024',
@@ -253,6 +253,39 @@ export const de: Record<TranslationKey, string> = {
   demoDashboardDonutSubtitle: 'Dieses Quartal',
   demoDashboardRankedTitle: 'Top-Produkte',
   demoDashboardRankedSubtitle: 'Verkaufte Einheiten',
+
+  // Chart showcase tabs (ChartShowcase.tsx)
+  demoShowcaseRegionLabel: 'Interaktive ExcelInsight-Diagrammdemo',
+  demoShowcaseTablistLabel: 'Diagrammtyp-Auswahl',
+  demoShowcaseTabOverview: 'Übersicht',
+  demoShowcaseTabBar: 'Balken',
+  demoShowcaseTabHorizontalBar: 'Horizontale Balken',
+  demoShowcaseTabLine: 'Linie',
+  demoShowcaseTabArea: 'Fläche',
+  demoShowcaseTabPie: 'Kreis',
+  demoShowcaseTabScatter: 'Streuung',
+  demoShowcaseTabRadar: 'Radar',
+  demoShowcaseScatterTitle: 'Werbeausgaben vs. Conversions',
+  demoShowcaseScatterSubtitle: 'Marketing-Effizienz',
+  demoShowcaseScatterXLabel: 'Werbeausgaben',
+  demoShowcaseScatterYLabel: 'Conversions',
+  demoShowcaseAreaTitle: 'Website-Traffic',
+  demoShowcaseAreaSubtitle: 'Letzte 6 Monate',
+  demoShowcaseRadarTitle: 'Regionale Leistung',
+  demoShowcaseRadarSubtitle: 'Punktzahl von 100',
+  demoShowcaseRadarAxisSpeed: 'Geschwindigkeit',
+  demoShowcaseRadarAxisQuality: 'Qualität',
+  demoShowcaseRadarAxisSupport: 'Support',
+  demoShowcaseRadarAxisPrice: 'Preis',
+  demoShowcaseRadarAxisReach: 'Reichweite',
+  demoShowcasePanelAriaOverview: 'Dashboard-Übersicht: Balkendiagramm, Statistiken, Trendlinie, Aufschlüsselung nach Region und Top-Produkte',
+  demoShowcasePanelAriaBar: 'Balkendiagramm: Umsatz nach Quartal',
+  demoShowcasePanelAriaHorizontalBar: 'Horizontales Balkendiagramm: Top-Produkte nach verkauften Einheiten',
+  demoShowcasePanelAriaLine: 'Liniendiagramm: monatlicher Umsatztrend',
+  demoShowcasePanelAriaArea: 'Flächendiagramm: Website-Traffic der letzten sechs Monate',
+  demoShowcasePanelAriaPie: 'Kreisdiagramm: Umsatz nach Region',
+  demoShowcasePanelAriaScatter: 'Streudiagramm: Werbeausgaben im Vergleich zu Conversions',
+  demoShowcasePanelAriaRadar: 'Radardiagramm: regionale Leistung über fünf Dimensionen',
 
   // "See it in action" section (R7)
   demoSectionTitle: 'Das Produkt live erleben',

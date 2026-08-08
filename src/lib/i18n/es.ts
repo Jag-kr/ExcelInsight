@@ -236,7 +236,7 @@ export const es: Record<TranslationKey, string> = {
   clearFileConfirmDesc: 'Esto eliminará el archivo actual y restablecerá todos los gráficos, filtros y paneles. Esta acción no se puede deshacer.',
   cancel: 'Cancelar',
 
-  // Hero demo animation (HeroDemoAnimation.tsx)
+  // Chart showcase demo (src/components/chart-showcase/ChartShowcase.tsx)
   demoDashboardMeta: '847 filas · 6 columnas',
   demoDashboardChartTitle: 'Ingresos por trimestre',
   demoDashboardChartSubtitle: 'Ventas · 2024',
@@ -253,6 +253,39 @@ export const es: Record<TranslationKey, string> = {
   demoDashboardDonutSubtitle: 'Este trimestre',
   demoDashboardRankedTitle: 'Productos más vendidos',
   demoDashboardRankedSubtitle: 'Unidades vendidas',
+
+  // Chart showcase tabs (ChartShowcase.tsx)
+  demoShowcaseRegionLabel: 'Demo interactiva de gráficos de ExcelInsight',
+  demoShowcaseTablistLabel: 'Selector de tipo de gráfico',
+  demoShowcaseTabOverview: 'Resumen',
+  demoShowcaseTabBar: 'Barras',
+  demoShowcaseTabHorizontalBar: 'Barras horizontales',
+  demoShowcaseTabLine: 'Líneas',
+  demoShowcaseTabArea: 'Áreas',
+  demoShowcaseTabPie: 'Circular',
+  demoShowcaseTabScatter: 'Dispersión',
+  demoShowcaseTabRadar: 'Radar',
+  demoShowcaseScatterTitle: 'Gasto publicitario vs. conversiones',
+  demoShowcaseScatterSubtitle: 'Eficiencia de marketing',
+  demoShowcaseScatterXLabel: 'Gasto publicitario',
+  demoShowcaseScatterYLabel: 'Conversiones',
+  demoShowcaseAreaTitle: 'Tráfico del sitio web',
+  demoShowcaseAreaSubtitle: 'Últimos 6 meses',
+  demoShowcaseRadarTitle: 'Rendimiento regional',
+  demoShowcaseRadarSubtitle: 'Puntuación sobre 100',
+  demoShowcaseRadarAxisSpeed: 'Velocidad',
+  demoShowcaseRadarAxisQuality: 'Calidad',
+  demoShowcaseRadarAxisSupport: 'Soporte',
+  demoShowcaseRadarAxisPrice: 'Precio',
+  demoShowcaseRadarAxisReach: 'Alcance',
+  demoShowcasePanelAriaOverview: 'Resumen del panel: gráfico de barras, estadísticas, línea de tendencia, desglose por región y productos más vendidos',
+  demoShowcasePanelAriaBar: 'Gráfico de barras: ingresos por trimestre',
+  demoShowcasePanelAriaHorizontalBar: 'Gráfico de barras horizontales: productos más vendidos por unidades',
+  demoShowcasePanelAriaLine: 'Gráfico de líneas: tendencia mensual de ingresos',
+  demoShowcasePanelAriaArea: 'Gráfico de área: tráfico del sitio web en los últimos seis meses',
+  demoShowcasePanelAriaPie: 'Gráfico circular: ingresos por región',
+  demoShowcasePanelAriaScatter: 'Gráfico de dispersión: gasto publicitario frente a conversiones',
+  demoShowcasePanelAriaRadar: 'Gráfico de radar: rendimiento regional en cinco dimensiones',
 
   // "See it in action" section (R7)
   demoSectionTitle: 'Mira el producto en acción',

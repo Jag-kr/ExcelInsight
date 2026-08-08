@@ -262,7 +262,7 @@ export const en = {
   clearFileConfirmDesc: 'This will remove the current file and reset all charts, filters, and dashboards. This cannot be undone.',
   cancel: 'Cancel',
 
-  // Hero demo animation (HeroDemoAnimation.tsx)
+  // Chart showcase demo (src/components/chart-showcase/ChartShowcase.tsx)
   demoDashboardMeta: '847 rows · 6 cols',
   demoDashboardChartTitle: 'Revenue by Quarter',
   demoDashboardChartSubtitle: 'Sales · 2024',
@@ -279,6 +279,39 @@ export const en = {
   demoDashboardDonutSubtitle: 'This quarter',
   demoDashboardRankedTitle: 'Top Products',
   demoDashboardRankedSubtitle: 'Units sold',
+
+  // Chart showcase tabs (ChartShowcase.tsx)
+  demoShowcaseRegionLabel: 'ExcelInsight interactive chart demo',
+  demoShowcaseTablistLabel: 'Chart type selector',
+  demoShowcaseTabOverview: 'Overview',
+  demoShowcaseTabBar: 'Bar',
+  demoShowcaseTabHorizontalBar: 'Horizontal Bar',
+  demoShowcaseTabLine: 'Line',
+  demoShowcaseTabArea: 'Area',
+  demoShowcaseTabPie: 'Pie',
+  demoShowcaseTabScatter: 'Scatter',
+  demoShowcaseTabRadar: 'Radar',
+  demoShowcaseScatterTitle: 'Ad Spend vs Conversions',
+  demoShowcaseScatterSubtitle: 'Marketing efficiency',
+  demoShowcaseScatterXLabel: 'Ad Spend',
+  demoShowcaseScatterYLabel: 'Conversions',
+  demoShowcaseAreaTitle: 'Website Traffic',
+  demoShowcaseAreaSubtitle: 'Last 6 months',
+  demoShowcaseRadarTitle: 'Regional Performance',
+  demoShowcaseRadarSubtitle: 'Score out of 100',
+  demoShowcaseRadarAxisSpeed: 'Speed',
+  demoShowcaseRadarAxisQuality: 'Quality',
+  demoShowcaseRadarAxisSupport: 'Support',
+  demoShowcaseRadarAxisPrice: 'Price',
+  demoShowcaseRadarAxisReach: 'Reach',
+  demoShowcasePanelAriaOverview: 'Dashboard overview: bar chart, stats, trend line, region breakdown, and top products',
+  demoShowcasePanelAriaBar: 'Bar chart: revenue by quarter',
+  demoShowcasePanelAriaHorizontalBar: 'Horizontal bar chart: top products by units sold',
+  demoShowcasePanelAriaLine: 'Line chart: monthly revenue trend',
+  demoShowcasePanelAriaArea: 'Area chart: website traffic over the last six months',
+  demoShowcasePanelAriaPie: 'Pie chart: revenue by region',
+  demoShowcasePanelAriaScatter: 'Scatter plot: ad spend versus conversions',
+  demoShowcasePanelAriaRadar: 'Radar chart: regional performance across five dimensions',
 
   // "See it in action" section (R7, LandingContent.tsx)
   // Note: badge uses existing seeItInAction key

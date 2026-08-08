@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb,
   Combine, Download, ArrowRight, CheckCircle2, AlertCircle, Clock, RefreshCw,
@@ -8,10 +9,33 @@ import {
 } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
 import { FaqAccordion } from '@/components/FaqAccordion';
-import { HeroDemoAnimation } from '@/components/HeroDemoAnimation';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import { seoPagesByCategory, categoryLabel, type SeoCategory } from '@/content/seo-pages';
+
+const ChartShowcase = dynamic(
+  () => import('@/components/chart-showcase/ChartShowcase').then((m) => m.ChartShowcase),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-2xl overflow-hidden shadow-2xl border border-border/60" style={{ background: 'hsl(var(--card))' }}>
+        <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border/40" style={{ background: 'hsl(var(--surface-2))' }}>
+          <div className="flex gap-1.5">
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="w-2.5 h-2.5 rounded-full" />)}
+          </div>
+          <Skeleton className="h-3 w-32" />
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-border/40" style={{ background: 'hsl(var(--surface-2))' }}>
+          {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-6 w-16 rounded-full" />)}
+        </div>
+        <div className="p-3">
+          <Skeleton className="h-[280px] w-full rounded-xl" />
+        </div>
+      </div>
+    ),
+  }
+);
 
 /* ─────────────────────────────────────────────────────────────
    Stat counter hook — counts up once when element enters view
@@ -302,7 +326,7 @@ export function LandingContent() {
           </p>
         </div>
         <div className="max-w-4xl mx-auto narrative-reveal">
-          <HeroDemoAnimation />
+          <ChartShowcase />
         </div>
       </section>
 
