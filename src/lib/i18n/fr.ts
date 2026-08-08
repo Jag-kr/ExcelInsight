@@ -236,7 +236,7 @@ export const fr: Record<TranslationKey, string> = {
   clearFileConfirmDesc: 'Cela supprimera le fichier actuel et réinitialisera tous les graphiques, filtres et tableaux de bord. Cette action est irréversible.',
   cancel: 'Annuler',
 
-  // Hero demo animation (HeroDemoAnimation.tsx)
+  // Chart showcase demo (src/components/chart-showcase/ChartShowcase.tsx)
   demoDashboardMeta: '847 lignes · 6 colonnes',
   demoDashboardChartTitle: 'Chiffre d\'affaires par trimestre',
   demoDashboardChartSubtitle: 'Ventes · 2024',
@@ -253,6 +253,39 @@ export const fr: Record<TranslationKey, string> = {
   demoDashboardDonutSubtitle: 'Ce trimestre',
   demoDashboardRankedTitle: 'Produits les plus vendus',
   demoDashboardRankedSubtitle: 'Unités vendues',
+
+  // Chart showcase tabs (ChartShowcase.tsx)
+  demoShowcaseRegionLabel: 'Démo interactive des graphiques ExcelInsight',
+  demoShowcaseTablistLabel: 'Sélecteur de type de graphique',
+  demoShowcaseTabOverview: 'Aperçu',
+  demoShowcaseTabBar: 'Barres',
+  demoShowcaseTabHorizontalBar: 'Barres horizontales',
+  demoShowcaseTabLine: 'Courbe',
+  demoShowcaseTabArea: 'Aires',
+  demoShowcaseTabPie: 'Camembert',
+  demoShowcaseTabScatter: 'Nuage de points',
+  demoShowcaseTabRadar: 'Radar',
+  demoShowcaseScatterTitle: 'Dépenses publicitaires vs conversions',
+  demoShowcaseScatterSubtitle: 'Efficacité marketing',
+  demoShowcaseScatterXLabel: 'Dépenses publicitaires',
+  demoShowcaseScatterYLabel: 'Conversions',
+  demoShowcaseAreaTitle: 'Trafic du site',
+  demoShowcaseAreaSubtitle: '6 derniers mois',
+  demoShowcaseRadarTitle: 'Performance régionale',
+  demoShowcaseRadarSubtitle: 'Score sur 100',
+  demoShowcaseRadarAxisSpeed: 'Vitesse',
+  demoShowcaseRadarAxisQuality: 'Qualité',
+  demoShowcaseRadarAxisSupport: 'Support',
+  demoShowcaseRadarAxisPrice: 'Prix',
+  demoShowcaseRadarAxisReach: 'Portée',
+  demoShowcasePanelAriaOverview: 'Aperçu du tableau de bord : graphique à barres, statistiques, courbe de tendance, répartition par région et meilleurs produits',
+  demoShowcasePanelAriaBar: 'Graphique à barres : chiffre d\'affaires par trimestre',
+  demoShowcasePanelAriaHorizontalBar: 'Graphique à barres horizontales : meilleurs produits par unités vendues',
+  demoShowcasePanelAriaLine: 'Courbe : tendance mensuelle du chiffre d\'affaires',
+  demoShowcasePanelAriaArea: 'Graphique en aires : trafic du site sur les six derniers mois',
+  demoShowcasePanelAriaPie: 'Camembert : chiffre d\'affaires par région',
+  demoShowcasePanelAriaScatter: 'Nuage de points : dépenses publicitaires par rapport aux conversions',
+  demoShowcasePanelAriaRadar: 'Graphique radar : performance régionale selon cinq dimensions',
 
   // "See it in action" section (R7)
   demoSectionTitle: 'Voyez le produit en action',

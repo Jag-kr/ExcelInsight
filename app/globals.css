@@ -459,6 +459,11 @@
   to   { clip-path: circle(55% at 50% 50%); opacity: 1; }
 }
 
+@keyframes demo-scatter-pop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
 
 /* ── Zone 2: Scroll-driven narrative keyframes ── */
 @keyframes narrative-reveal {

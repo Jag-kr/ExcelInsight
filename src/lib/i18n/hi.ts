@@ -236,7 +236,7 @@ export const hi: Record<TranslationKey, string> = {
   clearFileConfirmDesc: 'इससे वर्तमान फ़ाइल हट जाएगी और सभी चार्ट, फ़िल्टर और डैशबोर्ड रीसेट हो जाएंगे। इसे पूर्ववत नहीं किया जा सकता।',
   cancel: 'रद्द करें',
 
-  // Hero demo animation (HeroDemoAnimation.tsx)
+  // Chart showcase demo (src/components/chart-showcase/ChartShowcase.tsx)
   demoDashboardMeta: '847 पंक्तियाँ · 6 स्तंभ',
   demoDashboardChartTitle: 'तिमाही-वार राजस्व',
   demoDashboardChartSubtitle: 'बिक्री · 2024',
@@ -253,6 +253,39 @@ export const hi: Record<TranslationKey, string> = {
   demoDashboardDonutSubtitle: 'इस तिमाही',
   demoDashboardRankedTitle: 'शीर्ष उत्पाद',
   demoDashboardRankedSubtitle: 'बिकी हुई इकाइयाँ',
+
+  // Chart showcase tabs (ChartShowcase.tsx)
+  demoShowcaseRegionLabel: 'ExcelInsight इंटरैक्टिव चार्ट डेमो',
+  demoShowcaseTablistLabel: 'चार्ट प्रकार चयनकर्ता',
+  demoShowcaseTabOverview: 'अवलोकन',
+  demoShowcaseTabBar: 'बार',
+  demoShowcaseTabHorizontalBar: 'क्षैतिज बार',
+  demoShowcaseTabLine: 'लाइन',
+  demoShowcaseTabArea: 'एरिया',
+  demoShowcaseTabPie: 'पाई',
+  demoShowcaseTabScatter: 'स्कैटर',
+  demoShowcaseTabRadar: 'रडार',
+  demoShowcaseScatterTitle: 'विज्ञापन खर्च बनाम रूपांतरण',
+  demoShowcaseScatterSubtitle: 'मार्केटिंग दक्षता',
+  demoShowcaseScatterXLabel: 'विज्ञापन खर्च',
+  demoShowcaseScatterYLabel: 'रूपांतरण',
+  demoShowcaseAreaTitle: 'वेबसाइट ट्रैफ़िक',
+  demoShowcaseAreaSubtitle: 'पिछले 6 महीने',
+  demoShowcaseRadarTitle: 'क्षेत्रीय प्रदर्शन',
+  demoShowcaseRadarSubtitle: '100 में से स्कोर',
+  demoShowcaseRadarAxisSpeed: 'गति',
+  demoShowcaseRadarAxisQuality: 'गुणवत्ता',
+  demoShowcaseRadarAxisSupport: 'सहायता',
+  demoShowcaseRadarAxisPrice: 'कीमत',
+  demoShowcaseRadarAxisReach: 'पहुँच',
+  demoShowcasePanelAriaOverview: 'डैशबोर्ड अवलोकन: बार चार्ट, आँकड़े, ट्रेंड लाइन, क्षेत्र अनुसार विभाजन और शीर्ष उत्पाद',
+  demoShowcasePanelAriaBar: 'बार चार्ट: तिमाही-वार राजस्व',
+  demoShowcasePanelAriaHorizontalBar: 'क्षैतिज बार चार्ट: बिकी हुई इकाइयों के अनुसार शीर्ष उत्पाद',
+  demoShowcasePanelAriaLine: 'लाइन चार्ट: मासिक राजस्व प्रवृत्ति',
+  demoShowcasePanelAriaArea: 'एरिया चार्ट: पिछले छह महीनों में वेबसाइट ट्रैफ़िक',
+  demoShowcasePanelAriaPie: 'पाई चार्ट: क्षेत्र अनुसार राजस्व',
+  demoShowcasePanelAriaScatter: 'स्कैटर प्लॉट: विज्ञापन खर्च बनाम रूपांतरण',
+  demoShowcasePanelAriaRadar: 'रडार चार्ट: पाँच आयामों में क्षेत्रीय प्रदर्शन',
 
   // "See it in action" section (R7)
   demoSectionTitle: 'उत्पाद को काम करते देखें',

@@ -236,7 +236,7 @@ export const zh: Record<TranslationKey, string> = {
   clearFileConfirmDesc: '这将删除当前文件并重置所有图表、筛选器和仪表板。此操作无法撤销。',
   cancel: '取消',
 
-  // Hero demo animation (HeroDemoAnimation.tsx)
+  // Chart showcase demo (src/components/chart-showcase/ChartShowcase.tsx)
   demoDashboardMeta: '847 行 · 6 列',
   demoDashboardChartTitle: '各季度营收',
   demoDashboardChartSubtitle: '销售额 · 2024',
@@ -253,6 +253,39 @@ export const zh: Record<TranslationKey, string> = {
   demoDashboardDonutSubtitle: '本季度',
   demoDashboardRankedTitle: '畅销产品',
   demoDashboardRankedSubtitle: '销售数量',
+
+  // Chart showcase tabs (ChartShowcase.tsx)
+  demoShowcaseRegionLabel: 'ExcelInsight 交互式图表演示',
+  demoShowcaseTablistLabel: '图表类型选择器',
+  demoShowcaseTabOverview: '总览',
+  demoShowcaseTabBar: '条形图',
+  demoShowcaseTabHorizontalBar: '横向条形图',
+  demoShowcaseTabLine: '折线图',
+  demoShowcaseTabArea: '面积图',
+  demoShowcaseTabPie: '饼图',
+  demoShowcaseTabScatter: '散点图',
+  demoShowcaseTabRadar: '雷达图',
+  demoShowcaseScatterTitle: '广告支出与转化对比',
+  demoShowcaseScatterSubtitle: '营销效率',
+  demoShowcaseScatterXLabel: '广告支出',
+  demoShowcaseScatterYLabel: '转化数',
+  demoShowcaseAreaTitle: '网站流量',
+  demoShowcaseAreaSubtitle: '近6个月',
+  demoShowcaseRadarTitle: '区域表现',
+  demoShowcaseRadarSubtitle: '满分100',
+  demoShowcaseRadarAxisSpeed: '速度',
+  demoShowcaseRadarAxisQuality: '质量',
+  demoShowcaseRadarAxisSupport: '支持',
+  demoShowcaseRadarAxisPrice: '价格',
+  demoShowcaseRadarAxisReach: '覆盖范围',
+  demoShowcasePanelAriaOverview: '仪表板总览：条形图、统计数据、趋势线、地区分布与畅销产品',
+  demoShowcasePanelAriaBar: '条形图：各季度营收',
+  demoShowcasePanelAriaHorizontalBar: '横向条形图：按销售数量排名的畅销产品',
+  demoShowcasePanelAriaLine: '折线图：月度营收趋势',
+  demoShowcasePanelAriaArea: '面积图：过去六个月的网站流量',
+  demoShowcasePanelAriaPie: '饼图：各地区营收',
+  demoShowcasePanelAriaScatter: '散点图：广告支出与转化数对比',
+  demoShowcasePanelAriaRadar: '雷达图：五个维度的区域表现',
 
   // "See it in action" section (R7)
   demoSectionTitle: '看产品如何运作',
