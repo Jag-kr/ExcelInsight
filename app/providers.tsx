@@ -11,19 +11,18 @@ import { I18nContext, Language, translations, TranslationKey } from '@/lib/i18n'
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('datalens-theme') as ThemeMode) || 'dark';
-    }
-    return 'dark';
-  });
+  // Always start from the same value on server and client so the first client
+  // render matches the SSR output exactly; the persisted preference is applied
+  // right after mount instead, in an effect (client-only, runs post-hydration).
+  const [theme, setThemeState] = useState<ThemeMode>('dark');
+  const [lang, setLangState] = useState<Language>('en');
 
-  const [lang, setLangState] = useState<Language>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('datalens-lang') as Language) || 'en';
-    }
-    return 'en';
-  });
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('datalens-theme') as ThemeMode | null;
+    if (storedTheme) setThemeState(storedTheme);
+    const storedLang = localStorage.getItem('datalens-lang') as Language | null;
+    if (storedLang) setLangState(storedLang);
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
