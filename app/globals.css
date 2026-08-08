@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600;700&family=Chakra+Petch:wght@300;400;500;600&family=Zen+Old+Mincho:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,168 +6,162 @@
 
 @layer base {
   :root {
-    /* ── Core palette — Crisp Minimalist Azure (Light) ── */
-    --background: 220 20% 98%;
-    --foreground: 224 47% 10%;
+    /* ── Core palette — Neo Mirai: warm cream & ink (Light) ── */
+    --background: 36 42% 93%;
+    --foreground: 30 40% 11%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 224 47% 10%;
+    --card: 38 38% 96%;
+    --card-foreground: 30 40% 11%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 47% 10%;
+    --popover: 38 38% 97%;
+    --popover-foreground: 30 40% 11%;
 
-    --primary: 195 85% 33%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 38 80% 32%;
+    --primary-foreground: 40 55% 96%;
 
-    --secondary: 220 16% 94%;
-    --secondary-foreground: 224 47% 10%;
+    --secondary: 36 22% 87%;
+    --secondary-foreground: 30 40% 11%;
 
-    --muted: 220 16% 94%;
-    --muted-foreground: 220 14% 46%;
+    --muted: 36 20% 87%;
+    --muted-foreground: 32 15% 34%;
 
-    --accent: 270 85% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 176 38% 27%;
+    --accent-foreground: 38 60% 96%;
 
-    --destructive: 0 80% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 8 55% 42%;
+    --destructive-foreground: 38 60% 96%;
 
-    --border: 220 16% 87%;
-    --input: 220 16% 87%;
-    --ring: 195 85% 33%;
+    --border: 34 18% 78%;
+    --input: 34 18% 78%;
+    --ring: 38 80% 32%;
 
-    --radius: 0.75rem;
+    --radius: 0;
 
-    /* ── Chart palette (Curated for Data Viz) ── */
-    --chart-1: 195 85% 45%; /* Azure Primary */
-    --chart-2: 270 85% 55%; /* Violet */
-    --chart-3: 150 75% 45%; /* Emerald */
-    --chart-4: 40 90% 55%;  /* Amber */
-    --chart-5: 340 85% 60%; /* Pink/Crimson */
-    --chart-6: 210 90% 60%; /* Bright Blue */
-    --chart-7: 10 85% 55%;  /* Coral/Orange */
-    --chart-8: 170 80% 45%; /* Mint/Teal */
+    /* ── Chart palette (warm, curated for data viz — all text-safe at 4.5:1+) ── */
+    --chart-1: 38 60% 34%;  /* Amber */
+    --chart-2: 176 42% 32%; /* Deep Teal */
+    --chart-3: 8 58% 46%;   /* Brick */
+    --chart-4: 90 35% 33%;  /* Olive */
+    --chart-5: 15 62% 43%;  /* Rust */
+    --chart-6: 200 20% 41%; /* Slate */
+    --chart-7: 48 68% 29%;  /* Mustard */
+    --chart-8: 35 12% 40%;  /* Warm Gray */
 
     /* ── Semantic states ── */
-    --success: 150 75% 45%;
-    --success-foreground: 0 0% 100%;
-    --warning: 40 90% 55%;
-    --warning-foreground: 224 47% 10%;
-    --info: 195 85% 33%;
-    --info-foreground: 0 0% 100%;
+    --success: 90 30% 32%;
+    --success-foreground: 38 60% 96%;
+    --warning: 45 75% 28%;
+    --warning-foreground: 30 40% 11%;
+    --info: 176 38% 27%;
+    --info-foreground: 38 60% 96%;
 
     /* ── Surface hierarchy (4 levels) ── */
-    --surface-0: 220 20% 98%;
-    --surface-1: 0 0% 100%;
-    --surface-2: 220 16% 98%;
-    --surface-3: 220 20% 96%;
+    --surface-0: 36 42% 93%;
+    --surface-1: 38 38% 96%;
+    --surface-2: 36 30% 90%;
+    --surface-3: 36 26% 87%;
 
-    /* ── Gradients ── */
-    --gradient-primary: linear-gradient(135deg, hsl(195, 85%, 45%), hsl(270, 85%, 55%));
-    --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%), hsl(220, 16%, 98%));
-    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(195, 85%, 45%, 0.12) 0%, transparent 60%),
-                     radial-gradient(ellipse 50% 40% at 90% 20%, hsl(270, 85%, 55%, 0.08) 0%, transparent 50%),
-                     hsl(220, 20%, 98%);
-    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(195, 85%, 45%, 0.12), transparent 65%);
+    /* ── Surface backgrounds (flat, no hue gradients) ── */
+    --gradient-card: linear-gradient(145deg, hsl(38, 38%, 96%), hsl(36, 30%, 93%));
+    --gradient-hero: hsl(36, 42%, 93%);
+    --gradient-glow: hsl(36, 42%, 93%);
 
-    /* ── Shadows ── */
-    --shadow-glow: 0 0 24px -6px hsl(195, 85%, 45%, 0.25);
-    --shadow-card: 0 1px 3px hsl(220, 47%, 60%, 0.08), 0 4px 16px -4px hsl(220, 47%, 60%, 0.12);
-    --shadow-elevated: 0 2px 8px hsl(220, 47%, 60%, 0.08), 0 8px 32px -8px hsl(220, 47%, 60%, 0.18);
-    --shadow-floating: 0 4px 16px hsl(220, 47%, 40%, 0.1), 0 16px 48px -8px hsl(220, 47%, 40%, 0.2);
+    /* ── Shadows (hard offset, no blur) ── */
+    --shadow-glow: 2px 2px 0 hsl(38, 85%, 56%, 0.3);
+    --shadow-card: 2px 2px 0 hsl(30, 40%, 11%, 0.12);
+    --shadow-elevated: 3px 3px 0 hsl(30, 40%, 11%, 0.16);
+    --shadow-floating: 4px 4px 0 hsl(30, 40%, 11%, 0.22);
 
     /* ── Layout ── */
     --sidebar-width: 240px;
     --sidebar-collapsed-width: 56px;
     --header-height: 56px;
-    --radius-xl: 1.25rem;
-    --radius-2xl: 1.5rem;
+    --radius-xl: 0;
+    --radius-2xl: 0;
 
     /* ── Sidebar tokens ── */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 224 47% 10%;
-    --sidebar-primary: 195 85% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 16% 94%;
-    --sidebar-accent-foreground: 224 47% 10%;
-    --sidebar-border: 220 16% 90%;
-    --sidebar-ring: 195 85% 45%;
+    --sidebar-background: 38 38% 96%;
+    --sidebar-foreground: 30 40% 11%;
+    --sidebar-primary: 38 80% 32%;
+    --sidebar-primary-foreground: 40 55% 96%;
+    --sidebar-accent: 36 22% 87%;
+    --sidebar-accent-foreground: 30 40% 11%;
+    --sidebar-border: 34 18% 80%;
+    --sidebar-ring: 38 80% 32%;
   }
 
   .dark {
-    /* ── Core palette — Onyx & Electric Cyan (Dark) ── */
-    --background: 224 28% 4%; /* Deep Onyx */
-    --foreground: 216 32% 94%;
+    /* ── Core palette — Neo Mirai: ink & amber (Dark) ── */
+    --background: 171 22% 5%;
+    --foreground: 36 30% 92%;
 
-    --card: 224 28% 8%; /* Slightly elevated Onyx */
-    --card-foreground: 216 32% 94%;
+    --card: 171 20% 8%;
+    --card-foreground: 36 30% 92%;
 
-    --popover: 224 28% 9%;
-    --popover-foreground: 216 32% 94%;
+    --popover: 171 20% 9%;
+    --popover-foreground: 36 30% 92%;
 
-    --primary: 190 90% 50%; /* Electric Cyan */
-    --primary-foreground: 224 28% 4%;
+    --primary: 40 90% 58%;
+    --primary-foreground: 171 22% 5%;
 
-    --secondary: 224 22% 13%;
-    --secondary-foreground: 216 32% 88%;
+    --secondary: 171 15% 13%;
+    --secondary-foreground: 36 25% 88%;
 
-    --muted: 224 22% 13%;
-    --muted-foreground: 220 16% 60%;
+    --muted: 171 15% 13%;
+    --muted-foreground: 34 12% 60%;
 
-    --accent: 270 90% 65%; /* Bright Violet */
-    --accent-foreground: 216 32% 98%;
+    --accent: 176 40% 48%;
+    --accent-foreground: 171 22% 5%;
 
-    --destructive: 0 80% 60%;
-    --destructive-foreground: 216 32% 98%;
+    --destructive: 8 60% 55%;
+    --destructive-foreground: 36 30% 96%;
 
-    --border: 224 22% 15%;
-    --input: 224 22% 15%;
-    --ring: 190 90% 50%;
+    --border: 171 15% 16%;
+    --input: 171 15% 16%;
+    --ring: 40 90% 58%;
 
-    --chart-1: 190 90% 50%; /* Cyan */
-    --chart-2: 270 90% 65%; /* Violet */
-    --chart-3: 150 80% 50%; /* Emerald */
-    --chart-4: 40 90% 55%;  /* Amber */
-    --chart-5: 340 85% 65%; /* Pink/Crimson */
-    --chart-6: 210 90% 65%; /* Azure */
-    --chart-7: 10 85% 60%;  /* Coral/Orange */
-    --chart-8: 170 80% 50%; /* Mint/Teal */
+    --chart-1: 40 80% 55%;  /* Amber */
+    --chart-2: 176 40% 48%; /* Deep Teal */
+    --chart-3: 8 55% 55%;   /* Brick */
+    --chart-4: 90 35% 48%;  /* Olive */
+    --chart-5: 15 60% 55%;  /* Rust */
+    --chart-6: 200 20% 55%; /* Slate */
+    --chart-7: 48 65% 55%;  /* Mustard */
+    --chart-8: 35 12% 58%;  /* Warm Gray */
 
-    --success: 150 80% 50%;
-    --success-foreground: 224 28% 4%;
-    --warning: 40 90% 55%;
-    --warning-foreground: 224 28% 4%;
-    --info: 190 90% 50%;
-    --info-foreground: 224 28% 4%;
+    --success: 90 35% 48%;
+    --success-foreground: 171 22% 5%;
+    --warning: 45 75% 55%;
+    --warning-foreground: 171 22% 5%;
+    --info: 176 40% 48%;
+    --info-foreground: 171 22% 5%;
 
     /* ── Surface hierarchy (dark) ── */
-    --surface-0: 224 28% 4%;
-    --surface-1: 224 28% 8%;
-    --surface-2: 224 28% 10%;
-    --surface-3: 224 28% 12%;
+    --surface-0: 171 22% 5%;
+    --surface-1: 171 20% 8%;
+    --surface-2: 171 18% 10%;
+    --surface-3: 171 16% 12%;
 
-    /* ── Gradients (dark) ── */
-    --gradient-primary: linear-gradient(135deg, hsl(190, 90%, 50%), hsl(270, 90%, 65%));
-    --gradient-card: linear-gradient(145deg, hsl(224, 28%, 9%), hsl(224, 28%, 7%));
-    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(190, 90%, 50%, 0.15) 0%, transparent 65%),
-                     radial-gradient(ellipse 50% 40% at 90% 20%, hsl(270, 90%, 65%, 0.1) 0%, transparent 55%),
-                     hsl(224, 28%, 4%);
-    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(190, 90%, 50%, 0.15), transparent 65%);
+    /* ── Surface backgrounds (dark, flat, no hue gradients) ── */
+    --gradient-card: linear-gradient(145deg, hsl(171, 20%, 9%), hsl(171, 20%, 7%));
+    --gradient-hero: hsl(171, 22%, 5%);
+    --gradient-glow: hsl(171, 22%, 5%);
 
-    /* ── Shadows (dark) ── */
-    --shadow-glow: 0 0 28px -6px hsl(190, 90%, 50%, 0.35);
-    --shadow-card: 0 1px 3px hsl(0, 0%, 0%, 0.4), 0 4px 16px -4px hsl(0, 0%, 0%, 0.5);
-    --shadow-elevated: 0 2px 8px hsl(0, 0%, 0%, 0.5), 0 8px 32px -8px hsl(0, 0%, 0%, 0.6);
-    --shadow-floating: 0 4px 16px hsl(0, 0%, 0%, 0.6), 0 16px 48px -8px hsl(0, 0%, 0%, 0.7);
+    /* ── Shadows (dark, hard offset, no blur) ── */
+    --shadow-glow: 2px 2px 0 hsl(40, 90%, 58%, 0.35);
+    --shadow-card: 2px 2px 0 hsl(0, 0%, 0%, 0.5);
+    --shadow-elevated: 3px 3px 0 hsl(0, 0%, 0%, 0.6);
+    --shadow-floating: 4px 4px 0 hsl(0, 0%, 0%, 0.7);
 
     /* ── Sidebar tokens (dark) ── */
-    --sidebar-background: 224 28% 5%;
-    --sidebar-foreground: 216 32% 90%;
-    --sidebar-primary: 190 90% 50%;
-    --sidebar-primary-foreground: 224 28% 4%;
-    --sidebar-accent: 224 22% 13%;
-    --sidebar-accent-foreground: 216 32% 90%;
-    --sidebar-border: 224 22% 15%;
-    --sidebar-ring: 190 90% 50%;
+    --sidebar-background: 171 20% 6%;
+    --sidebar-foreground: 36 25% 90%;
+    --sidebar-primary: 40 90% 58%;
+    --sidebar-primary-foreground: 171 22% 5%;
+    --sidebar-accent: 171 15% 13%;
+    --sidebar-accent-foreground: 36 25% 90%;
+    --sidebar-border: 171 15% 16%;
+    --sidebar-ring: 40 90% 58%;
   }
 }
 
@@ -182,14 +176,18 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-family: 'Zen Old Mincho', 'Hiragino Mincho ProN', serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  code, pre {
-    font-family: 'JetBrains Mono', monospace;
+  h1, h2, h3, h4 {
+    font-family: 'Chakra Petch', 'Noto Sans JP', sans-serif;
+    letter-spacing: 0.01em;
+  }
+
+  button, input, select, textarea, table, code, pre {
+    font-family: 'Azeret Mono', monospace;
   }
 }
 
@@ -225,25 +223,11 @@
     box-shadow: var(--shadow-elevated);
     position: relative;
     overflow: hidden;
+    transition: border-color 200ms ease;
   }
 
-  .elevated-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: var(--gradient-primary);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 250ms ease;
-    pointer-events: none;
-  }
-
-  .elevated-card:hover::before {
-    opacity: 0.4;
+  .elevated-card:hover {
+    border-color: hsl(var(--primary) / 0.3);
   }
 
   /* ── Panel (secondary content areas) ── */
@@ -263,17 +247,17 @@
     box-shadow: 2px 0 16px hsl(220, 47%, 40%, 0.04);
   }
 
-  /* ── Hero gradient background ── */
-  .hero-gradient {
+  /* ── Hero surface background ── */
+  .hero-surface {
     background: var(--gradient-hero);
   }
 
-  /* ── Gradient text ── */
-  .gradient-text {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  /* ── Brand text (display type, deep-teal accent — amber stays reserved for actions) ── */
+  .brand-text {
+    color: hsl(var(--accent));
+    font-family: 'Chakra Petch', 'Noto Sans JP', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
 
   /* ── Stat chip (data badges in header) ── */
@@ -434,16 +418,6 @@
   50% { transform: translateY(-8px); }
 }
 
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px -5px hsl(217, 91%, 60%, 0.3); }
-  50% { box-shadow: 0 0 40px -5px hsl(217, 91%, 60%, 0.6); }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -473,6 +447,26 @@
 @keyframes demo-fade-up {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes demo-bar-grow-x {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes demo-donut-reveal {
+  from { clip-path: circle(0% at 50% 50%); opacity: 0; }
+  to   { clip-path: circle(55% at 50% 50%); opacity: 1; }
+}
+
+@keyframes demo-scatter-pop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+@keyframes demo-area-reveal {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
 }
 
 
@@ -612,6 +606,7 @@
       opacity: 1 !important;
       transform: none !important;
       stroke-dashoffset: 0 !important;
+      clip-path: none !important;
     }
   }
 

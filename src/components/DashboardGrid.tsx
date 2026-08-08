@@ -295,7 +295,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
         title={t('dragToReorder')}
         className="absolute left-0 top-2 bottom-2 w-1 rounded-full z-20 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-150 cursor-grab active:cursor-grabbing touch-none"
         style={{
-          background: 'linear-gradient(180deg, hsl(var(--primary)/0.6), hsl(var(--accent)/0.6))',
+          background: 'hsl(var(--primary) / 0.6)',
         }}
       />
 
@@ -427,18 +427,13 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
       <div
         className="rounded-2xl border-2 border-dashed border-primary/15 p-8 sm:p-14 text-center animate-[fade-in_0.4s_ease-out] relative overflow-hidden"
         style={{
-          background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)/0.3))',
+          background: 'hsl(var(--card))',
         }}
       >
-        {/* Decorative blob */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.04]"
-          style={{ background: 'radial-gradient(ellipse at 50% 0%, hsl(var(--primary)), transparent 70%)' }}
-        />
         <div
           className="mx-auto h-16 w-16 rounded-2xl flex items-center justify-center mb-5 relative"
           style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary)/0.12), hsl(var(--accent)/0.08))',
+            background: 'hsl(var(--primary) / 0.1)',
             border: '1px solid hsl(var(--primary)/0.15)',
           }}
         >
