@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 47% 10%;
 
-    --primary: 195 85% 45%;
+    --primary: 195 85% 33%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 16% 94%;
@@ -33,7 +33,7 @@
 
     --border: 220 16% 87%;
     --input: 220 16% 87%;
-    --ring: 195 85% 45%;
+    --ring: 195 85% 33%;
 
     --radius: 0.75rem;
 
@@ -52,7 +52,7 @@
     --success-foreground: 0 0% 100%;
     --warning: 40 90% 55%;
     --warning-foreground: 224 47% 10%;
-    --info: 195 85% 45%;
+    --info: 195 85% 33%;
     --info-foreground: 0 0% 100%;
 
     /* ── Surface hierarchy (4 levels) ── */
@@ -447,12 +447,6 @@
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-@keyframes blob-drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -20px) scale(1.05); }
-  66% { transform: translate(-20px, 15px) scale(0.97); }
 }
 
 @keyframes stagger-fade-up {
