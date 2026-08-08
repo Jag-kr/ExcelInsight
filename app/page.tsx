@@ -342,10 +342,10 @@ export default function Index() {
     if (!dashboardRef.current || !dashboardItems.length) { toast.error('Nothing to export'); return; }
     setExporting(true);
     const toastId = toast.loading(t('generatingPdf'));
+    const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
+    const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
+    const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
     try {
-      const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
-      const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
-      const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
       const { exportDashboardToPDF } = await import('@/lib/pdf-export');
       await exportDashboardToPDF(dashboardRef.current, {
         appName: 'ExcelInsight', fileName,
@@ -353,9 +353,11 @@ export default function Index() {
         chartCount, tableCount, insightCount, logoUrl: logo.src,
       });
       toast.success(t('pdfReady'), { id: toastId });
+      trackEvent('export_pdf', { status: 'success', chartCount, tableCount, insightCount });
     } catch (e) {
       console.error(e);
       toast.error(t('pdfFailed'), { id: toastId });
+      trackEvent('export_pdf', { status: 'failed', chartCount, tableCount, insightCount });
     } finally {
       setExporting(false);
     }
