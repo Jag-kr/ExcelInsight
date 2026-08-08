@@ -12,10 +12,30 @@ const BARS = [
 ];
 
 // Q1–Q4 labels are internationally understood abbreviations; pct values are illustrative data.
+// Region codes (NA/EU/APAC/LATAM) and "Product A–D" are illustrative placeholders, same as
+// sales_data.xlsx above — no translation needed.
 // All human-readable text is sourced from useI18n below.
 
 // Smooth upward-trending SVG path (viewBox 0 0 100 44)
 const LINE_D = 'M 2,38 C 10,34 18,26 28,22 S 46,9 58,13 S 74,19 86,11 L 98,5';
+
+// Donut segments — sum to 100
+const REGIONS = [
+  { label: 'NA', pct: 42, color: 'hsl(var(--chart-1))' },
+  { label: 'EU', pct: 28, color: 'hsl(var(--chart-2))' },
+  { label: 'APAC', pct: 19, color: 'hsl(var(--chart-5))' },
+  { label: 'LATAM', pct: 11, color: 'hsl(var(--chart-6))' },
+];
+
+// Horizontal ranked bars — widths relative to the top row
+const RANKED = [
+  { label: 'Product A', value: '312', pct: 100 },
+  { label: 'Product B', value: '289', pct: 87 },
+  { label: 'Product C', value: '204', pct: 61 },
+  { label: 'Product D', value: '167', pct: 48 },
+];
+
+const DONUT_R = 15.915; // circumference ≈ 100, so pct maps directly to dash length
 
 export function HeroDemoAnimation({ className = '' }: { className?: string }) {
   const { t } = useI18n();
@@ -41,7 +61,7 @@ export function HeroDemoAnimation({ className = '' }: { className?: string }) {
       className={`demo-anim-wrapper rounded-2xl overflow-hidden shadow-2xl border border-border/60 select-none ${className}`}
       style={{ background: 'hsl(var(--card))' }}
       role="img"
-      aria-label="ExcelInsight demo: a spreadsheet transforms into charts, statistics, and an interactive dashboard"
+      aria-label="ExcelInsight demo: a spreadsheet transforms into bar, line, and donut charts, a ranked list, statistics, and a full interactive dashboard"
     >
       {/* ── Browser-chrome header ── */}
       <div
@@ -187,6 +207,121 @@ export function HeroDemoAnimation({ className = '' }: { className?: string }) {
                 style={{ opacity: 0, animation: 'demo-fade-up 0.2s ease-out 1.5s both' }}
               />
             </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Second dashboard row — donut + ranked list, both real ExcelInsight chart types ── */}
+      <div className="px-3 pb-3 grid grid-cols-5 gap-2.5">
+
+        {/* Donut chart — col-span-2 */}
+        <div
+          className="col-span-2 rounded-xl p-3"
+          style={{
+            background: 'hsl(var(--surface-1))',
+            border: '1px solid hsl(var(--border)/0.5)',
+            animation: 'demo-fade-up 0.35s ease-out 0.5s both',
+          }}
+        >
+          <p className="text-[11px] font-semibold text-foreground leading-tight">
+            {t('demoDashboardDonutTitle')}
+          </p>
+          <p className="text-[10px] text-muted-foreground mb-2">{t('demoDashboardDonutSubtitle')}</p>
+
+          <div className="flex items-center gap-3">
+            <div className="relative w-16 h-16 flex-shrink-0">
+              <svg
+                viewBox="0 0 36 36"
+                className="w-full h-full"
+                style={{ animation: 'demo-donut-reveal 0.6s ease-out 0.65s both' }}
+                aria-hidden="true"
+              >
+                <g transform="rotate(-90 18 18)">
+                  {(() => {
+                    let cumulative = 0;
+                    return REGIONS.map((r) => {
+                      const offset = -cumulative;
+                      cumulative += r.pct;
+                      return (
+                        <circle
+                          key={r.label}
+                          cx="18" cy="18" r={DONUT_R}
+                          fill="transparent"
+                          stroke={r.color}
+                          strokeWidth="4"
+                          strokeDasharray={`${r.pct} ${100 - r.pct}`}
+                          strokeDashoffset={offset}
+                        />
+                      );
+                    });
+                  })()}
+                </g>
+              </svg>
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ opacity: 0, animation: 'demo-fade-up 0.3s ease-out 1.15s both' }}
+              >
+                <span className="text-[11px] font-bold" style={{ color: REGIONS[0].color }}>
+                  {REGIONS[0].pct}%
+                </span>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="flex-1 min-w-0 space-y-1">
+              {REGIONS.map((r, i) => (
+                <div
+                  key={r.label}
+                  className="flex items-center gap-1.5"
+                  style={{ opacity: 0, animation: `demo-fade-up 0.3s ease-out ${0.9 + i * 0.08}s both` }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: r.color }} />
+                  <span className="text-[9px] text-muted-foreground flex-1 truncate">{r.label}</span>
+                  <span className="text-[9px] font-semibold text-foreground tabular-nums">{r.pct}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Ranked bar list — col-span-3 */}
+        <div
+          className="col-span-3 rounded-xl p-3"
+          style={{
+            background: 'hsl(var(--surface-1))',
+            border: '1px solid hsl(var(--border)/0.5)',
+            animation: 'demo-fade-up 0.35s ease-out 0.55s both',
+          }}
+        >
+          <p className="text-[11px] font-semibold text-foreground leading-tight">
+            {t('demoDashboardRankedTitle')}
+          </p>
+          <p className="text-[10px] text-muted-foreground mb-2.5">{t('demoDashboardRankedSubtitle')}</p>
+
+          <div className="space-y-2">
+            {RANKED.map((row, i) => (
+              <div key={row.label} className="flex items-center gap-2">
+                <span className="text-[9px] text-muted-foreground w-14 flex-shrink-0 truncate">{row.label}</span>
+                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'hsl(var(--border)/0.3)' }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${row.pct}%`,
+                      background: 'hsl(var(--chart-2))',
+                      opacity: 1 - i * 0.18,
+                      transformOrigin: 'left',
+                      animation: `demo-bar-grow-x 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) ${0.75 + i * 0.09}s both`,
+                    }}
+                  />
+                </div>
+                <span
+                  className="text-[9px] font-semibold text-foreground tabular-nums w-7 text-right flex-shrink-0"
+                  style={{ opacity: 0, animation: `demo-fade-up 0.25s ease-out ${1.0 + i * 0.09}s both` }}
+                >
+                  {row.value}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
