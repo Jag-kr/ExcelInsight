@@ -292,8 +292,8 @@ export function LandingContent() {
         </div>
       </section>
 
-      {/* ── Section: See it in action (R7) — full demo for mobile + below-fold evaluation ── */}
-      {/* <section aria-labelledby="demo-section-heading">
+      {/* ── Section: See it in action — the demo now lives below the fold instead of competing with the upload zone in the hero ── */}
+      <section aria-labelledby="demo-section-heading">
         <div className="text-center mb-8">
           <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium mb-4">
             <Sparkles className="h-3.5 w-3.5" />
@@ -312,7 +312,7 @@ export function LandingContent() {
         <div className="max-w-2xl mx-auto narrative-reveal">
           <HeroDemoAnimation />
         </div>
-      </section> */}
+      </section>
 
       {/* ── Ad slot ── */}
       <AdSlot slot="" label={t('sponsored')} />
