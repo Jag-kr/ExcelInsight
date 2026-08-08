@@ -427,7 +427,7 @@ export default function Index() {
   /* ─── LANDING PAGE ─── */
   if (!mounted || !data.length) {
     return (
-      <div className="min-h-screen hero-gradient">
+      <div className="min-h-screen hero-surface">
         <div className="absolute top-4 right-4 z-10">
           <ThemeLangSwitcher />
         </div>
@@ -447,7 +447,7 @@ export default function Index() {
                 decoding="async"
                 className="h-8 w-8 flex-shrink-0"
               />
-              <span className="font-bold text-base gradient-text tracking-tight">ExcelInsight</span>
+              <span className="font-bold text-base brand-text tracking-tight">ExcelInsight</span>
             </div>
 
             {/* Headline — compact and functional, not a marketing display treatment */}
@@ -474,7 +474,7 @@ export default function Index() {
           </section>
 
           {/* Feature cards — full-width strip, spans wider than the narrow hero column */}
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-6 lg:pb-10">
+          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 pb-6 lg:pb-10">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl lg:max-w-none mx-auto text-center hero-appear-feats">
               {[
                 { icon: Database, label: t('smartDetection'), desc: t('smartDetectionDesc') },
@@ -546,7 +546,7 @@ export default function Index() {
               className="h-7 w-7 flex-shrink-0"
             />
             {!sidebarCollapsed && (
-              <span className="font-bold gradient-text text-sm leading-none truncate animate-[fade-in_0.2s_ease-out]">
+              <span className="font-bold brand-text text-sm leading-none truncate animate-[fade-in_0.2s_ease-out]">
                 {t('appName')}
               </span>
             )}
@@ -610,7 +610,7 @@ export default function Index() {
                 <img src={logo.src} alt="ExcelInsight" width="22" height="22" decoding="async" className="h-5 w-5 flex-shrink-0" />
               )}
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-xs font-semibold gradient-text hidden sm:inline">{t('appName')}</span>
+                <span className="text-xs font-semibold brand-text hidden sm:inline">{t('appName')}</span>
                 <ChevronRight className="h-3 w-3 text-muted-foreground/40 hidden sm:block" />
                 <span className="text-xs font-medium text-foreground truncate max-w-[120px] sm:max-w-[260px]">
                   {activeItem?.label ?? 'Dashboard'}

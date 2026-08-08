@@ -59,7 +59,7 @@ function LandingHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="max-w-6xl mx-auto flex items-center justify-between h-14 px-6">
-        <Link href="/" className="flex items-center gap-2 font-bold gradient-text">
+        <Link href="/" className="flex items-center gap-2 font-bold brand-text">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.png" alt="ExcelInsight" width="24" height="24" className="h-6 w-6" />
           ExcelInsight
