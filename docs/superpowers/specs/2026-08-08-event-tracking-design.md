@@ -48,6 +48,7 @@ type AnalyticsEvent =
   | { name: 'file_upload_rejected'; props: { fileExt: string } }
   | { name: 'file_parsed'; props: { fileExt: string; rowCount: number; colCount: number } }
   | { name: 'file_parse_failed'; props: { fileExt: string } }
+  | { name: 'file_analysis_empty'; props: { fileExt: string; colCount: number } }
   | { name: 'chart_added'; props: { source: 'suggestion' | 'manual' | 'insight' | 'table' } }
   | { name: 'export_pdf'; props: { status: 'success' | 'failed'; chartCount: number; tableCount: number; insightCount: number } }
   | { name: 'export_png'; props: { status: 'success' | 'failed'; chartType: string } };
@@ -64,6 +65,7 @@ export function trackEvent<E extends AnalyticsEvent>(name: E['name'], props: E['
 | `file_upload_rejected` | `FileUpload.tsx` — `isValidFile` fail path | drop-off before parsing starts |
 | `file_parsed` | `app/page.tsx` — `handleDataLoaded`, after `analyzeColumns` | successful upload, data stage reached |
 | `file_parse_failed` | `FileUpload.tsx` — `processFile` catch block | upload attempted but broke |
+| `file_analysis_empty` | `app/page.tsx` — `handleDataLoaded`, when `buildDefaultDashboard` returns 0 items | parsed fine, but nothing in it was chartable (no numeric/repeating/null-bearing columns, no chart suggestions) — a data-shape problem, not a parse failure |
 | `chart_added` | `app/page.tsx` — `addToDashboard`, `addSuggestionToDashboard`, `addInsightToDashboard`, `addTableToDashboard` | user engaged past the auto-generated default dashboard |
 | `export_pdf` | `app/page.tsx` — `handleExportPdf` success/catch branches | conversion event |
 | `export_png` | `DynamicChart.tsx` — `handleExport` | conversion event |
@@ -71,6 +73,15 @@ export function trackEvent<E extends AnalyticsEvent>(name: E['name'], props: E['
 `file_parsed` fires from `page.tsx` rather than `FileUpload.tsx` because
 `colCount` isn't known until `analyzeColumns` runs, which happens in
 `handleDataLoaded`.
+
+`file_parsed` and `file_analysis_empty` are not mutually exclusive with each
+other — `file_parsed` always fires on a successful parse; `file_analysis_empty`
+fires additionally, right after, only when `buildDefaultDashboard` comes back
+with zero items. This is deliberately a separate event from
+`file_parse_failed`: a parse failure means the file itself was
+unreadable (corrupt, wrong format); `file_analysis_empty` means the file
+was read correctly but its shape has nothing to chart — two different
+problems with different fixes.
 
 The four "add to dashboard" callbacks all emit the same `chart_added` event
 with a `source` discriminator rather than four separate event names — they
