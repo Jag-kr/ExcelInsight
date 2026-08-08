@@ -14,8 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        sans: ["Zen Old Mincho", "Hiragino Mincho ProN", "serif"],
+        serif: ["Zen Old Mincho", "Hiragino Mincho ProN", "serif"],
+        display: ["Chakra Petch", "Noto Sans JP", "sans-serif"],
+        mono: ["Azeret Mono", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -88,6 +90,17 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "0",
+        "2xl": "0",
+        "3xl": "0",
+      },
+      boxShadow: {
+        sm: "1px 1px 0 hsl(var(--foreground))",
+        DEFAULT: "2px 2px 0 hsl(var(--foreground))",
+        md: "2px 2px 0 hsl(var(--foreground))",
+        lg: "3px 3px 0 hsl(var(--foreground))",
+        xl: "4px 4px 0 hsl(var(--foreground))",
+        "2xl": "6px 6px 0 hsl(var(--foreground))",
       },
       keyframes: {
         "accordion-down": {

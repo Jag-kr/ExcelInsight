@@ -110,10 +110,7 @@ export function HeroDemoAnimation({ className = '' }: { className?: string }) {
                   className="w-full rounded-t-sm"
                   style={{
                     height: `${bar.pct}%`,
-                    background:
-                      i % 2 === 0
-                        ? 'linear-gradient(to top, hsl(var(--chart-1)), hsl(var(--chart-1)/0.55))'
-                        : 'linear-gradient(to top, hsl(var(--chart-2)), hsl(var(--chart-2)/0.55))',
+                    background: i % 2 === 0 ? 'hsl(var(--chart-1))' : 'hsl(var(--chart-2))',
                     transformOrigin: 'bottom',
                     animation: `demo-bar-grow 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) ${0.18 + i * 0.09}s both`,
                   }}

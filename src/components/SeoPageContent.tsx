@@ -120,7 +120,7 @@ export function SeoPageContent({ basePage }: { basePage: SeoPage }) {
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs text-primary">
               <Sparkles className="h-3.5 w-3.5" /> {currentCategoryLabel}
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold gradient-text leading-tight">
+            <h1 className="text-4xl md:text-5xl font-bold brand-text leading-tight">
               {page.h1}
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl">
@@ -188,7 +188,7 @@ export function SeoPageContent({ basePage }: { basePage: SeoPage }) {
         {/* Mid-page CTA */}
         <section className="max-w-4xl mx-auto px-6 pb-16">
           <div className="glass-card rounded-2xl p-8 md:p-10 text-center space-y-4">
-            <h2 className="text-2xl md:text-3xl font-bold gradient-text">{ui.tryWithYourOwnFile}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold brand-text">{ui.tryWithYourOwnFile}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">{ui.tryItDesc}</p>
             <div className="pt-2">
               <Cta label={ctaLabel} />
