@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, type ReactNode } from 'react';
-import { BARS, LINE_D, AREA_D, REGIONS, RANKED, DONUT_R, SCATTER_POINTS, RADAR_VALUES } from './data';
+import { BARS, LINE_D, LINE_POINTS, AREA_D, REGIONS, RANKED, DONUT_R, SCATTER_POINTS, RADAR_VALUES } from './data';
 
 export type ChartSize = 'sm' | 'lg';
 
@@ -28,11 +28,15 @@ function ChartCard({
   );
 }
 
-export function MiniBarChart({ size, title, subtitle }: { size: ChartSize; title: string; subtitle: string }) {
-  const height = size === 'lg' ? 220 : 82;
+export function MiniBarChart({
+  size, title, subtitle, fill = false,
+}: { size: ChartSize; title: string; subtitle: string; fill?: boolean }) {
   return (
-    <ChartCard size={size} title={title} subtitle={subtitle}>
-      <div className="flex items-end gap-2" style={{ height }}>
+    <ChartCard size={size} title={title} subtitle={subtitle} className={fill ? 'h-full flex flex-col' : ''}>
+      <div
+        className="flex items-end gap-2"
+        style={fill ? { flex: 1, minHeight: 0 } : { height: size === 'lg' ? 220 : 82 }}
+      >
         {BARS.map((bar, i) => (
           <div key={bar.label} className="flex flex-col items-center gap-1 flex-1 h-full justify-end">
             <div
@@ -58,33 +62,56 @@ export function MiniLineChart({
   size, title, subtitle = '', className = '',
 }: { size: ChartSize; title: string; subtitle?: string; className?: string }) {
   const uid = useId().replace(/:/g, '');
+  const isLg = size === 'lg';
   return (
     <ChartCard size={size} title={title} subtitle={subtitle} className={className}>
-      <svg viewBox="0 0 100 44" className="w-full" style={{ height: size === 'lg' ? 220 : undefined, flex: size === 'lg' ? undefined : 1 }} aria-hidden="true">
-        <defs>
-          <linearGradient id={`${uid}g`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {/* Area fill */}
-        <path
-          d={`${LINE_D} L 98,44 L 2,44 Z`}
-          fill={`url(#${uid}g)`}
-          style={{ opacity: 0, animation: 'demo-fade-up 0.3s ease-out 0.5s both' }}
-        />
+      <svg viewBox="0 0 100 44" className="w-full" style={{ height: isLg ? 220 : undefined, flex: isLg ? undefined : 1 }} aria-hidden="true">
+        {/* Standalone "lg" view stays a pure line — no area fill — so it doesn't
+            read as the same chart type as the Area tab */}
+        {!isLg && (
+          <>
+            <defs>
+              <linearGradient id={`${uid}g`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path
+              d={`${LINE_D} L 98,44 L 2,44 Z`}
+              fill={`url(#${uid}g)`}
+              style={{ opacity: 0, animation: 'demo-fade-up 0.3s ease-out 0.5s both' }}
+            />
+          </>
+        )}
         {/* Trend line — draws itself via stroke-dashoffset */}
         <path
           d={LINE_D}
           fill="none"
           stroke="hsl(var(--primary))"
-          strokeWidth="1.8"
+          strokeWidth={isLg ? 2.2 : 1.8}
           strokeLinecap="round"
           strokeLinejoin="round"
           style={{ strokeDasharray: 200, strokeDashoffset: 200, animation: 'demo-line-draw 0.9s ease-out 0.35s both' }}
         />
-        {/* End-point dot */}
-        <circle cx="98" cy="5" r="2.5" fill="hsl(var(--primary))" style={{ opacity: 0, animation: 'demo-fade-up 0.2s ease-out 1.2s both' }} />
+        {/* Data-point markers — only on the standalone view, reinforcing "line chart" over "area chart" */}
+        {isLg && LINE_POINTS.map((p, i) => (
+          <circle
+            key={i}
+            cx={p.x} cy={p.y} r="2.2"
+            fill="hsl(var(--card))"
+            stroke="hsl(var(--primary))"
+            strokeWidth="1.6"
+            style={{
+              transformOrigin: `${p.x}px ${p.y}px`,
+              transform: 'scale(0)',
+              opacity: 0,
+              animation: `demo-scatter-pop 0.35s cubic-bezier(0.34, 1.4, 0.64, 1) ${0.4 + i * 0.12}s both`,
+            }}
+          />
+        ))}
+        {!isLg && (
+          <circle cx="98" cy="5" r="2.5" fill="hsl(var(--primary))" style={{ opacity: 0, animation: 'demo-fade-up 0.2s ease-out 1.2s both' }} />
+        )}
       </svg>
     </ChartCard>
   );
@@ -218,23 +245,20 @@ export function MiniAreaChart({ title, subtitle }: { title: string; subtitle: st
       <svg viewBox="0 0 100 44" className="w-full" style={{ height: 220 }} aria-hidden="true">
         <defs>
           <linearGradient id={`${uid}ag`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(var(--chart-2))" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="hsl(var(--chart-2))" stopOpacity="0.04" />
+            <stop offset="0%" stopColor="hsl(var(--chart-2))" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="hsl(var(--chart-2))" stopOpacity="0.15" />
           </linearGradient>
         </defs>
+        {/* Baseline */}
+        <line x1="0" y1="44" x2="100" y2="44" stroke="hsl(var(--border)/0.6)" strokeWidth="0.5" />
+        {/* Solid filled region, no separate stroke line — reads as "area" rather than "line" */}
         <path
           d={`${AREA_D} L 98,44 L 2,44 Z`}
           fill={`url(#${uid}ag)`}
-          style={{ opacity: 0, animation: 'demo-fade-up 0.4s ease-out 0.2s both' }}
-        />
-        <path
-          d={AREA_D}
-          fill="none"
           stroke="hsl(var(--chart-2))"
-          strokeWidth="1.8"
-          strokeLinecap="round"
+          strokeWidth="1.2"
           strokeLinejoin="round"
-          style={{ strokeDasharray: 220, strokeDashoffset: 220, animation: 'demo-line-draw 1s ease-out 0.1s both' }}
+          style={{ transformOrigin: '50px 44px', transform: 'scaleY(0)', opacity: 0, animation: 'demo-area-reveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both' }}
         />
       </svg>
     </ChartCard>

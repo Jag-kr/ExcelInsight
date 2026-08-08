@@ -12,6 +12,15 @@ export const BARS = [
 // Smooth upward-trending SVG path (viewBox 0 0 100 44)
 export const LINE_D = 'M 2,38 C 10,34 18,26 28,22 S 46,9 58,13 S 74,19 86,11 L 98,5';
 
+// On-curve anchor points of LINE_D, for the standalone Line tab's data-point markers
+export const LINE_POINTS = [
+  { x: 2, y: 38 },
+  { x: 28, y: 22 },
+  { x: 58, y: 13 },
+  { x: 86, y: 11 },
+  { x: 98, y: 5 },
+];
+
 // Donut / pie segments — sum to 100
 export const REGIONS = [
   { label: 'NA', pct: 42, color: 'hsl(var(--chart-1))' },
