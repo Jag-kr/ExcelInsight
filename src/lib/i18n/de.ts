@@ -158,16 +158,7 @@ export const de: Record<TranslationKey, string> = {
   moreTypes: 'Weitere Typen',
   
   // SEO Hero terms
-  seoHero1: 'ist der schnellste Weg, eine Excel-Tabelle in schöne',
-  seoHero2: 'Excel-Visualisierungen',
-  seoHero3: 'Graphen',
-  seoHero4: 'Plots',
-  seoHero5: 'Dashboards',
-  seoHero6: 'Berichte',
-  seoHero7: 'Erhalten Sie sofort',
-  seoHero8: 'Excel-Analysen',
-  seoHero9: 'Excel-Erkenntnisse',
-  seoHero10: 'aus jeder .xlsx- oder .csv-Datei — kostenlos, privat und zu 100% browserbasiert.',
+  seoHeroPara: 'ExcelInsight ist ein kostenloses, browserbasiertes Analysetool, das Ihre Excel- oder CSV-Datei direkt auf Ihrem Gerät liest — ohne Upload — und sofort Diagramme, Statistiken und ein interaktives Dashboard erstellt. Es unterstützt .xlsx-, .xls- und .csv-Dateien, läuft ohne Installation auf jedem Gerät und ist in sechs Sprachen verfügbar.',
 
   howTitle: 'Wie es funktioniert',
   howIntro: 'In weniger als einer Minute von der Roh-Tabelle zum interaktiven Dashboard.',
@@ -215,6 +206,24 @@ export const de: Record<TranslationKey, string> = {
   clearFileConfirmTitle: 'Hochgeladene Datei löschen?',
   clearFileConfirmDesc: 'Dadurch wird die aktuelle Datei entfernt und alle Diagramme, Filter und Dashboards werden zurückgesetzt. Dies kann nicht rückgängig gemacht werden.',
   cancel: 'Abbrechen',
+
+  // Hero demo animation (HeroDemoAnimation.tsx)
+  demoDashboardMeta: '847 Zeilen · 6 Spalten',
+  demoDashboardChartTitle: 'Umsatz nach Quartal',
+  demoDashboardChartSubtitle: 'Verkäufe · 2024',
+  demoDashboardStat1Label: 'Gesamtumsatz',
+  demoDashboardStat1Value: '84,2K\u00a0$',
+  demoDashboardStat2Label: 'Wachstum ggü. Vorperiode',
+  demoDashboardStat2Value: '↑ 23\u00a0%',
+  demoDashboardStat3Label: 'Einträge verarbeitet',
+  demoDashboardStat3Value: '847',
+  demoDashboardTrendLabel: 'Monatlicher Trend',
+  demoDashboardAnalyzed: 'Analysiert',
+  demoDashboardPrivacy: 'Datei lokal verarbeitet · wird nie auf einen Server hochgeladen',
+
+  // "See it in action" section (R7)
+  demoSectionTitle: 'Das Produkt live erleben',
+  demoSectionDesc: 'Lade eine beliebige Excel- oder CSV-Datei hoch und sieh zu, wie Diagramme, Dashboards und Insights in unter 10\u00a0Sekunden entstehen – vollständig im Browser, ohne dass etwas hochgeladen wird.',
 
   // SEO page UI chrome
   categoryFeature: 'Funktionen',

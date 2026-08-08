@@ -157,16 +157,8 @@ export const hi: Record<TranslationKey, string> = {
   repeatingValuesSuffix: ' — दोहराए जाने वाले मान',
   moreTypes: 'और प्रकार',
 
-  seoHero1: 'एक एक्सेल स्प्रेडशीट को सुंदर',
-  seoHero2: 'एक्सेल विज़ुअलाइज़ेशन',
-  seoHero3: 'ग्राफ़',
-  seoHero4: 'प्लॉट',
-  seoHero5: 'डैशबोर्ड',
-  seoHero6: 'और रिपोर्ट में बदलने का सबसे तेज़ तरीका है।',
-  seoHero7: 'किसी भी .xlsx या .csv फ़ाइल से त्वरित',
-  seoHero8: 'एक्सेल एनालिटिक्स',
-  seoHero9: 'और एक्सेल इनसाइट्स प्राप्त करें',
-  seoHero10: '— मुफ़्त, निजी, और 100% ब्राउज़र-आधारित।',
+  // SEO Hero terms
+  seoHeroPara: 'ExcelInsight एक मुफ़्त, ब्राउज़र-आधारित एनालिटिक्स टूल है जो आपकी Excel या CSV फ़ाइल को सीधे आपके डिवाइस पर पढ़ता है — कुछ भी अपलोड नहीं होता — और तुरंत चार्ट, सांख्यिकी और एक इंटरैक्टिव डैशबोर्ड तैयार करता है। यह .xlsx, .xls और .csv फ़ाइलों को सपोर्ट करता है, बिना किसी इंस्टॉलेशन के किसी भी डिवाइस पर चलता है, और छह भाषाओं में उपलब्ध है।',
 
   howTitle: 'यह कैसे काम करता है',
   howIntro: 'एक मिनट से भी कम समय में कच्ची स्प्रेडशीट से इंटरैक्टिव डैशबोर्ड तक जाएं।',
@@ -214,6 +206,24 @@ export const hi: Record<TranslationKey, string> = {
   clearFileConfirmTitle: 'अपलोड की गई फ़ाइल हटाएँ?',
   clearFileConfirmDesc: 'इससे वर्तमान फ़ाइल हट जाएगी और सभी चार्ट, फ़िल्टर और डैशबोर्ड रीसेट हो जाएंगे। इसे पूर्ववत नहीं किया जा सकता।',
   cancel: 'रद्द करें',
+
+  // Hero demo animation (HeroDemoAnimation.tsx)
+  demoDashboardMeta: '847 पंक्तियाँ · 6 स्तंभ',
+  demoDashboardChartTitle: 'तिमाही-वार राजस्व',
+  demoDashboardChartSubtitle: 'बिक्री · 2024',
+  demoDashboardStat1Label: 'कुल राजस्व',
+  demoDashboardStat1Value: '$84.2K',
+  demoDashboardStat2Label: 'पिछले वर्ष की तुलना में वृद्धि',
+  demoDashboardStat2Value: '↑ 23%',
+  demoDashboardStat3Label: 'रिकॉर्ड विश्लेषित',
+  demoDashboardStat3Value: '847',
+  demoDashboardTrendLabel: 'मासिक प्रवृत्ति',
+  demoDashboardAnalyzed: 'विश्लेषित',
+  demoDashboardPrivacy: 'फ़ाइल स्थानीय रूप से प्रोसेस हुई · किसी सर्वर पर अपलोड नहीं',
+
+  // "See it in action" section (R7)
+  demoSectionTitle: 'उत्पाद को काम करते देखें',
+  demoSectionDesc: 'कोई भी Excel या CSV फ़ाइल डालें और देखें कि चार्ट, डैशबोर्ड और इनसाइट्स 10 सेकंड से कम में खुद बन जाते हैं — पूरी तरह आपके ब्राउज़र में, बिना कुछ अपलोड किए।',
 
   // SEO page UI chrome
   categoryFeature: 'विशेषताएँ',

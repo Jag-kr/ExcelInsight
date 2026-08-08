@@ -16,6 +16,7 @@ import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, get
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useI18n } from '@/lib/i18n';
+import { trackEvent } from '@/lib/analytics';
 
 interface DynamicChartProps {
   title: string;
@@ -80,8 +81,10 @@ export function DynamicChart({
       link.download = `${title.replace(/\s+/g, '_')}.png`;
       link.href = url;
       link.click();
+      trackEvent('export_png', { status: 'success', chartType: type });
     } catch (e) {
       console.error('Export failed', e);
+      trackEvent('export_png', { status: 'failed', chartType: type });
     }
   };
 

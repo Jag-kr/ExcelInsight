@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
 import { FaqAccordion } from '@/components/FaqAccordion';
+import { HeroDemoAnimation } from '@/components/HeroDemoAnimation';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import { seoPagesByCategory, categoryLabel, type SeoCategory } from '@/content/seo-pages';
@@ -196,11 +197,7 @@ export function LandingContent() {
       {/* ── SEO-rich intro ── */}
       <section aria-label="ExcelInsight overview" className="text-center max-w-3xl mx-auto">
         <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-          <strong className="text-foreground">ExcelInsight</strong> {t('seoHero1')}{' '}
-          <strong className="text-foreground">{t('seoHero2')}</strong>, <strong className="text-foreground">{t('seoHero3')}</strong>,{' '}
-          <strong className="text-foreground">{t('seoHero4')}</strong>, <strong className="text-foreground">{t('seoHero5')}</strong>,{' '}
-          <strong className="text-foreground">{t('seoHero6')}</strong>. {t('seoHero7')} <strong className="text-foreground">{t('seoHero8')}</strong>{' '}
-          <strong className="text-foreground">{t('seoHero9')}</strong> {t('seoHero10')}
+          {t('seoHeroPara')}
         </p>
       </section>
 
@@ -292,6 +289,28 @@ export function LandingContent() {
               <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      {/* ── Section: See it in action — the demo now lives below the fold instead of competing with the upload zone in the hero ── */}
+      <section aria-labelledby="demo-section-heading">
+        <div className="text-center mb-8">
+          <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium mb-4">
+            <Sparkles className="h-3.5 w-3.5" />
+            {t('seeItInAction')}
+          </span>
+          <h2
+            id="demo-section-heading"
+            className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3"
+          >
+            {t('demoSectionTitle')}
+          </h2>
+          <p className="narrative-reveal text-muted-foreground max-w-xl mx-auto">
+            {t('demoSectionDesc')}
+          </p>
+        </div>
+        <div className="max-w-2xl mx-auto narrative-reveal">
+          <HeroDemoAnimation />
         </div>
       </section>
 

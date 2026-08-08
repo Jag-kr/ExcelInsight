@@ -157,16 +157,8 @@ export const fr: Record<TranslationKey, string> = {
   repeatingValuesSuffix: ' — Valeurs Répétées',
   moreTypes: 'Plus de types',
   
-  seoHero1: 'est le moyen le plus rapide de transformer une feuille de calcul en superbes',
-  seoHero2: 'visualisations Excel',
-  seoHero3: 'graphiques',
-  seoHero4: 'tracés',
-  seoHero5: 'tableaux de bord',
-  seoHero6: 'rapports',
-  seoHero7: 'Obtenez instantanément',
-  seoHero8: 'des analyses Excel',
-  seoHero9: 'des insights Excel',
-  seoHero10: 'à partir de n\'importe quel fichier .xlsx ou .csv — gratuit, privé et 100% dans le navigateur.',
+  // SEO Hero terms
+  seoHeroPara: 'ExcelInsight est un outil d\'analyse gratuit qui fonctionne entièrement dans le navigateur : il lit votre fichier Excel ou CSV en local — sans aucun envoi vers un serveur — et génère instantanément des graphiques, des statistiques et un tableau de bord interactif. Il prend en charge les formats .xlsx, .xls et .csv, fonctionne sur n\'importe quel appareil sans installation et est disponible en six langues.',
 
   howTitle: 'Comment ça marche',
   howIntro: 'Passez d\'une feuille de calcul brute à un tableau de bord interactif en moins d\'une minute.',
@@ -214,6 +206,24 @@ export const fr: Record<TranslationKey, string> = {
   clearFileConfirmTitle: 'Effacer le fichier téléchargé ?',
   clearFileConfirmDesc: 'Cela supprimera le fichier actuel et réinitialisera tous les graphiques, filtres et tableaux de bord. Cette action est irréversible.',
   cancel: 'Annuler',
+
+  // Hero demo animation (HeroDemoAnimation.tsx)
+  demoDashboardMeta: '847 lignes · 6 colonnes',
+  demoDashboardChartTitle: 'Chiffre d\'affaires par trimestre',
+  demoDashboardChartSubtitle: 'Ventes · 2024',
+  demoDashboardStat1Label: 'Chiffre d\'affaires total',
+  demoDashboardStat1Value: '84,2K\u00a0$',
+  demoDashboardStat2Label: 'Croissance vs période précédente',
+  demoDashboardStat2Value: '↑ 23\u00a0%',
+  demoDashboardStat3Label: 'Enregistrements analysés',
+  demoDashboardStat3Value: '847',
+  demoDashboardTrendLabel: 'Tendance mensuelle',
+  demoDashboardAnalyzed: 'Analysé',
+  demoDashboardPrivacy: 'Fichier traité localement · jamais envoyé à un serveur',
+
+  // "See it in action" section (R7)
+  demoSectionTitle: 'Voyez le produit en action',
+  demoSectionDesc: 'Déposez n\'importe quel fichier Excel ou CSV et regardez graphiques, tableaux de bord et insights se construire en moins de 10\u00a0secondes — entièrement dans votre navigateur, sans rien uploader.',
 
   // SEO page UI chrome
   categoryFeature: 'Fonctionnalités',

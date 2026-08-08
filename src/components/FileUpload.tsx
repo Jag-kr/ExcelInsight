@@ -3,6 +3,7 @@ import { Upload, X, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n';
 import { toast } from 'sonner';
+import { trackEvent, getFileExt } from '@/lib/analytics';
 
 const ACCEPTED_EXTENSIONS = ['.xlsx', '.xls', '.csv'];
 const ACCEPTED_MIME_TYPES = new Set([
@@ -35,6 +36,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
 
   const processFile = useCallback((file: File) => {
     if (!isValidFile(file)) {
+      trackEvent('file_upload_rejected', { fileExt: getFileExt(file.name) });
       toast.error(t('invalidFileType'));
       return;
     }
@@ -65,6 +67,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
       } catch (err: any) {
         clearInterval(interval);
         console.error('Failed to parse file:', err);
+        trackEvent('file_parse_failed', { fileExt: getFileExt(file.name) });
         toast.error('Failed to parse file. Please check it is a valid Excel or CSV file.');
         setFileName(null);
         setLoading(false);
