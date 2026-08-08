@@ -2,7 +2,7 @@ export const en = {
   // App
   appName: 'ExcelInsight',
   analyticsEngine: 'Analytics Engine',
-  uploadSubtitle: 'Upload any Excel file • Instant analytics • Custom dashboards',
+  uploadSubtitle: 'ExcelInsight turns any spreadsheet into charts and dashboards entirely in your browser — no upload, no signup, no data leaving your device.',
   smartDetection: 'Smart Detection',
   smartDetectionDesc: 'Auto-detects data types',
   autoCharts: 'Auto Charts',
@@ -169,16 +169,7 @@ export const en = {
   moreTypes: 'More types',
   
   // SEO Hero terms
-  seoHero1: 'is the fastest way to turn an Excel spreadsheet into beautiful',
-  seoHero2: 'Excel visualizations',
-  seoHero3: 'graphs',
-  seoHero4: 'plots',
-  seoHero5: 'dashboards',
-  seoHero6: 'reports',
-  seoHero7: 'Get instant',
-  seoHero8: 'Excel analytics',
-  seoHero9: 'Excel insights',
-  seoHero10: 'from any .xlsx or .csv file — free, private, and 100% browser-based.',
+  seoHeroPara: 'ExcelInsight is a free, browser-based analytics tool that reads your Excel or CSV file locally — nothing is uploaded — and instantly generates charts, statistics, and an interactive dashboard. It supports .xlsx, .xls, and .csv files, runs on any device without installation, and works in six languages.',
 
   howTitle: 'How it works',
   howIntro: 'Go from raw spreadsheet to interactive dashboard in under a minute.',
@@ -241,6 +232,25 @@ export const en = {
   clearFileConfirmTitle: 'Clear uploaded file?',
   clearFileConfirmDesc: 'This will remove the current file and reset all charts, filters, and dashboards. This cannot be undone.',
   cancel: 'Cancel',
+
+  // Hero demo animation (HeroDemoAnimation.tsx)
+  demoDashboardMeta: '847 rows · 6 cols',
+  demoDashboardChartTitle: 'Revenue by Quarter',
+  demoDashboardChartSubtitle: 'Sales · 2024',
+  demoDashboardStat1Label: 'Total Revenue',
+  demoDashboardStat1Value: '$84.2K',
+  demoDashboardStat2Label: 'Growth vs prior',
+  demoDashboardStat2Value: '↑ 23%',
+  demoDashboardStat3Label: 'Records parsed',
+  demoDashboardStat3Value: '847',
+  demoDashboardTrendLabel: 'Monthly Trend',
+  demoDashboardAnalyzed: 'Analyzed',
+  demoDashboardPrivacy: 'File processed locally · never uploaded to any server',
+
+  // "See it in action" section (R7, LandingContent.tsx)
+  // Note: badge uses existing seeItInAction key
+  demoSectionTitle: 'Watch the product work',
+  demoSectionDesc: 'Drop any Excel or CSV file and watch charts, dashboards, and insights build themselves in under 10\u00a0seconds — entirely in your browser, with nothing uploaded.',
 } as const;
 
 export type TranslationKey = keyof typeof en;

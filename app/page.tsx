@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import logo from '@/assets/ExcelInsight_Logo.png';
 import { toast } from 'sonner';
+import { trackEvent, getFileExt } from '@/lib/analytics';
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
 import { Card } from '@/components/ui/card';
@@ -275,6 +276,12 @@ export default function Index() {
       setAddedChartIds(usedChartIds);
       setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
       setAnalyzing(false);
+
+      const fileExt = getFileExt(name);
+      trackEvent('file_parsed', { fileExt, rowCount: newData.length, colCount: cols.length });
+      if (items.length === 0) {
+        trackEvent('file_analysis_empty', { fileExt, colCount: cols.length });
+      }
     });
   }, [t]);
 
@@ -334,10 +341,10 @@ export default function Index() {
     if (!dashboardRef.current || !dashboardItems.length) { toast.error('Nothing to export'); return; }
     setExporting(true);
     const toastId = toast.loading(t('generatingPdf'));
+    const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
+    const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
+    const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
     try {
-      const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
-      const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
-      const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
       const { exportDashboardToPDF } = await import('@/lib/pdf-export');
       await exportDashboardToPDF(dashboardRef.current, {
         appName: 'ExcelInsight', fileName,
@@ -345,9 +352,11 @@ export default function Index() {
         chartCount, tableCount, insightCount, logoUrl: logo.src,
       });
       toast.success(t('pdfReady'), { id: toastId });
+      trackEvent('export_pdf', { status: 'success', chartCount, tableCount, insightCount });
     } catch (e) {
       console.error(e);
       toast.error(t('pdfFailed'), { id: toastId });
+      trackEvent('export_pdf', { status: 'failed', chartCount, tableCount, insightCount });
     } finally {
       setExporting(false);
     }
@@ -366,6 +375,7 @@ export default function Index() {
 
   const addToDashboard = useCallback((chart: DashboardItem) => {
     setDashboardItems(prev => [...prev, chart]);
+    trackEvent('chart_added', { source: 'manual' });
   }, []);
 
   const addSuggestionToDashboard = useCallback((s: ChartSuggestion) => {
@@ -374,6 +384,7 @@ export default function Index() {
       type: s.type, data: s.data, dataKeys: s.dataKeys, xKey: s.xKey,
     }]);
     setAddedChartIds(prev => new Set(prev).add(s.id));
+    trackEvent('chart_added', { source: 'suggestion' });
   }, []);
 
   const addInsightToDashboard = useCallback((card: { id: string; title: string; content: any; type: 'insight' }) => {
@@ -389,6 +400,7 @@ export default function Index() {
       displayAs: 'insight', insightType, insightContent: content,
     }]);
     setAddedInsightIds(prev => new Set(prev).add(card.id));
+    trackEvent('chart_added', { source: 'insight' });
   }, []);
 
   const addTableToDashboard = useCallback((card: { id: string; title: string; data: any[]; columns: string[] }) => {
@@ -397,6 +409,7 @@ export default function Index() {
       dataKeys: [], xKey: '', displayAs: 'table', tableColumns: card.columns,
     }]);
     setAddedInsightIds(prev => new Set(prev).add(card.id));
+    trackEvent('chart_added', { source: 'table' });
   }, []);
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
@@ -419,70 +432,50 @@ export default function Index() {
           <ThemeLangSwitcher />
         </div>
 
-        {/* Animated blob decorations */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-[0.06] dark:opacity-[0.08]"
-            style={{
-              background: 'radial-gradient(circle, hsl(217, 91%, 60%), transparent 70%)',
-              animation: 'blob-drift 12s ease-in-out infinite',
-            }}
-          />
-          <div
-            className="absolute top-1/3 -left-40 w-[500px] h-[500px] rounded-full opacity-[0.05] dark:opacity-[0.07]"
-            style={{
-              background: 'radial-gradient(circle, hsl(262, 83%, 65%), transparent 70%)',
-              animation: 'blob-drift 16s ease-in-out infinite reverse',
-            }}
-          />
-        </div>
-
         <main className="relative">
-          {/* ── Hero section ── */}
-          <section className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-8 sm:pb-12 space-y-8 hero-appear">
-            {/* Badge */}
-            <div className="flex justify-center hero-appear-badge">
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium">
-                <BarChart3 className="h-3.5 w-3.5" />
-                {t('analyticsEngine')}
-              </span>
-            </div>
+          {/* ── Hero section — single column, upload-first tool front door (works identically on every breakpoint) ── */}
+          <section className="w-full max-w-2xl mx-auto px-4 sm:px-6 pt-10 lg:pt-14 pb-6 hero-appear text-center">
 
-            {/* Logo + Headline */}
-            <div className="text-center space-y-4">
+            {/* Row 1: logo icon + brand name */}
+            <div className="flex items-center gap-2.5 justify-center hero-appear-badge">
               <img
                 src={logo.src}
                 alt="ExcelInsight logo"
-                width="72"
-                height="72"
+                width="32"
+                height="32"
                 fetchPriority="high"
                 decoding="async"
-                className="h-16 w-16 mx-auto drop-shadow-lg logo-float"
+                className="h-8 w-8 flex-shrink-0"
               />
-              <h1 className="text-4xl sm:text-6xl font-bold gradient-text tracking-tight leading-[1.1] hero-appear-title">
-                {t('heroTitle')}
-              </h1>
-              <p className="mx-auto max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed hero-appear-sub">
-                {t('uploadSubtitle')}
-              </p>
-
-              {/* Trust pills */}
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-1 hero-appear-pills">
-                {[t('badgePrivate'), t('badgeInstant'), t('badgeExport')].map((label) => (
-                  <span key={label} className="stat-chip">
-                    {label}
-                  </span>
-                ))}
-              </div>
+              <span className="font-bold text-base gradient-text tracking-tight">ExcelInsight</span>
             </div>
 
-            {/* Upload zone — opacity only, zero delay, fully interactive from frame 1 */}
-            <div className="max-w-2xl mx-auto hero-appear-upload">
+            {/* Headline — compact and functional, not a marketing display treatment */}
+            <h1 className="mt-3 text-xl sm:text-2xl font-semibold text-foreground tracking-tight hero-appear-title">
+              {t('heroTitle')}
+            </h1>
+
+            {/* Upload zone — the primary action, appears immediately (zero delay) */}
+            <div className="mt-6 hero-appear-upload">
               <FileUpload onDataLoaded={handleDataLoaded} />
             </div>
 
-            {/* Feature pills */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto text-center hero-appear-feats">
+            {/* Subtext — reassurance/context, secondary to the action itself */}
+            <p className="mt-4 text-sm text-muted-foreground leading-relaxed hero-appear-sub">
+              {t('uploadSubtitle')}
+            </p>
+
+            {/* Trust pills — functional metadata about the tool, not marketing badges */}
+            <div className="mt-3 flex flex-wrap items-center gap-2 justify-center hero-appear-pills">
+              {[t('badgePrivate'), t('badgeInstant'), t('badgeExport')].map((label) => (
+                <span key={label} className="stat-chip">{label}</span>
+              ))}
+            </div>
+          </section>
+
+          {/* Feature cards — full-width strip, spans wider than the narrow hero column */}
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-6 lg:pb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl lg:max-w-none mx-auto text-center hero-appear-feats">
               {[
                 { icon: Database, label: t('smartDetection'), desc: t('smartDetectionDesc') },
                 { icon: BarChart3, label: t('autoCharts'), desc: t('autoChartsDesc') },
@@ -497,7 +490,7 @@ export default function Index() {
                 </div>
               ))}
             </div>
-          </section>
+          </div>
 
           <LandingContent />
         </main>

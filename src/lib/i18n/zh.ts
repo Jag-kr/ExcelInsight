@@ -157,16 +157,8 @@ export const zh: Record<TranslationKey, string> = {
   repeatingValuesSuffix: ' — 重复值',
   moreTypes: '更多类型',
 
-  seoHero1: '是将 Excel 电子表格转换为精美的',
-  seoHero2: 'Excel 可视化',
-  seoHero3: '图形',
-  seoHero4: '绘图',
-  seoHero5: '仪表板',
-  seoHero6: '和报告的最快方式。',
-  seoHero7: '即刻从任何 .xlsx 或 .csv 文件中获取',
-  seoHero8: 'Excel 分析',
-  seoHero9: '和 Excel 洞察',
-  seoHero10: '— 免费、私密、100% 基于浏览器。',
+  // SEO Hero terms
+  seoHeroPara: 'ExcelInsight 是一款免费的浏览器端数据分析工具，可在本地读取您的 Excel 或 CSV 文件——无需上传——并即时生成图表、统计数据和交互式仪表板。它支持 .xlsx、.xls 和 .csv 格式，无需安装即可在任何设备上运行，并提供六种语言版本。',
 
   howTitle: '工作原理',
   howIntro: '在不到一分钟的时间内从原始电子表格转换为交互式仪表板。',
@@ -214,6 +206,24 @@ export const zh: Record<TranslationKey, string> = {
   clearFileConfirmTitle: '清除已上传的文件？',
   clearFileConfirmDesc: '这将删除当前文件并重置所有图表、筛选器和仪表板。此操作无法撤销。',
   cancel: '取消',
+
+  // Hero demo animation (HeroDemoAnimation.tsx)
+  demoDashboardMeta: '847 行 · 6 列',
+  demoDashboardChartTitle: '各季度营收',
+  demoDashboardChartSubtitle: '销售额 · 2024',
+  demoDashboardStat1Label: '总营收',
+  demoDashboardStat1Value: '$84.2K',
+  demoDashboardStat2Label: '同比增长',
+  demoDashboardStat2Value: '↑ 23%',
+  demoDashboardStat3Label: '已解析记录',
+  demoDashboardStat3Value: '847',
+  demoDashboardTrendLabel: '月度趋势',
+  demoDashboardAnalyzed: '已分析',
+  demoDashboardPrivacy: '文件在本地处理 · 从不上传至任何服务器',
+
+  // "See it in action" section (R7)
+  demoSectionTitle: '看产品如何运作',
+  demoSectionDesc: '上传任意 Excel 或 CSV 文件，见证图表、仪表盘与数据洞察在不到 10\u00a0秒内自动生成——完全在浏览器中完成，无需上传任何内容。',
 
   // SEO page UI chrome
   categoryFeature: '功能',
