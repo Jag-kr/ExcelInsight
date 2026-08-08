@@ -127,24 +127,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
           ? 'border-primary bg-primary/6 scale-[1.01]'
           : 'border-border/60 hover:border-primary/40 hover:bg-secondary/20'
       }`}
-      style={{
-        background: isDragging
-          ? 'linear-gradient(135deg, hsl(var(--primary)/0.06), hsl(var(--accent)/0.04))'
-          : undefined,
-      }}
     >
-      {/* Animated gradient border effect on drag */}
-      {isDragging && (
-        <div
-          className="absolute inset-0 rounded-2xl pointer-events-none"
-          style={{
-            background: 'linear-gradient(90deg, hsl(var(--primary)/0.15), hsl(var(--accent)/0.15), hsl(var(--primary)/0.15))',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 1.5s linear infinite',
-          }}
-        />
-      )}
-
       {/* Upload icon */}
       <div
         className={`relative z-10 rounded-2xl p-4 transition-all duration-300 ${
@@ -195,7 +178,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
               className="h-full rounded-full transition-all duration-300 ease-out"
               style={{
                 width: `${progress}%`,
-                background: 'var(--gradient-primary)',
+                background: 'hsl(var(--primary))',
               }}
             />
           </div>

@@ -21,7 +21,7 @@ export function LegalPage({ docKey, otherDocPath }: LegalPageProps) {
           <Link href="/" className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="ExcelInsight logo" className="h-6" />
-            <span className="font-bold gradient-text">ExcelInsight</span>
+            <span className="font-bold brand-text">ExcelInsight</span>
           </Link>
           <ThemeLangSwitcher />
         </div>
@@ -29,7 +29,7 @@ export function LegalPage({ docKey, otherDocPath }: LegalPageProps) {
 
       <main className="max-w-3xl mx-auto px-6 py-12">
         <article className="glass-card rounded-2xl p-6 md:p-10">
-          <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">{doc.title}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold brand-text mb-2">{doc.title}</h1>
           <p className="text-xs text-muted-foreground mb-8">
             {doc.lastUpdatedLabel}: {doc.lastUpdated}
           </p>

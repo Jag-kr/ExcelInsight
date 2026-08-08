@@ -62,15 +62,7 @@ function StatCard({
         <Icon className="h-5 w-5" style={{ color }} />
       </div>
       <div>
-        <p
-          className="text-3xl font-bold tabular-nums"
-          style={{
-            background: `linear-gradient(135deg, ${color}, hsl(var(--primary)))`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
+        <p className="text-3xl font-bold tabular-nums" style={{ color }}>
           {value.toLocaleString()}{suffix}
         </p>
         <p className="text-sm text-muted-foreground mt-1 font-medium">{label}</p>
@@ -192,7 +184,7 @@ export function LandingContent() {
   ];
 
   return (
-    <div ref={zone2Ref} className="w-full max-w-6xl mx-auto px-4 pb-20 space-y-28">
+    <div ref={zone2Ref} className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 pb-20 space-y-28">
 
       {/* ── SEO-rich intro ── */}
       <section aria-label="ExcelInsight overview" className="text-center max-w-3xl mx-auto">
@@ -216,7 +208,7 @@ export function LandingContent() {
           </span>
           <h2
             id="problem-heading"
-            className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3"
+            className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3"
           >
             Spreadsheets shouldn't slow you down
           </h2>
@@ -235,7 +227,7 @@ export function LandingContent() {
             <div
               className="problem-pin-line w-full h-full"
               style={{
-                background: 'linear-gradient(to bottom, hsl(var(--destructive)/0.3), hsl(var(--primary)/0.3))',
+                background: 'hsl(var(--border))',
                 transformOrigin: 'top center',
               }}
             />
@@ -268,7 +260,7 @@ export function LandingContent() {
             <Sparkles className="h-3.5 w-3.5" />
             Everything you need
           </span>
-          <h2 id="features-heading" className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3">
+          <h2 id="features-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
             {t('featuresTitle')}
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">{t('featuresIntro')}</p>
@@ -301,7 +293,7 @@ export function LandingContent() {
           </span>
           <h2
             id="demo-section-heading"
-            className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3"
+            className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3"
           >
             {t('demoSectionTitle')}
           </h2>
@@ -309,7 +301,7 @@ export function LandingContent() {
             {t('demoSectionDesc')}
           </p>
         </div>
-        <div className="max-w-2xl mx-auto narrative-reveal">
+        <div className="max-w-4xl mx-auto narrative-reveal">
           <HeroDemoAnimation />
         </div>
       </section>
@@ -324,7 +316,7 @@ export function LandingContent() {
             <TrendingUp className="h-3.5 w-3.5" />
             Built for speed
           </span>
-          <h2 id="proof-heading" className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3">
+          <h2 id="proof-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
             From raw file to full dashboard
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">
@@ -345,7 +337,7 @@ export function LandingContent() {
           <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-1.5 text-sm text-accent font-medium mb-4">
             Get started in minutes
           </span>
-          <h2 id="how-heading" className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3">
+          <h2 id="how-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
             {t('howTitle')}
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">{t('howIntro')}</p>
@@ -354,7 +346,7 @@ export function LandingContent() {
         {/* Steps with connecting line */}
         <div className="relative">
           {/* Desktop connector line */}
-          <div className="hidden md:block absolute top-8 left-[calc(12.5%+20px)] right-[calc(12.5%+20px)] h-px bg-gradient-to-r from-primary/20 via-accent/40 to-primary/20" />
+          <div className="hidden md:block absolute top-8 left-[calc(12.5%+20px)] right-[calc(12.5%+20px)] h-px bg-primary/20" />
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {steps.map(({ n, title, desc }, i) => (
@@ -363,7 +355,7 @@ export function LandingContent() {
                 className={`narrative-reveal flex flex-col items-center text-center md:items-center narrative-stagger-${i + 1}`}
               >
                 <div className="relative mb-4">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br from-primary to-accent text-primary-foreground font-bold text-xl shadow-lg shadow-primary/20">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-primary text-primary-foreground font-bold text-xl shadow-lg shadow-primary/20">
                     {n}
                   </div>
                 </div>
@@ -380,15 +372,11 @@ export function LandingContent() {
         <div
           className="narrative-reveal rounded-2xl p-8 md:p-10 relative overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary)/0.06), hsl(var(--accent)/0.06))',
+            background: 'hsl(var(--primary) / 0.05)',
             border: '1px solid hsl(var(--border)/0.6)',
           }}
         >
-          {/* Decorative */}
-          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full opacity-[0.06]"
-            style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
-
-          <h2 id="usecases-heading" className="text-2xl md:text-3xl font-bold gradient-text mb-6">
+          <h2 id="usecases-heading" className="text-2xl md:text-3xl font-bold brand-text mb-6">
             {t('useCasesTitle')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -415,7 +403,7 @@ export function LandingContent() {
       {/* ── Tools hub ── */}
       <section aria-labelledby="tools-heading">
         <div className="text-center mb-12">
-          <h2 id="tools-heading" className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3">
+          <h2 id="tools-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
             Free Excel &amp; CSV Tools — Chart Makers, Dashboards &amp; Data Insights
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">
@@ -452,7 +440,7 @@ export function LandingContent() {
       {/* ── FAQ ── */}
       <section aria-labelledby="faq-heading">
         <div className="text-center mb-12">
-          <h2 id="faq-heading" className="narrative-reveal text-3xl md:text-4xl font-bold gradient-text mb-3">
+          <h2 id="faq-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
             {t('faqTitle')}
           </h2>
           <p className="narrative-reveal text-muted-foreground">{t('faqIntro')}</p>
@@ -466,18 +454,10 @@ export function LandingContent() {
       <section aria-labelledby="cta-heading" className="text-center">
         <div className="cta-settle narrative-reveal inline-block rounded-3xl p-10 md:p-14 w-full max-w-2xl mx-auto relative overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary)/0.08), hsl(var(--accent)/0.08))',
+            background: 'hsl(var(--primary) / 0.06)',
             border: '1px solid hsl(var(--border)/0.6)',
           }}
         >
-          {/* Glow orb */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            aria-hidden="true"
-            style={{
-              background: 'radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--primary)/0.12), transparent 70%)',
-            }}
-          />
           <div className="relative z-10 space-y-5">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium">
               <Sparkles className="h-3.5 w-3.5" />
@@ -485,7 +465,7 @@ export function LandingContent() {
             </div>
             <h2
               id="cta-heading"
-              className="text-3xl md:text-4xl font-bold gradient-text"
+              className="text-3xl md:text-4xl font-bold brand-text"
             >
               Your data. Your answers. Instantly.
             </h2>
@@ -496,7 +476,7 @@ export function LandingContent() {
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                className="cta-pulse-btn inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+                className="cta-pulse-btn font-mono inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
                 aria-label="Scroll to top to upload your file"
               >
                 <Upload className="h-4 w-4" />
@@ -515,7 +495,7 @@ export function LandingContent() {
       <footer className="border-t border-border pt-10 pb-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-center sm:text-left">
-            <p className="text-sm font-semibold gradient-text">ExcelInsight</p>
+            <p className="text-sm font-semibold brand-text">ExcelInsight</p>
             <p className="text-xs text-muted-foreground mt-0.5">{t('footerCopy')}</p>
           </div>
           <nav className="flex items-center gap-4 text-sm">
