@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import logo from '@/assets/ExcelInsight_Logo.png';
 import { toast } from 'sonner';
+import { trackEvent, getFileExt } from '@/lib/analytics';
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
 import { Card } from '@/components/ui/card';
@@ -276,6 +277,12 @@ export default function Index() {
       setAddedChartIds(usedChartIds);
       setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
       setAnalyzing(false);
+
+      const fileExt = getFileExt(name);
+      trackEvent('file_parsed', { fileExt, rowCount: newData.length, colCount: cols.length });
+      if (items.length === 0) {
+        trackEvent('file_analysis_empty', { fileExt, colCount: cols.length });
+      }
     });
   }, [t]);
 
