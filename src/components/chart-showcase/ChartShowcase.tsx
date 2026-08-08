@@ -34,7 +34,7 @@ function OverviewPanel({ t }: { t: (key: TranslationKey) => string }) {
     <div className="space-y-2.5">
       <div className="grid grid-cols-5 gap-2.5">
         <div className="col-span-3">
-          <MiniBarChart size="sm" title={t('demoDashboardChartTitle')} subtitle={t('demoDashboardChartSubtitle')} />
+          <MiniBarChart size="sm" title={t('demoDashboardChartTitle')} subtitle={t('demoDashboardChartSubtitle')} fill />
         </div>
         <div className="col-span-2 flex flex-col gap-2">
           {STATS.map((stat) => (
@@ -111,7 +111,7 @@ export function ChartShowcase({ className = '' }: { className?: string }) {
   const [active, setActive] = useState<TabKey>('overview');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const prefersReducedMotion = useReducedMotion() || true; // TEMP DIAGNOSTIC — revert before finishing
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (prefersReducedMotion) return;

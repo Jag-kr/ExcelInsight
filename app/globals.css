@@ -464,6 +464,11 @@
   to   { transform: scale(1); opacity: 1; }
 }
 
+@keyframes demo-area-reveal {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+
 
 /* ── Zone 2: Scroll-driven narrative keyframes ── */
 @keyframes narrative-reveal {
