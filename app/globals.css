@@ -449,6 +449,16 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes demo-bar-grow-x {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes demo-donut-reveal {
+  from { clip-path: circle(0% at 50% 50%); opacity: 0; }
+  to   { clip-path: circle(55% at 50% 50%); opacity: 1; }
+}
+
 
 /* ── Zone 2: Scroll-driven narrative keyframes ── */
 @keyframes narrative-reveal {
@@ -586,6 +596,7 @@
       opacity: 1 !important;
       transform: none !important;
       stroke-dashoffset: 0 !important;
+      clip-path: none !important;
     }
   }
 

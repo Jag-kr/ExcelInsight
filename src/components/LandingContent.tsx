@@ -165,20 +165,20 @@ export function LandingContent() {
   const painPoints = [
     {
       icon: Clock,
-      label: 'Hours wasted',
-      desc: 'Manually building charts in Excel takes hours you don\'t have.',
+      label: t('painPoint1Label'),
+      desc: t('painPoint1Desc'),
       color: 'hsl(var(--chart-7))',
     },
     {
       icon: AlertCircle,
-      label: 'Human error',
-      desc: 'Copy-paste mistakes corrupt reports before they ever reach stakeholders.',
+      label: t('painPoint2Label'),
+      desc: t('painPoint2Desc'),
       color: 'hsl(var(--chart-5))',
     },
     {
       icon: RefreshCw,
-      label: 'Repeat work',
-      desc: 'Every new file means rebuilding the same layouts from scratch.',
+      label: t('painPoint3Label'),
+      desc: t('painPoint3Desc'),
       color: 'hsl(var(--chart-4))',
     },
   ];
@@ -187,7 +187,7 @@ export function LandingContent() {
     <div ref={zone2Ref} className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 pb-20 space-y-28">
 
       {/* ── SEO-rich intro ── */}
-      <section aria-label="ExcelInsight overview" className="text-center max-w-3xl mx-auto">
+      <section aria-label={t('overviewAriaLabel')} className="text-center max-w-3xl mx-auto">
         <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
           {t('seoHeroPara')}
         </p>
@@ -204,16 +204,16 @@ export function LandingContent() {
         <div className="text-center mb-10">
           <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-destructive/25 bg-destructive/8 px-4 py-1.5 text-sm text-destructive font-medium mb-4">
             <AlertCircle className="h-3.5 w-3.5" />
-            Sound familiar?
+            {t('soundFamiliar')}
           </span>
           <h2
             id="problem-heading"
             className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3"
           >
-            Spreadsheets shouldn't slow you down
+            {t('problemHeading')}
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-xl mx-auto">
-            You have the data. You just need answers — not another afternoon of pivot tables.
+            {t('problemDesc')}
           </p>
         </div>
 
@@ -258,7 +258,7 @@ export function LandingContent() {
         <div className="text-center mb-12">
           <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium mb-4">
             <Sparkles className="h-3.5 w-3.5" />
-            Everything you need
+            {t('everythingYouNeedBadge')}
           </span>
           <h2 id="features-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
             {t('featuresTitle')}
@@ -314,20 +314,20 @@ export function LandingContent() {
         <div className="text-center mb-12">
           <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-1.5 text-sm text-accent font-medium mb-4">
             <TrendingUp className="h-3.5 w-3.5" />
-            Built for speed
+            {t('builtForSpeedBadge')}
           </span>
           <h2 id="proof-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
-            From raw file to full dashboard
+            {t('proofHeading')}
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">
-            No sign-up. No cloud uploads. No waiting. Your data stays in your browser.
+            {t('proofDesc')}
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard target={100} suffix="%" label="Browser-only" icon={ShieldCheck} color="hsl(var(--chart-3))" inView={statsInView} delay={0} />
-          <StatCard target={0} suffix="" label="Files uploaded to server" icon={Zap} color="hsl(var(--chart-1))" inView={statsInView} delay={120} />
-          <StatCard target={30} suffix="s" label="Time to first chart" icon={Clock} color="hsl(var(--chart-4))" inView={statsInView} delay={240} />
-          <StatCard target={8} suffix="+" label="Chart types auto-generated" icon={BarChart3} color="hsl(var(--chart-2))" inView={statsInView} delay={360} />
+          <StatCard target={100} suffix="%" label={t('statBrowserOnly')} icon={ShieldCheck} color="hsl(var(--chart-3))" inView={statsInView} delay={0} />
+          <StatCard target={0} suffix="" label={t('statFilesUploaded')} icon={Zap} color="hsl(var(--chart-1))" inView={statsInView} delay={120} />
+          <StatCard target={30} suffix="s" label={t('statTimeToChart')} icon={Clock} color="hsl(var(--chart-4))" inView={statsInView} delay={240} />
+          <StatCard target={8} suffix="+" label={t('statChartTypesGenerated')} icon={BarChart3} color="hsl(var(--chart-2))" inView={statsInView} delay={360} />
         </div>
       </section>
 
@@ -335,7 +335,7 @@ export function LandingContent() {
       <section aria-labelledby="how-heading">
         <div className="text-center mb-12">
           <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-1.5 text-sm text-accent font-medium mb-4">
-            Get started in minutes
+            {t('getStartedMinutesBadge')}
           </span>
           <h2 id="how-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
             {t('howTitle')}
@@ -404,10 +404,10 @@ export function LandingContent() {
       <section aria-labelledby="tools-heading">
         <div className="text-center mb-12">
           <h2 id="tools-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
-            Free Excel &amp; CSV Tools — Chart Makers, Dashboards &amp; Data Insights
+            {t('toolsHeading')}
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">
-            Make bar graphs, line charts, dashboards and get data insights from Excel &amp; CSV files — all free, all private, all browser-based.
+            {t('toolsDesc')}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -461,30 +461,30 @@ export function LandingContent() {
           <div className="relative z-10 space-y-5">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium">
               <Sparkles className="h-3.5 w-3.5" />
-              No account needed
+              {t('noAccountNeededBadge')}
             </div>
             <h2
               id="cta-heading"
               className="text-3xl md:text-4xl font-bold brand-text"
             >
-              Your data. Your answers. Instantly.
+              {t('ctaHeading')}
             </h2>
             <p className="text-muted-foreground max-w-md mx-auto">
-              Drop any Excel or CSV file above and watch charts, insights, and dashboards build themselves — in seconds, in your browser.
+              {t('ctaDesc')}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className="cta-pulse-btn font-mono inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
-                aria-label="Scroll to top to upload your file"
+                aria-label={t('uploadFileFreeAriaLabel')}
               >
                 <Upload className="h-4 w-4" />
-                Upload a file — it's free
+                {t('uploadFileFreeCta')}
               </a>
               <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-success" />
-                Never leaves your browser
+                {t('neverLeavesBrowser')}
               </span>
             </div>
           </div>
