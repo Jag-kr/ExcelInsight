@@ -374,6 +374,7 @@ export default function Index() {
 
   const addToDashboard = useCallback((chart: DashboardItem) => {
     setDashboardItems(prev => [...prev, chart]);
+    trackEvent('chart_added', { source: 'manual' });
   }, []);
 
   const addSuggestionToDashboard = useCallback((s: ChartSuggestion) => {
@@ -382,6 +383,7 @@ export default function Index() {
       type: s.type, data: s.data, dataKeys: s.dataKeys, xKey: s.xKey,
     }]);
     setAddedChartIds(prev => new Set(prev).add(s.id));
+    trackEvent('chart_added', { source: 'suggestion' });
   }, []);
 
   const addInsightToDashboard = useCallback((card: { id: string; title: string; content: any; type: 'insight' }) => {
@@ -397,6 +399,7 @@ export default function Index() {
       displayAs: 'insight', insightType, insightContent: content,
     }]);
     setAddedInsightIds(prev => new Set(prev).add(card.id));
+    trackEvent('chart_added', { source: 'insight' });
   }, []);
 
   const addTableToDashboard = useCallback((card: { id: string; title: string; data: any[]; columns: string[] }) => {
@@ -405,6 +408,7 @@ export default function Index() {
       dataKeys: [], xKey: '', displayAs: 'table', tableColumns: card.columns,
     }]);
     setAddedInsightIds(prev => new Set(prev).add(card.id));
+    trackEvent('chart_added', { source: 'table' });
   }, []);
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
