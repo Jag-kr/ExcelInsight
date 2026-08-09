@@ -7,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
+import { TopValueBar } from '@/components/TopValueBar';
+import { getChartColor, getChartColorVar } from '@/lib/chart-themes';
 
 interface SmartInsightsProps {
   columns: ColumnMeta[];
@@ -145,14 +147,14 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
   return (
     <div className="space-y-6">
       <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-        <BarChart3 className="h-4 w-4 text-primary" />
+        <BarChart3 className="h-4 w-4" style={{ color: getChartColor(0) }} />
         {t('smartInsights')}
       </h3>
 
       {/* Repeating Values Detection */}
       {repeatingColumns.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-xs font-semibold text-accent flex items-center gap-2">
+          <h4 className="text-xs font-semibold flex items-center gap-2" style={{ color: getChartColor(0) }}>
             <Repeat2 className="h-3.5 w-3.5" />
             {t('repeatingValues')}
           </h4>
@@ -165,7 +167,7 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">{col.name}</span>
                     <div className="flex items-center gap-1">
-                      <Badge variant="secondary" className="text-[10px] bg-accent/20 text-accent font-normal border-0">
+                      <Badge variant="secondary" className="text-[10px] font-normal border-0" style={{ background: `hsl(${getChartColorVar(0)} / 0.18)`, color: getChartColor(0) }}>
                         {t('highRepetition')} ({Math.round(col.repetitionRatio * 100)}%)
                       </Badge>
                       {isAdded(chartId) ? <AddedBadge /> : onAddToDashboard && (
@@ -185,12 +187,8 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
                   </p>
                   <div className="space-y-1">
                     <p className="text-[10px] text-muted-foreground font-medium">{t('topValues')}:</p>
-                    {col.topValues.map(v => (
-                      <div key={v.value} className="flex items-center gap-2">
-                        <Progress value={v.percentage} className="flex-1 h-1.5 [&>div]:bg-primary/70" />
-                        <span className="text-[10px] text-foreground min-w-[60px] truncate">{v.value}</span>
-                        <span className="text-[10px] text-muted-foreground shrink-0">{v.count} ({v.percentage}%)</span>
-                      </div>
+                    {col.topValues.map((v, i) => (
+                      <TopValueBar key={v.value} index={i} value={v.value} count={v.count} percentage={v.percentage} />
                     ))}
                   </div>
                 </Card>

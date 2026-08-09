@@ -86,6 +86,12 @@ export const zh: Record<TranslationKey, string> = {
   darkMode: '深色',
   theme: '主题',
   language: '语言',
+  chartTheme: '图表主题',
+  chartPaletteDefault: '默认',
+  chartPaletteProfessional: '专业',
+  chartPaletteVibrant: '鲜艳',
+  chartPaletteColorblindSafe: '色盲友好',
+  chartPalettePastel: '柔和',
 
   allChartsAdded: '所有图表都已添加到仪表板',
   exportPdf: '导出PDF',

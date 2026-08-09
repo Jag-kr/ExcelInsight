@@ -95,6 +95,12 @@ export const en = {
   darkMode: 'Dark',
   theme: 'Theme',
   language: 'Language',
+  chartTheme: 'Chart Theme',
+  chartPaletteDefault: 'Default',
+  chartPaletteProfessional: 'Professional',
+  chartPaletteVibrant: 'Vibrant',
+  chartPaletteColorblindSafe: 'Colorblind Safe',
+  chartPalettePastel: 'Pastel',
 
   // Dashboard extras
   allChartsAdded: 'All charts have been added to the dashboard',

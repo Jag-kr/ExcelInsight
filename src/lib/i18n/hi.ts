@@ -86,6 +86,12 @@ export const hi: Record<TranslationKey, string> = {
   darkMode: 'डार्क',
   theme: 'थीम',
   language: 'भाषा',
+  chartTheme: 'चार्ट थीम',
+  chartPaletteDefault: 'डिफ़ॉल्ट',
+  chartPaletteProfessional: 'प्रोफेशनल',
+  chartPaletteVibrant: 'वाइब्रेंट',
+  chartPaletteColorblindSafe: 'कलरब्लाइंड सेफ',
+  chartPalettePastel: 'पेस्टल',
 
   allChartsAdded: 'सभी चार्ट डैशबोर्ड में जोड़ दिए गए हैं',
   exportPdf: 'PDF निर्यात',
