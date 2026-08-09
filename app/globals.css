@@ -163,6 +163,43 @@
     --sidebar-border: 171 15% 16%;
     --sidebar-ring: 40 90% 58%;
   }
+
+  /* ── Chart color palettes (independent of light/dark mode) ── */
+  [data-chart-theme="professional"] {
+    --chart-1: 217 55% 38%; --chart-2: 190 45% 35%; --chart-3: 230 25% 48%; --chart-4: 40 45% 42%;
+    --chart-5: 150 25% 38%; --chart-6: 350 40% 40%; --chart-7: 210 12% 50%; --chart-8: 260 18% 52%;
+  }
+  .dark[data-chart-theme="professional"] {
+    --chart-1: 217 60% 62%; --chart-2: 190 50% 55%; --chart-3: 230 35% 68%; --chart-4: 40 55% 60%;
+    --chart-5: 150 30% 55%; --chart-6: 350 45% 62%; --chart-7: 210 12% 68%; --chart-8: 260 25% 70%;
+  }
+
+  [data-chart-theme="vibrant"] {
+    --chart-1: 335 85% 48%; --chart-2: 210 90% 44%; --chart-3: 95 70% 30%; --chart-4: 25 95% 42%;
+    --chart-5: 270 80% 55%; --chart-6: 175 75% 30%; --chart-7: 45 95% 32%; --chart-8: 355 80% 46%;
+  }
+  .dark[data-chart-theme="vibrant"] {
+    --chart-1: 335 90% 68%; --chart-2: 210 95% 65%; --chart-3: 95 75% 55%; --chart-4: 25 95% 62%;
+    --chart-5: 270 85% 68%; --chart-6: 175 80% 52%; --chart-7: 45 95% 58%; --chart-8: 355 85% 62%;
+  }
+
+  [data-chart-theme="colorblind-safe"] {
+    --chart-1: 41 100% 32%; --chart-2: 202 70% 48%; --chart-3: 164 100% 28%; --chart-4: 56 82% 24%;
+    --chart-5: 202 100% 30%; --chart-6: 26 100% 40%; --chart-7: 327 45% 45%; --chart-8: 0 0% 42%;
+  }
+  .dark[data-chart-theme="colorblind-safe"] {
+    --chart-1: 41 100% 60%; --chart-2: 202 80% 68%; --chart-3: 164 85% 50%; --chart-4: 56 85% 65%;
+    --chart-5: 202 100% 55%; --chart-6: 26 100% 58%; --chart-7: 327 50% 68%; --chart-8: 0 0% 68%;
+  }
+
+  [data-chart-theme="pastel"] {
+    --chart-1: 350 55% 52%; --chart-2: 205 55% 44%; --chart-3: 155 45% 32%; --chart-4: 25 65% 46%;
+    --chart-5: 270 42% 52%; --chart-6: 48 60% 30%; --chart-7: 175 40% 32%; --chart-8: 320 32% 48%;
+  }
+  .dark[data-chart-theme="pastel"] {
+    --chart-1: 350 60% 75%; --chart-2: 205 65% 72%; --chart-3: 155 50% 65%; --chart-4: 25 75% 72%;
+    --chart-5: 270 50% 75%; --chart-6: 48 70% 68%; --chart-7: 175 45% 65%; --chart-8: 320 40% 70%;
+  }
 }
 
 @layer base {

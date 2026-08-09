@@ -12,7 +12,7 @@ import { Download, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIc
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, getChartColor, getChartVarColor } from '@/lib/chart-themes';
+import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, getChartColor, getChartVarColor, getChartColorVar } from '@/lib/chart-themes';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useI18n } from '@/lib/i18n';
@@ -166,7 +166,7 @@ export function DynamicChart({
           <PieChart>
             <Pie data={data} dataKey={dataKeys[0]} nameKey={xKey} cx="50%" cy="50%" outerRadius="75%" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
               {data.map((_, i) => (
-                <Cell key={i} fill={getChartColor(i)} />
+                <Cell key={i} fill={getChartColor(i)} stroke="hsl(var(--card))" />
               ))}
             </Pie>
             <ChartTooltip content={<ChartTooltipContent />} />
@@ -262,9 +262,10 @@ export function DynamicChart({
                             aria-pressed={type === ct}
                             className={`p-1 rounded transition-all ${
                               type === ct
-                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                ? 'shadow-sm'
                                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                             }`}
+                            style={type === ct ? { background: `hsl(${getChartColorVar(0)} / 0.18)`, color: getChartColor(0) } : undefined}
                           >
                             <Icon className="h-3 w-3" />
                           </button>
@@ -283,9 +284,10 @@ export function DynamicChart({
                             type="button"
                             className={`p-1 rounded transition-all ${
                               OVERFLOW_CHART_TYPES.includes(type)
-                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                ? 'shadow-sm'
                                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                             }`}
+                            style={OVERFLOW_CHART_TYPES.includes(type) ? { background: `hsl(${getChartColorVar(0)} / 0.18)`, color: getChartColor(0) } : undefined}
                           >
                             <MoreHorizontal className="h-3 w-3" />
                           </button>
@@ -307,9 +309,10 @@ export function DynamicChart({
                                 aria-pressed={type === ct}
                                 className={`p-1.5 rounded transition-all ${
                                   type === ct
-                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    ? 'shadow-sm'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                                 }`}
+                                style={type === ct ? { background: `hsl(${getChartColorVar(0)} / 0.18)`, color: getChartColor(0) } : undefined}
                               >
                                 <Icon className="h-3.5 w-3.5" />
                               </button>
@@ -346,9 +349,10 @@ export function DynamicChart({
                                 aria-pressed={type === opt.value}
                                 className={`p-2 rounded transition-all ${
                                   type === opt.value
-                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    ? 'shadow-sm'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                                 }`}
+                                style={type === opt.value ? { background: `hsl(${getChartColorVar(0)} / 0.18)`, color: getChartColor(0) } : undefined}
                               >
                                 <Icon className="h-4 w-4" />
                               </button>
