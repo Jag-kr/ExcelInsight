@@ -7,7 +7,8 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DynamicChart } from './DynamicChart';
-import { ChartType } from '@/lib/chart-themes';
+import { ChartType, getChartColor, getChartColorVar } from '@/lib/chart-themes';
+import { TopValueBar } from './TopValueBar';
 import {
   Trash2, Maximize2, Minimize2, Square, Repeat2, BarChart3, AlertTriangle,
   Copy, MoreHorizontal, RectangleHorizontal,
@@ -129,10 +130,10 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
       <Card className="dashboard-panel animate-fade-in h-full space-y-2 p-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 min-w-0 flex-1">
-            <Repeat2 className="h-4 w-4 text-accent shrink-0" />
+            <Repeat2 className="h-4 w-4 shrink-0" style={{ color: getChartColor(0) }} />
             <EditableTitle value={item.title} onChange={onRename} className="min-w-0" />
           </h3>
-          <Badge variant="secondary" className="text-[10px] bg-accent/20 text-accent">
+          <Badge variant="secondary" className="text-[10px]" style={{ background: `hsl(${getChartColorVar(0)} / 0.18)`, color: getChartColor(0) }}>
             {t('highRepetition')} ({Math.round(content.repetitionRatio * 100)}%)
           </Badge>
         </div>
@@ -141,12 +142,8 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
         </p>
         <div className="space-y-1">
           <p className="text-[10px] text-muted-foreground font-medium">{t('topValues')}:</p>
-          {content.topValues?.map((v: any) => (
-            <div key={v.value} className="flex items-center gap-2">
-              <Progress value={v.percentage} className="flex-1 h-1.5 [&>div]:bg-primary/70" />
-              <span className="text-[10px] text-foreground min-w-[60px] truncate">{v.value}</span>
-              <span className="text-[10px] text-muted-foreground shrink-0">{v.count} ({v.percentage}%)</span>
-            </div>
+          {content.topValues?.map((v: any, i: number) => (
+            <TopValueBar key={v.value} index={i} value={v.value} count={v.count} percentage={v.percentage} />
           ))}
         </div>
       </Card>
@@ -158,7 +155,7 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
       <Card className="dashboard-panel animate-fade-in h-full flex flex-col">
         <CardHeader className="p-4 pb-0">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-primary" />
+            <BarChart3 className="h-4 w-4" style={{ color: getChartColor(0) }} />
             <EditableTitle value={item.title} onChange={onRename} />
           </CardTitle>
         </CardHeader>
@@ -270,6 +267,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
     transition: transition || 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 50 : 'auto' as any,
+    ...(isDragging ? { '--tw-ring-color': `hsl(${getChartColorVar(0)} / 0.3)` } : {}),
   };
 
   const setSize = (s: 'sm' | 'md' | 'lg') => onUpdateItem({ size: s });
@@ -283,7 +281,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
       style={style}
       data-pdf-card
       className={`relative group ${sizeClasses[size]} ${
-        isDragging ? 'scale-[1.02] shadow-2xl ring-2 ring-primary/30 z-50' : ''
+        isDragging ? 'scale-[1.02] shadow-2xl ring-2 z-50' : ''
       } transition-all duration-200`}
     >
       {/* ─── Left-edge drag rail (always visible on hover) ─── */}
@@ -295,7 +293,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
         title={t('dragToReorder')}
         className="absolute left-0 top-2 bottom-2 w-1 rounded-full z-20 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-150 cursor-grab active:cursor-grabbing touch-none"
         style={{
-          background: 'hsl(var(--primary) / 0.6)',
+          background: `hsl(${getChartColorVar(0)} / 0.6)`,
         }}
       />
 

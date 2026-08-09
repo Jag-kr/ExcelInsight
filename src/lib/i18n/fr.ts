@@ -86,6 +86,12 @@ export const fr: Record<TranslationKey, string> = {
   darkMode: 'Sombre',
   theme: 'Thème',
   language: 'Langue',
+  chartTheme: 'Thème du graphique',
+  chartPaletteDefault: 'Par défaut',
+  chartPaletteProfessional: 'Professionnel',
+  chartPaletteVibrant: 'Vibrant',
+  chartPaletteColorblindSafe: 'Daltonien',
+  chartPalettePastel: 'Pastel',
 
   allChartsAdded: 'Tous les graphiques ont été ajoutés au tableau de bord',
   exportPdf: 'Exporter PDF',
