@@ -10,6 +10,8 @@ export interface PdfExportMeta {
   tableCount: number;
   insightCount: number;
   logoUrl?: string;
+  /** Accent stripe color for the cover page and page headers. Defaults to the app's indigo. */
+  accentColor?: [number, number, number];
 }
 
 const A4_WIDTH_MM = 210;
@@ -34,13 +36,14 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
 function drawCoverPage(pdf: jsPDF, meta: PdfExportMeta, logoDataUrl: string | null) {
   const pageW = A4_WIDTH_MM;
   const pageH = A4_HEIGHT_MM;
+  const [ar, ag, ab] = meta.accentColor ?? [99, 102, 241];
 
   // Background block
   pdf.setFillColor(15, 23, 42);
   pdf.rect(0, 0, pageW, pageH, 'F');
 
   // Accent stripe
-  pdf.setFillColor(99, 102, 241);
+  pdf.setFillColor(ar, ag, ab);
   pdf.rect(0, 0, pageW, 6, 'F');
 
   if (logoDataUrl) {
@@ -127,8 +130,9 @@ export async function exportDashboardToPDF(
     pageNum++;
 
     // header on each content page
+    const [ar, ag, ab] = meta.accentColor ?? [99, 102, 241];
     const drawPageHeader = () => {
-      pdf.setFillColor(99, 102, 241);
+      pdf.setFillColor(ar, ag, ab);
       pdf.rect(0, 0, A4_WIDTH_MM, 4, 'F');
       pdf.setFontSize(9);
       pdf.setTextColor(100, 116, 139);

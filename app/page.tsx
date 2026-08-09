@@ -4,6 +4,9 @@ import { useState, useCallback, useMemo, useRef, useEffect, Suspense, startTrans
 import dynamic from 'next/dynamic';
 import { FileUpload } from '@/components/FileUpload';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
+import { ChartThemeSwitcher } from '@/components/ChartThemeSwitcher';
+import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } from '@/lib/chart-themes';
+import { hslStringToRgb } from '@/lib/color-utils';
 import { LandingContent } from '@/components/LandingContent';
 import { AdSlot } from '@/components/AdSlot';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
@@ -223,6 +226,7 @@ const MOBILE_TABS = [
 
 export default function Index() {
   const { t } = useI18n();
+  const { paletteId } = useChartPalette();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
@@ -346,10 +350,13 @@ export default function Index() {
     const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
     try {
       const { exportDashboardToPDF } = await import('@/lib/pdf-export');
+      const palette = getChartPalette(paletteId);
+      const accentColor = paletteId === 'default' ? undefined : hslStringToRgb(palette.pdfAccent);
       await exportDashboardToPDF(dashboardRef.current, {
         appName: 'ExcelInsight', fileName,
         rowCount: filteredData.length, colCount: columns.length,
         chartCount, tableCount, insightCount, logoUrl: logo.src,
+        accentColor,
       });
       toast.success(t('pdfReady'), { id: toastId });
       trackEvent('export_pdf', { status: 'success', chartCount, tableCount, insightCount });
@@ -360,7 +367,7 @@ export default function Index() {
     } finally {
       setExporting(false);
     }
-  }, [dashboardItems, fileName, columns.length, filteredData, t]);
+  }, [dashboardItems, fileName, columns.length, filteredData, t, paletteId]);
 
   const availableSuggestions = useMemo(() =>
     filteredSuggestions.filter(s => !addedChartIds.has(s.id)),
@@ -686,6 +693,8 @@ export default function Index() {
                 <span className="sm:hidden">PDF</span>
               </Button>
 
+              <ChartThemeSwitcher />
+
               {/* Dashboard overflow menu */}
               {activeTab === 'dashboard' && (
                 <DropdownMenu>
@@ -731,7 +740,7 @@ export default function Index() {
               <div className="dashboard-surface p-4 sm:p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-1">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1" style={{ color: getChartColor(0) }}>
                       {t('workspace')}
                     </p>
                     <h2 className="text-lg font-bold text-foreground">{fileName || t('dashboard')}</h2>
@@ -740,14 +749,14 @@ export default function Index() {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    <Badge variant="secondary" className="rounded-full border-0 bg-primary/10 px-2.5 py-1 text-[11px] text-primary font-medium">
+                    <Badge variant="secondary" className="rounded-full border-0 px-2.5 py-1 text-[11px] font-medium" style={{ background: `hsl(${getChartColorVar(0)} / 0.1)`, color: getChartColor(0) }}>
                       {filteredData.length} {t('rows')}
                     </Badge>
-                    <Badge variant="secondary" className="rounded-full border-0 bg-accent/10 px-2.5 py-1 text-[11px] text-accent font-medium">
+                    <Badge variant="secondary" className="rounded-full border-0 px-2.5 py-1 text-[11px] font-medium" style={{ background: `hsl(${getChartColorVar(1)} / 0.1)`, color: getChartColor(1) }}>
                       {columns.length} {t('cols')}
                     </Badge>
                     {dashboardItems.length > 0 && (
-                      <Badge variant="secondary" className="rounded-full border-0 bg-success/10 px-2.5 py-1 text-[11px] text-success font-medium">
+                      <Badge variant="secondary" className="rounded-full border-0 px-2.5 py-1 text-[11px] font-medium" style={{ background: `hsl(${getChartColorVar(2)} / 0.1)`, color: getChartColor(2) }}>
                         {dashboardItems.length} cards
                       </Badge>
                     )}

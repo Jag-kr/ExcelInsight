@@ -86,6 +86,12 @@ export const de: Record<TranslationKey, string> = {
   darkMode: 'Dunkel',
   theme: 'Design',
   language: 'Sprache',
+  chartTheme: 'Diagrammdesign',
+  chartPaletteDefault: 'Standard',
+  chartPaletteProfessional: 'Professionell',
+  chartPaletteVibrant: 'Lebendig',
+  chartPaletteColorblindSafe: 'Farbenblind-sicher',
+  chartPalettePastel: 'Pastell',
 
   allChartsAdded: 'Alle Diagramme wurden zum Dashboard hinzugefügt',
   exportPdf: 'PDF Exportieren',
