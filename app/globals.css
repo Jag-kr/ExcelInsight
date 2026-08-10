@@ -744,13 +744,66 @@
     animation: cta-pulse 2.4s ease-in-out 0.8s infinite;
   }
 
+  /* ── Scroll-scrubbed chart construction (Proof bars + How-it-works line) ──
+     Unlike .narrative-reveal (a quick trigger over a short range), these track
+     scroll position across nearly the whole time the element is in view, so
+     the chart visibly builds — and un-builds on scroll-back — with the
+     visitor's own scroll motion instead of firing once and holding. */
+  .chart-bar-rise {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+
+  .chart-line-progress {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  @supports ((animation-timeline: view()) and (animation-range: 0% 100%)) {
+    @keyframes chart-bar-rise-scroll {
+      from { transform: scaleY(0); }
+      to   { transform: scaleY(1); }
+    }
+    @keyframes chart-line-progress-scroll {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+
+    .chart-bar-rise {
+      animation: chart-bar-rise-scroll auto linear both;
+      animation-timeline: view();
+      animation-range: entry 15% cover 95%;
+    }
+    .chart-line-progress {
+      animation: chart-line-progress-scroll auto linear both;
+      animation-timeline: view();
+      animation-range: entry 25% cover 90%;
+    }
+  }
+
+  /* Fallback (Firefox and other non-scroll-timeline browsers): a single
+     eased entrance triggered by the existing Zone-2 IntersectionObserver,
+     matching how .narrative-reveal already degrades. */
+  @supports not ((animation-timeline: view()) and (animation-range: 0% 100%)) {
+    .chart-bar-rise,
+    .chart-line-progress {
+      transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .chart-bar-rise.in-view,
+    .chart-line-progress.in-view {
+      transform: none;
+    }
+  }
+
   /* prefers-reduced-motion: collapse all Zone 2 narrative animations */
   @media (prefers-reduced-motion: reduce) {
     .narrative-reveal,
     .narrative-reveal-left,
     .narrative-reveal-right,
     .cta-settle,
-    .problem-pin-line {
+    .problem-pin-line,
+    .chart-bar-rise,
+    .chart-line-progress {
       animation: none !important;
       opacity: 1 !important;
       transform: none !important;

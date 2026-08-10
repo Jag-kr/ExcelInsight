@@ -78,7 +78,7 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
 
   const AddedBadge = () => (
     <Badge variant="secondary" className="gap-1 text-[10px] bg-success/20 text-success border-0 px-2 py-0.5 font-normal">
-      <Check className="h-3 w-3" /> {t('addToDashboard')}
+      <Check className="h-3 w-3" /> {t('added')}
     </Badge>
   );
 
@@ -94,8 +94,8 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
     onAddTableToDashboard({
       id,
       title: `${col.name} — ${t('repeatingValues')}`,
-      data: col.topValues.map(v => ({ [t('topValues')]: v.value, Count: v.count, '%': `${v.percentage}%` })),
-      columns: [t('topValues'), 'Count', '%'],
+      data: col.topValues.map(v => ({ [t('topValues')]: v.value, [t('count')]: v.count, '%': `${v.percentage}%` })),
+      columns: [t('topValues'), t('count'), '%'],
     });
   };
 
@@ -138,9 +138,9 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
       data: dataQuality.map(c => ({
         [t('columns')]: c.name,
         [`${t('complete')} %`]: `${c.completeness}%`,
-        'Nulls': c.nullCount,
+        [t('nullValues')]: c.nullCount,
       })),
-      columns: [t('columns'), `${t('complete')} %`, 'Nulls'],
+      columns: [t('columns'), `${t('complete')} %`, t('nullValues')],
     });
   };
 
@@ -171,12 +171,12 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
                         {t('highRepetition')} ({Math.round(col.repetitionRatio * 100)}%)
                       </Badge>
                       {isAdded(chartId) ? <AddedBadge /> : onAddToDashboard && (
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => addRepeatingAsDashboardChart(col)} title={t('addToDashboard')}>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity" onClick={() => addRepeatingAsDashboardChart(col)} title={t('addToDashboard')} aria-label={t('addToDashboard')}>
                           <Plus className="h-3.5 w-3.5 text-primary" />
                         </Button>
                       )}
                       {isAdded(tableId) ? <AddedBadge /> : onAddTableToDashboard && (
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => addRepeatingAsTable(col)} title="Add as Table">
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity" onClick={() => addRepeatingAsTable(col)} title={t('addAsTable')} aria-label={t('addAsTable')}>
                           <TableIcon className="h-3.5 w-3.5 text-primary" />
                         </Button>
                       )}
@@ -214,7 +214,7 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
               )}
               {isAdded('insight-stats-table') ? <AddedBadge /> : onAddTableToDashboard && (
                 <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addStatsAsTable}>
-                  <TableIcon className="h-3 w-3 mr-1" /> Table
+                  <TableIcon className="h-3 w-3 mr-1" /> {t('table')}
                 </Button>
               )}
             </div>
@@ -264,7 +264,7 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
               )}
               {isAdded('insight-quality-table') ? <AddedBadge /> : onAddTableToDashboard && (
                 <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={addQualityAsTable}>
-                  <TableIcon className="h-3 w-3 mr-1" /> Table
+                  <TableIcon className="h-3 w-3 mr-1" /> {t('table')}
                 </Button>
               )}
             </div>
