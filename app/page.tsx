@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useMemo, useRef, useEffect, Suspense, startTransition } from 'react';
-import dynamic from 'next/dynamic';
 import { FileUpload } from '@/components/FileUpload';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { ChartThemeSwitcher } from '@/components/ChartThemeSwitcher';
@@ -208,20 +207,20 @@ function loadSession(): PersistedSession | null {
 
 /* ─── Sidebar nav items ─── */
 const SIDEBAR_ITEMS = [
-  { value: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { value: 'explore',   icon: BarChart3,       label: 'Explore' },
-  { value: 'insights',  icon: Lightbulb,       label: 'Insights' },
-  { value: 'build',     icon: Wrench,          label: 'Build' },
-  { value: 'filter',    icon: Filter,          label: 'Filter' },
-  { value: 'data',      icon: Database,        label: 'Data' },
+  { value: 'dashboard', icon: LayoutDashboard, labelKey: 'dashboard' },
+  { value: 'explore',   icon: BarChart3,       labelKey: 'explore' },
+  { value: 'insights',  icon: Lightbulb,       labelKey: 'insights' },
+  { value: 'build',     icon: Wrench,          labelKey: 'build' },
+  { value: 'filter',    icon: Filter,          labelKey: 'filter' },
+  { value: 'data',      icon: Database,        labelKey: 'data' },
 ] as const;
 
 /* ─── Mobile bottom nav (subset) ─── */
 const MOBILE_TABS = [
-  { value: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { value: 'explore',   icon: BarChart3,       label: 'Charts' },
-  { value: 'insights',  icon: Lightbulb,       label: 'Insights' },
-  { value: 'data',      icon: Database,        label: 'Data' },
+  { value: 'dashboard', icon: LayoutDashboard, labelKey: 'dashboard' },
+  { value: 'explore',   icon: BarChart3,       labelKey: 'explore' },
+  { value: 'insights',  icon: Lightbulb,       labelKey: 'insights' },
+  { value: 'data',      icon: Database,        labelKey: 'data' },
 ] as const;
 
 export default function Index() {
@@ -245,6 +244,7 @@ export default function Index() {
   const [exporting, setExporting] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [mobileClearConfirmOpen, setMobileClearConfirmOpen] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -342,7 +342,7 @@ export default function Index() {
 
   // ── PDF export (must come after filteredData is declared) ──
   const handleExportPdf = useCallback(async () => {
-    if (!dashboardRef.current || !dashboardItems.length) { toast.error('Nothing to export'); return; }
+    if (!dashboardRef.current || !dashboardItems.length) { toast.error(t('nothingToExport')); return; }
     setExporting(true);
     const toastId = toast.loading(t('generatingPdf'));
     const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
@@ -520,8 +520,8 @@ export default function Index() {
           <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
             <Sparkles className="h-7 w-7 text-primary animate-pulse" />
           </div>
-          <p className="text-base font-semibold text-foreground">Analyzing your data…</p>
-          <p className="text-sm text-muted-foreground">Building charts and insights</p>
+          <p className="text-base font-semibold text-foreground">{t('analyzingData')}</p>
+          <p className="text-sm text-muted-foreground">{t('buildingChartsInsights')}</p>
           <div className="flex items-center justify-center gap-1 pt-2">
             {[0, 1, 2].map(i => (
               <div
@@ -561,8 +561,9 @@ export default function Index() {
 
           {/* Nav items */}
           <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-            {SIDEBAR_ITEMS.map(({ value, icon: Icon, label }) => {
+            {SIDEBAR_ITEMS.map(({ value, icon: Icon, labelKey }) => {
               const isActive = activeTab === value;
+              const label = t(labelKey);
               return (
                 <button
                   key={value}
@@ -590,12 +591,12 @@ export default function Index() {
             <button
               type="button"
               onClick={() => setSidebarCollapsed(c => !c)}
-              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={sidebarCollapsed ? t('expandSidebar') : t('collapseSidebar')}
               className={`sidebar-nav-item ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
             >
               {sidebarCollapsed
                 ? <PanelLeftOpen className="h-4 w-4 flex-shrink-0" />
-                : <><PanelLeftClose className="h-4 w-4 flex-shrink-0" /><span className="text-xs">Collapse</span></>
+                : <><PanelLeftClose className="h-4 w-4 flex-shrink-0" /><span className="text-xs">{t('collapseSection')}</span></>
               }
             </button>
           </div>
@@ -620,7 +621,7 @@ export default function Index() {
                 <span className="text-xs font-semibold brand-text hidden sm:inline">{t('appName')}</span>
                 <ChevronRight className="h-3 w-3 text-muted-foreground/40 hidden sm:block" />
                 <span className="text-xs font-medium text-foreground truncate max-w-[120px] sm:max-w-[260px]">
-                  {activeItem?.label ?? 'Dashboard'}
+                  {activeItem ? t(activeItem.labelKey) : t('dashboard')}
                 </span>
               </div>
 
@@ -678,7 +679,7 @@ export default function Index() {
                 className="gap-1.5 text-xs h-8 shadow-sm font-medium"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{t('quickAdd') || 'Quick Add'}</span>
+                <span className="hidden sm:inline">{t('quickAdd')}</span>
               </Button>
 
               <Button
@@ -699,7 +700,7 @@ export default function Index() {
               {activeTab === 'dashboard' && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label={t('moreActions')}>
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -745,7 +746,7 @@ export default function Index() {
                     </p>
                     <h2 className="text-lg font-bold text-foreground">{fileName || t('dashboard')}</h2>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                      {filteredData.length} {t('rows')} · {columns.length} {t('cols')} · {dashboardItems.length} cards
+                      {filteredData.length} {t('rows')} · {columns.length} {t('cols')} · {dashboardItems.length} {t('cards')}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -757,7 +758,7 @@ export default function Index() {
                     </Badge>
                     {dashboardItems.length > 0 && (
                       <Badge variant="secondary" className="rounded-full border-0 px-2.5 py-1 text-[11px] font-medium" style={{ background: `hsl(${getChartColorVar(2)} / 0.1)`, color: getChartColor(2) }}>
-                        {dashboardItems.length} cards
+                        {dashboardItems.length} {t('cards')}
                       </Badge>
                     )}
                     {Object.keys(filters).length > 0 && (
@@ -780,7 +781,7 @@ export default function Index() {
                     emptyAction={
                       <div className="flex flex-wrap items-center justify-center gap-2">
                         <Button size="sm" onClick={() => setQuickAddOpen(true)} className="gap-1.5 text-sm h-9">
-                          <Plus className="h-3.5 w-3.5" /> {t('quickAdd') || 'Quick Add'}
+                          <Plus className="h-3.5 w-3.5" /> {t('quickAdd')}
                         </Button>
                         <Button size="sm" variant="outline" onClick={handleResetLayout} className="gap-1.5 text-sm h-9">
                           <Sparkles className="h-3.5 w-3.5" /> {t('autoGenerate')}
@@ -799,7 +800,7 @@ export default function Index() {
             <TabsContent value="explore" className="space-y-4 mt-0">
               <div className="dashboard-surface p-4">
                 <h2 className="text-base font-bold text-foreground">{t('explore')}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Auto-generated chart suggestions from your data</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{t('exploreTabDesc')}</p>
               </div>
               {availableSuggestions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center min-h-[300px]">
@@ -807,7 +808,6 @@ export default function Index() {
                     <BarChart3 className="h-6 w-6 text-primary" />
                   </div>
                   <p className="text-sm font-semibold text-foreground mb-1">{t('allChartsAdded')}</p>
-                  <p className="text-sm text-muted-foreground">All suggested charts are already on your dashboard.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -827,7 +827,7 @@ export default function Index() {
             <TabsContent value="insights" className="space-y-4 mt-0">
               <div className="dashboard-surface p-4">
                 <h2 className="text-base font-bold text-foreground">{t('insights')}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Smart analysis of your data patterns and quality</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{t('insightsTabDesc')}</p>
               </div>
               <Card className="elevated-card p-5 min-h-[300px]">
                 <Suspense fallback={<PanelFallback />}>
@@ -840,7 +840,7 @@ export default function Index() {
             <TabsContent value="build" className="space-y-4 mt-0">
               <div className="dashboard-surface p-4">
                 <h2 className="text-base font-bold text-foreground">{t('build')}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Create custom charts and transform your columns</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{t('buildTabDesc')}</p>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 <Card className="elevated-card p-5 min-h-[300px]">
@@ -860,7 +860,7 @@ export default function Index() {
             <TabsContent value="filter" className="space-y-4 mt-0">
               <div className="dashboard-surface p-4">
                 <h2 className="text-base font-bold text-foreground">{t('filter')}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Filter rows by column values to focus your analysis</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{t('filterTabDesc')}</p>
               </div>
               <Card className="elevated-card p-5 min-h-[250px]">
                 <Suspense fallback={<PanelFallback />}>
@@ -885,7 +885,7 @@ export default function Index() {
             <TabsContent value="data" className="space-y-4 mt-0">
               <div className="dashboard-surface p-4">
                 <h2 className="text-base font-bold text-foreground">{t('data')}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Column statistics and raw data preview</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{t('dataTabDesc')}</p>
               </div>
               <Card className="elevated-card p-5 min-h-[200px]">
                 <Suspense fallback={<PanelFallback />}>
@@ -938,55 +938,76 @@ export default function Index() {
       {isMobile && (
         <nav
           className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border safe-area-bottom"
-          aria-label="Main navigation"
+          aria-label={t('mainNavigation')}
         >
           <div className="flex items-center justify-around h-14">
-            {MOBILE_TABS.map(({ value, icon: Icon, label }) => (
+            {MOBILE_TABS.map(({ value, icon: Icon, labelKey }) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => setActiveTab(value)}
-                aria-label={label}
+                aria-label={t(labelKey)}
                 aria-current={activeTab === value ? 'page' : undefined}
                 className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
                   activeTab === value ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
                 <Icon className="h-5 w-5" />
-                <span className="text-[10px] font-medium">{label}</span>
+                <span className="text-[10px] font-medium">{t(labelKey)}</span>
               </button>
             ))}
 
-            {/* More: Build + Filter */}
+            {/* More: Build + Filter + Clear file */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  aria-label="More tabs"
+                  aria-label={t('moreTabs')}
                   className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
                     (activeTab === 'build' || activeTab === 'filter') ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 >
                   <MoreHorizontal className="h-5 w-5" />
                   <span className="text-[10px] font-medium">
-                    {activeTab === 'build' ? 'Build' : activeTab === 'filter' ? 'Filter' : 'More'}
+                    {activeTab === 'build' ? t('build') : activeTab === 'filter' ? t('filter') : t('more')}
                   </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="end" className="w-44 mb-1">
                 <DropdownMenuItem onClick={() => setActiveTab('build')} className="text-xs gap-2">
-                  <Wrench className="h-3.5 w-3.5" /> Build
+                  <Wrench className="h-3.5 w-3.5" /> {t('build')}
                   {activeTab === 'build' && <span className="ml-auto text-primary">✓</span>}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setActiveTab('filter')} className="text-xs gap-2">
-                  <Filter className="h-3.5 w-3.5" /> Filter
+                  <Filter className="h-3.5 w-3.5" /> {t('filter')}
                   {activeTab === 'filter' && <span className="ml-auto text-primary">✓</span>}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={(e) => { e.preventDefault(); setMobileClearConfirmOpen(true); }}
+                  className="text-xs gap-2 text-destructive focus:text-destructive"
+                >
+                  <X className="h-3.5 w-3.5" /> {t('clearFile')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </nav>
       )}
+
+      {/* ─── Mobile Clear-File Confirmation ─── */}
+      <AlertDialog open={mobileClearConfirmOpen} onOpenChange={setMobileClearConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('clearFileConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('clearFileConfirmDesc')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleClearFile}>{t('clearFile')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
     </>
   );

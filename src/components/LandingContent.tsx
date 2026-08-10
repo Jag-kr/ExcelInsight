@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb,
@@ -63,33 +63,43 @@ function useCountUp(target: number, duration = 1400, start = false) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Individual animated stat card
+   Proof section — one column of the scroll-scrubbed bar chart.
+   The bar itself (.chart-bar-rise) tracks scroll position directly;
+   the number keeps its own count-up, triggered the moment the row
+   enters view, so the two motions read as one construction moment
+   rather than two competing timers.
 ───────────────────────────────────────────────────────────── */
-function StatCard({
+function ProofColumn({
   target, suffix, label, icon: Icon, color,
-  inView, delay,
+  inView, delay, index,
 }: {
   target: number; suffix: string; label: string;
   icon: React.ElementType; color: string;
-  inView: boolean; delay: number;
+  inView: boolean; delay: number; index: number;
 }) {
   const value = useCountUp(target, 1400, inView);
   return (
-    <div
-      className="narrative-reveal elevated-card p-6 text-center flex flex-col items-center gap-3"
-      style={{ transitionDelay: inView ? `${delay}ms` : '0ms' }}
-    >
-      <div
-        className="w-12 h-12 rounded-2xl flex items-center justify-center"
-        style={{ background: `${color}18` }}
+    <div className="relative z-10 flex flex-col items-center text-center gap-3">
+      <p
+        className="text-2xl md:text-3xl font-bold tabular-nums"
+        style={{ color, transitionDelay: inView ? `${delay}ms` : '0ms' }}
       >
-        <Icon className="h-5 w-5" style={{ color }} />
+        {value.toLocaleString()}{suffix}
+      </p>
+      <div className="w-full h-20 md:h-24 flex items-end justify-center" aria-hidden="true">
+        <div
+          className={`chart-bar-rise narrative-stagger-${index + 1} w-8 md:w-10 h-full rounded-t-md`}
+          style={{ background: color, transitionDelay: `${delay}ms` }}
+        />
       </div>
-      <div>
-        <p className="text-3xl font-bold tabular-nums" style={{ color }}>
-          {value.toLocaleString()}{suffix}
-        </p>
-        <p className="text-sm text-muted-foreground mt-1 font-medium">{label}</p>
+      <div className="flex items-center gap-1.5">
+        <div
+          className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: `${color}18` }}
+        >
+          <Icon className="h-3.5 w-3.5" style={{ color }} />
+        </div>
+        <p className="text-sm text-muted-foreground font-medium text-left">{label}</p>
       </div>
     </div>
   );
@@ -119,7 +129,7 @@ function useFallbackReveal(containerRef: React.RefObject<HTMLElement | null>) {
     );
 
     const targets = containerRef.current?.querySelectorAll(
-      '.narrative-reveal, .narrative-reveal-left, .narrative-reveal-right'
+      '.narrative-reveal, .narrative-reveal-left, .narrative-reveal-right, .chart-bar-rise, .chart-line-progress'
     );
     targets?.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
@@ -347,11 +357,23 @@ export function LandingContent() {
             {t('proofDesc')}
           </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard target={100} suffix="%" label={t('statBrowserOnly')} icon={ShieldCheck} color="hsl(var(--chart-3))" inView={statsInView} delay={0} />
-          <StatCard target={0} suffix="" label={t('statFilesUploaded')} icon={Zap} color="hsl(var(--chart-1))" inView={statsInView} delay={120} />
-          <StatCard target={30} suffix="s" label={t('statTimeToChart')} icon={Clock} color="hsl(var(--chart-4))" inView={statsInView} delay={240} />
-          <StatCard target={8} suffix="+" label={t('statChartTypesGenerated')} icon={BarChart3} color="hsl(var(--chart-2))" inView={statsInView} delay={360} />
+        <div
+          className="relative rounded-2xl overflow-hidden"
+          style={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(var(--border)/0.5)', boxShadow: 'var(--shadow-card)' }}
+        >
+          {/* Gridlines — chart atmosphere, echoes the mini chart cards used in the demo showcase */}
+          <div className="absolute inset-x-6 md:inset-x-10 top-8 md:top-10 bottom-[4.75rem] pointer-events-none hidden sm:block" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="absolute inset-x-0 h-px" style={{ top: `${i * 32}%`, background: 'hsl(var(--border)/0.15)' }} />
+            ))}
+          </div>
+
+          <div className="relative grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 px-6 md:px-10 pt-8 md:pt-10 pb-6 md:pb-8">
+            <ProofColumn index={0} target={100} suffix="%" label={t('statBrowserOnly')} icon={ShieldCheck} color="hsl(var(--chart-3))" inView={statsInView} delay={0} />
+            <ProofColumn index={1} target={0} suffix="" label={t('statFilesUploaded')} icon={Zap} color="hsl(var(--chart-1))" inView={statsInView} delay={120} />
+            <ProofColumn index={2} target={30} suffix="s" label={t('statTimeToChart')} icon={Clock} color="hsl(var(--chart-4))" inView={statsInView} delay={240} />
+            <ProofColumn index={3} target={8} suffix="+" label={t('statChartTypesGenerated')} icon={BarChart3} color="hsl(var(--chart-2))" inView={statsInView} delay={360} />
+          </div>
         </div>
       </section>
 
@@ -369,8 +391,11 @@ export function LandingContent() {
 
         {/* Steps with connecting line */}
         <div className="relative">
-          {/* Desktop connector line */}
-          <div className="hidden md:block absolute top-8 left-[calc(12.5%+20px)] right-[calc(12.5%+20px)] h-px bg-primary/20" />
+          {/* Desktop connector line — track + scroll-scrubbed fill drawing left to right through the steps */}
+          <div className="hidden md:block absolute top-8 left-[calc(12.5%+20px)] right-[calc(12.5%+20px)] h-px overflow-hidden" aria-hidden="true">
+            <div className="absolute inset-0 bg-primary/15" />
+            <div className="chart-line-progress absolute inset-0 bg-primary" />
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {steps.map(({ n, title, desc }, i) => (
@@ -497,15 +522,15 @@ export function LandingContent() {
               {t('ctaDesc')}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <a
-                href="#"
-                onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="cta-pulse-btn font-mono inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
                 aria-label={t('uploadFileFreeAriaLabel')}
               >
                 <Upload className="h-4 w-4" />
                 {t('uploadFileFreeCta')}
-              </a>
+              </button>
               <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-success" />
                 {t('neverLeavesBrowser')}

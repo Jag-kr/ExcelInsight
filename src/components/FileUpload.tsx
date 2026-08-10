@@ -96,7 +96,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-foreground truncate">{fileName}</p>
-          <p className="text-xs text-muted-foreground">Loaded successfully</p>
+          <p className="text-xs text-muted-foreground">{t('loadedSuccessfully')}</p>
         </div>
         <Button
           variant="ghost"
@@ -146,7 +146,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
       {/* Text */}
       <div className="relative z-10 text-center space-y-1">
         <p className="text-base sm:text-lg font-semibold text-foreground">
-          {loading ? t('processing') : isDragging ? 'Drop your file here' : t('dropFile')}
+          {loading ? t('processing') : t('dropFile')}
         </p>
         {!loading && (
           <p className="text-sm text-muted-foreground">{t('orClickBrowse')}</p>
@@ -183,7 +183,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
             />
           </div>
           <p className="text-[11px] text-muted-foreground text-center mt-1.5">
-            {Math.round(progress)}% — parsing your file…
+            {Math.round(progress)}{t('parsingFile')}
           </p>
         </div>
       )}
