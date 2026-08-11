@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from '@vercel/analytics/react';
 import { Providers } from "./providers";
+import { SITE_URL } from '@/lib/site';
 import "./globals.css";
 
 /**
@@ -25,7 +26,6 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
-const SITE_URL = 'https://excelinsight.xyz';
 const OG_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/neEqO6MCG2bHfGf0v6pME35dIMA2/social-images/social-1774898677243-ExcelInsight.webp';
 
 export const metadata: Metadata = {

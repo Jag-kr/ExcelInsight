@@ -17,7 +17,7 @@ export const legalEn: LegalContent = {
       { heading: '7. Children\'s Privacy', body: 'ExcelInsight is not directed to children under 13, and we do not knowingly collect personal information from children.' },
       { heading: '8. Your Rights', body: 'Because we do not collect or store personal data on our servers, there is generally nothing for us to delete on your behalf. You can clear browser-side preferences at any time by clearing your browser\'s site data.' },
       { heading: '9. Changes to This Policy', body: 'We may update this Privacy Policy from time to time. The "Last updated" date at the top of this page indicates when the latest revision was made.' },
-      { heading: '10. Contact', body: 'Questions about this policy? Reach out via the contact information published on the ExcelInsight website.' },
+      { heading: '10. Contact', body: 'Questions about this policy? Email us at <a href="mailto:hello@excelinsight.xyz">hello@excelinsight.xyz</a>.' },
     ],
   },
   terms: {
@@ -38,7 +38,7 @@ export const legalEn: LegalContent = {
       { heading: '9. Modifications', body: 'We may update these Terms at any time. Continued use of the Service after changes are posted constitutes your acceptance of the revised Terms.' },
       { heading: '10. Termination', body: 'We may suspend or discontinue the Service (or your access to it) at any time, with or without notice, for any reason.' },
       { heading: '11. Governing Law', body: 'These Terms shall be governed by and construed in accordance with applicable local laws, without regard to conflict-of-law principles.' },
-      { heading: '12. Contact', body: 'Questions about these Terms? Reach out via the contact information published on the ExcelInsight website.' },
+      { heading: '12. Contact', body: 'Questions about these Terms? Email us at <a href="mailto:hello@excelinsight.xyz">hello@excelinsight.xyz</a>.' },
     ],
   },
 };

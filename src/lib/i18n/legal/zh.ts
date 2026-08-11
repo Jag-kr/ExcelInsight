@@ -17,7 +17,7 @@ export const legalZh: LegalContent = {
       { heading: '7. 儿童隐私', body: 'ExcelInsight不针对13岁以下的儿童，我们不会故意收集儿童的个人信息。' },
       { heading: '8. 您的权利', body: '由于我们不在服务器上收集或存储个人数据，通常没有什么需要我们代表您删除的。您可以随时通过清除浏览器站点数据来清除浏览器端的偏好设置。' },
       { heading: '9. 本政策的变更', body: '我们可能会不时更新本隐私政策。本页面顶部的"最后更新"日期表示最近一次修订的时间。' },
-      { heading: '10. 联系', body: '对本政策有疑问？请通过ExcelInsight网站上发布的联系信息与我们联系。' },
+      { heading: '10. 联系', body: '对本政策有疑问？请发送电子邮件至 <a href="mailto:hello@excelinsight.xyz">hello@excelinsight.xyz</a>。' },
     ],
   },
   terms: {
@@ -38,7 +38,7 @@ export const legalZh: LegalContent = {
       { heading: '9. 修改', body: '我们可能随时更新这些条款。在更改发布后继续使用本服务即表示您接受修订后的条款。' },
       { heading: '10. 终止', body: '我们可以在任何时候，无论是否通知，出于任何原因暂停或停止本服务（或您对它的访问）。' },
       { heading: '11. 适用法律', body: '本条款应根据适用的当地法律进行管辖和解释，不考虑法律冲突原则。' },
-      { heading: '12. 联系', body: '对本条款有疑问？请通过ExcelInsight网站上发布的联系信息与我们联系。' },
+      { heading: '12. 联系', body: '对本条款有疑问？请发送电子邮件至 <a href="mailto:hello@excelinsight.xyz">hello@excelinsight.xyz</a>。' },
     ],
   },
 };
