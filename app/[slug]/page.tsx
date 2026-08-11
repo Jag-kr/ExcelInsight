@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SeoPageContent } from '@/components/SeoPageContent';
 import { seoPageMap, seoPages } from '@/content/seo-pages';
+import { SITE_URL } from '@/lib/site';
 
-const SITE_URL = 'https://excelinsight.xyz';
 const OG_IMAGE =
   'https://storage.googleapis.com/gpt-engineer-file-uploads/neEqO6MCG2bHfGf0v6pME35dIMA2/social-images/social-1774898677243-ExcelInsight.webp';
 

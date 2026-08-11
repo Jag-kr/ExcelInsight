@@ -17,7 +17,7 @@ export const legalFr: LegalContent = {
       { heading: '7. Confidentialité des Enfants', body: 'ExcelInsight ne s\'adresse pas aux enfants de moins de 13 ans, et nous ne collectons pas sciemment d\'informations personnelles d\'enfants.' },
       { heading: '8. Vos Droits', body: 'Comme nous ne collectons ni ne stockons de données personnelles sur nos serveurs, il n\'y a généralement rien à supprimer en votre nom. Vous pouvez effacer les préférences côté navigateur à tout moment en effaçant les données du site de votre navigateur.' },
       { heading: '9. Modifications de cette Politique', body: 'Nous pouvons mettre à jour cette Politique de Confidentialité de temps en temps. La date de « Dernière mise à jour » en haut de cette page indique quand la dernière révision a été effectuée.' },
-      { heading: '10. Contact', body: 'Des questions sur cette politique ? Contactez-nous via les informations de contact publiées sur le site Web ExcelInsight.' },
+      { heading: '10. Contact', body: 'Des questions sur cette politique ? Écrivez-nous à <a href="mailto:hello@excelinsight.xyz">hello@excelinsight.xyz</a>.' },
     ],
   },
   terms: {
@@ -38,7 +38,7 @@ export const legalFr: LegalContent = {
       { heading: '9. Modifications', body: 'Nous pouvons mettre à jour ces Conditions à tout moment. L\'utilisation continue du Service après la publication des modifications constitue votre acceptation des Conditions révisées.' },
       { heading: '10. Résiliation', body: 'Nous pouvons suspendre ou interrompre le Service (ou votre accès à celui-ci) à tout moment, avec ou sans préavis, pour quelque raison que ce soit.' },
       { heading: '11. Loi Applicable', body: 'Ces Conditions seront régies et interprétées conformément aux lois locales applicables, sans tenir compte des principes de conflit de lois.' },
-      { heading: '12. Contact', body: 'Des questions sur ces Conditions ? Contactez-nous via les informations de contact publiées sur le site Web ExcelInsight.' },
+      { heading: '12. Contact', body: 'Des questions sur ces Conditions ? Écrivez-nous à <a href="mailto:hello@excelinsight.xyz">hello@excelinsight.xyz</a>.' },
     ],
   },
 };

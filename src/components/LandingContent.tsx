@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import {
   Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb,
   Combine, Download, ArrowRight, CheckCircle2, AlertCircle, Clock, RefreshCw,
-  BarChart3, TrendingUp, ShieldCheck, Zap,
+  BarChart3, TrendingUp, ShieldCheck, Zap, Github, Mail,
 } from 'lucide-react';
 import { AdSlot } from '@/components/AdSlot';
 import { FaqAccordion } from '@/components/FaqAccordion';
@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 import { useFallbackReveal } from '@/hooks/use-reveal';
 import { useGlowCards } from '@/hooks/use-glow-cards';
+import { SITE_URL, CONTACT_EMAIL, GITHUB_URL } from '@/lib/site';
 import { seoPagesByCategory, categoryLabel, type SeoCategory } from '@/content/seo-pages';
 
 const ChartShowcase = dynamic(
@@ -561,11 +562,30 @@ export function LandingContent() {
             <p className="text-sm font-semibold brand-mark">ExcelInsight</p>
             <p className="text-xs text-muted-foreground mt-0.5">{t('footerCopy')}</p>
           </div>
-          <nav className="flex items-center gap-4 text-sm">
+          {/* The repo and address are proper nouns, so they carry no translation
+              keys — the visible text doubles as the accessible name in every
+              locale. */}
+          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm">
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Github className="h-3.5 w-3.5" />
+              GitHub
+            </a>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              {CONTACT_EMAIL}
+            </a>
+            <span className="text-border" aria-hidden="true">•</span>
             <Link href="/privacy/" className="text-muted-foreground hover:text-primary transition-colors text-sm">
               {t('privacyPolicy')}
             </Link>
-            <span className="text-border">•</span>
             <Link href="/terms/" className="text-muted-foreground hover:text-primary transition-colors text-sm">
               {t('termsOfService')}
             </Link>
@@ -584,10 +604,22 @@ export function LandingContent() {
             '@context': 'https://schema.org',
             '@type': 'WebApplication',
             name: 'ExcelInsight',
-            url: 'https://excelinsight.xyz',
+            url: SITE_URL,
             applicationCategory: 'BusinessApplication',
             operatingSystem: 'Any',
             offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+            isAccessibleForFree: true,
+            // Open source: the repo is a verifiable claim about the privacy
+            // story, not just a link. No `license` here — the repo has no
+            // LICENSE file yet, and pointing at a 404 is worse than omitting it.
+            sameAs: [GITHUB_URL],
+            author: {
+              '@type': 'Organization',
+              name: 'ExcelInsight',
+              url: SITE_URL,
+              email: CONTACT_EMAIL,
+              sameAs: [GITHUB_URL],
+            },
             description: 'Free online Excel insights, chart maker & dashboard builder.',
             featureList: [
               'Excel Chart Maker', 'Bar Graph from Excel', 'CSV Dashboard Builder',
