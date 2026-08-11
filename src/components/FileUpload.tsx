@@ -32,6 +32,14 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  /**
+   * 'reading' reports a real byte count from FileReader; 'parsing' covers the
+   * XLSX decode, which is synchronous and gives no progress signal at all, so
+   * it shows an indeterminate bar rather than inventing a number. The previous
+   * version ran a setInterval that incremented by Math.random() to 85% — it
+   * bore no relation to the actual work.
+   */
+  const [phase, setPhase] = useState<'reading' | 'parsing'>('reading');
   const [progress, setProgress] = useState(0);
 
   const processFile = useCallback((file: File) => {
@@ -42,30 +50,29 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
     }
 
     setLoading(true);
+    setPhase('reading');
     setProgress(0);
     setFileName(file.name);
 
-    // Simulate progress for UX
-    const interval = setInterval(() => {
-      setProgress(p => Math.min(p + Math.random() * 15, 85));
-    }, 120);
-
     const reader = new FileReader();
+
+    reader.onprogress = (e) => {
+      if (e.lengthComputable && e.total > 0) {
+        setProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    };
+
     reader.onload = async (e) => {
+      setPhase('parsing');
       try {
         const XLSX = await import('xlsx');
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(firstSheet);
-        clearInterval(interval);
-        setProgress(100);
-        setTimeout(() => {
-          onDataLoaded(jsonData, file.name);
-          setLoading(false);
-        }, 400);
+        onDataLoaded(jsonData, file.name);
+        setLoading(false);
       } catch (err: any) {
-        clearInterval(interval);
         console.error('Failed to parse file:', err);
         trackEvent('file_parse_failed', { fileExt: getFileExt(file.name) });
         toast.error('Failed to parse file. Please check it is a valid Excel or CSV file.');
@@ -73,6 +80,15 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
         setLoading(false);
       }
     };
+
+    reader.onerror = () => {
+      console.error('Failed to read file:', reader.error);
+      trackEvent('file_parse_failed', { fileExt: getFileExt(file.name) });
+      toast.error('Failed to parse file. Please check it is a valid Excel or CSV file.');
+      setFileName(null);
+      setLoading(false);
+    };
+
     reader.readAsArrayBuffer(file);
   }, [onDataLoaded, t]);
 
@@ -96,7 +112,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-foreground truncate">{fileName}</p>
-          <p className="text-xs text-muted-foreground">Loaded successfully</p>
+          <p className="text-xs text-muted-foreground">{t('loadedSuccessfully')}</p>
         </div>
         <Button
           variant="ghost"
@@ -122,10 +138,10 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.currentTarget.click(); }}
-      className={`relative flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-10 sm:p-14 transition-all duration-300 overflow-hidden ${
+      className={`relative flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-10 sm:p-14 backdrop-blur-sm transition-all duration-300 overflow-hidden ${
         isDragging
-          ? 'border-primary bg-primary/6 scale-[1.01]'
-          : 'border-border/60 hover:border-primary/40 hover:bg-secondary/20'
+          ? 'border-primary bg-primary/8 shadow-glow scale-[1.01]'
+          : 'border-foreground/15 bg-foreground/[0.02] hover:border-primary/40 hover:bg-primary/[0.03]'
       }`}
     >
       {/* Upload icon */}
@@ -134,19 +150,18 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
           isDragging ? 'bg-primary/15 scale-110' : 'bg-primary/8'
         }`}
       >
-        {loading ? (
-          <Upload className="h-8 w-8 text-primary animate-bounce" />
-        ) : (
-          <Upload
-            className={`h-8 w-8 text-primary transition-transform duration-300 ${isDragging ? 'scale-110' : ''}`}
-          />
-        )}
+        {/* No bounce while loading — the progress bar below already carries the
+            "working" signal, and a continuously hopping icon next to it reads
+            as noise rather than feedback. */}
+        <Upload
+          className={`h-8 w-8 text-primary transition-transform duration-300 ${isDragging ? 'scale-110' : ''}`}
+        />
       </div>
 
       {/* Text */}
       <div className="relative z-10 text-center space-y-1">
         <p className="text-base sm:text-lg font-semibold text-foreground">
-          {loading ? t('processing') : isDragging ? 'Drop your file here' : t('dropFile')}
+          {loading ? t('processing') : t('dropFile')}
         </p>
         {!loading && (
           <p className="text-sm text-muted-foreground">{t('orClickBrowse')}</p>
@@ -158,33 +173,44 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
             {['.xlsx', '.xls', '.csv'].map((fmt) => (
               <span
                 key={fmt}
-                className="rounded-lg bg-secondary px-2.5 py-1 text-[11px] font-medium text-muted-foreground border border-border/50"
+                className="rounded-full bg-foreground/5 px-2.5 py-1 text-[11px] font-medium text-muted-foreground border border-foreground/10"
               >
                 {fmt}
               </span>
             ))}
-            <span className="rounded-lg bg-primary/8 px-2.5 py-1 text-[11px] font-medium text-primary border border-primary/15">
+            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary border border-primary/20">
               {t('badgePrivate')}
             </span>
           </div>
         )}
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar — determinate while the file is being read (a real byte
+          count), indeterminate while XLSX decodes (genuinely unknowable). */}
       {loading && (
-        <div className="relative z-10 w-full max-w-xs">
+        <div
+          className="relative z-10 w-full max-w-xs"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={phase === 'reading' ? progress : undefined}
+          aria-label={t('processing')}
+        >
           <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300 ease-out"
-              style={{
-                width: `${progress}%`,
-                background: 'hsl(var(--primary))',
-              }}
-            />
+            {phase === 'reading' ? (
+              <div
+                className="h-full rounded-full bg-primary transition-[width] duration-fast ease-smooth"
+                style={{ width: `${progress}%` }}
+              />
+            ) : (
+              <div className="progress-indeterminate h-full rounded-full" />
+            )}
           </div>
-          <p className="text-[11px] text-muted-foreground text-center mt-1.5">
-            {Math.round(progress)}% — parsing your file…
-          </p>
+          {phase === 'reading' && (
+            <p className="text-[11px] text-muted-foreground text-center mt-1.5">
+              {progress}{t('parsingFile')}
+            </p>
+          )}
         </div>
       )}
 

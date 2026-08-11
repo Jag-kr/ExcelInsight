@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600;700&family=Chakra+Petch:wght@300;400;500;600&family=Zen+Old+Mincho:wght@400;500;600&display=swap');
+/* Fonts are loaded with next/font in app/layout.tsx, which self-hosts them and
+   exposes --font-sans / --font-mono. Do not reintroduce an @import here: it
+   blocks first paint on a third-party origin. */
 
 @tailwind base;
 @tailwind components;
@@ -6,162 +8,179 @@
 
 @layer base {
   :root {
-    /* ── Core palette — Neo Mirai: warm cream & ink (Light) ── */
-    --background: 36 42% 93%;
-    --foreground: 30 40% 11%;
+    /* ── Core palette — Nightframe: cool paper & spreadsheet-emerald (Light) ── */
+    --background: 210 25% 97%;
+    --foreground: 222 22% 10%;
 
-    --card: 38 38% 96%;
-    --card-foreground: 30 40% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 22% 10%;
 
-    --popover: 38 38% 97%;
-    --popover-foreground: 30 40% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 22% 10%;
 
-    --primary: 38 80% 32%;
-    --primary-foreground: 40 55% 96%;
+    --primary: 152 65% 32%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 36 22% 87%;
-    --secondary-foreground: 30 40% 11%;
+    --secondary: 210 20% 93%;
+    --secondary-foreground: 222 22% 12%;
 
-    --muted: 36 20% 87%;
-    --muted-foreground: 32 15% 34%;
+    --muted: 210 18% 93%;
+    --muted-foreground: 220 10% 42%;
 
-    --accent: 176 38% 27%;
-    --accent-foreground: 38 60% 96%;
+    --accent: 152 65% 32%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 8 55% 42%;
-    --destructive-foreground: 38 60% 96%;
+    --destructive: 6 65% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 34 18% 78%;
-    --input: 34 18% 78%;
-    --ring: 38 80% 32%;
+    --border: 220 16% 88%;
+    --input: 220 16% 88%;
+    --ring: 152 65% 32%;
 
-    --radius: 0;
+    --radius: 1.25rem;
 
-    /* ── Chart palette (warm, curated for data viz — all text-safe at 4.5:1+) ── */
-    --chart-1: 38 60% 34%;  /* Amber */
-    --chart-2: 176 42% 32%; /* Deep Teal */
-    --chart-3: 8 58% 46%;   /* Brick */
-    --chart-4: 90 35% 33%;  /* Olive */
-    --chart-5: 15 62% 43%;  /* Rust */
-    --chart-6: 200 20% 41%; /* Slate */
-    --chart-7: 48 68% 29%;  /* Mustard */
-    --chart-8: 35 12% 40%;  /* Warm Gray */
+    /* ── Chart palette (cool, multi-hue for data viz — text-safe at 4.5:1+) ── */
+    --chart-1: 152 60% 32%;  /* Emerald */
+    --chart-2: 199 80% 38%;  /* Sky */
+    --chart-3: 40 85% 38%;   /* Amber */
+    --chart-4: 262 55% 50%;  /* Violet */
+    --chart-5: 349 65% 45%;  /* Rose */
+    --chart-6: 199 20% 42%;  /* Slate blue */
+    --chart-7: 28 75% 40%;   /* Orange */
+    --chart-8: 210 8% 46%;   /* Neutral gray */
 
     /* ── Semantic states ── */
-    --success: 90 30% 32%;
-    --success-foreground: 38 60% 96%;
-    --warning: 45 75% 28%;
-    --warning-foreground: 30 40% 11%;
-    --info: 176 38% 27%;
-    --info-foreground: 38 60% 96%;
+    --success: 152 55% 34%;
+    --success-foreground: 0 0% 100%;
+    --warning: 40 92% 45%;
+    --warning-foreground: 30 40% 12%;
+    --info: 199 80% 38%;
+    --info-foreground: 0 0% 100%;
 
     /* ── Surface hierarchy (4 levels) ── */
-    --surface-0: 36 42% 93%;
-    --surface-1: 38 38% 96%;
-    --surface-2: 36 30% 90%;
-    --surface-3: 36 26% 87%;
+    --surface-0: 210 25% 97%;
+    --surface-1: 0 0% 100%;
+    --surface-2: 210 18% 95%;
+    --surface-3: 210 16% 92%;
 
-    /* ── Surface backgrounds (flat, no hue gradients) ── */
-    --gradient-card: linear-gradient(145deg, hsl(38, 38%, 96%), hsl(36, 30%, 93%));
-    --gradient-hero: hsl(36, 42%, 93%);
-    --gradient-glow: hsl(36, 42%, 93%);
+    /* ── Surface backgrounds ── */
+    --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%), hsl(210, 20%, 97%));
+    --gradient-hero: radial-gradient(ellipse 80% 50% at 50% -10%, hsl(152, 55%, 88%, 0.7), transparent 60%), hsl(210, 25%, 97%);
+    --gradient-glow: radial-gradient(circle, hsl(152, 60%, 80%, 0.35), transparent 70%);
 
-    /* ── Shadows (hard offset, no blur) ── */
-    --shadow-glow: 2px 2px 0 hsl(38, 85%, 56%, 0.3);
-    --shadow-card: 2px 2px 0 hsl(30, 40%, 11%, 0.12);
-    --shadow-elevated: 3px 3px 0 hsl(30, 40%, 11%, 0.16);
-    --shadow-floating: 4px 4px 0 hsl(30, 40%, 11%, 0.22);
+    /* ── Shadows (soft, cool-tinted, no pure black) ── */
+    --shadow-glow: 0 0 32px hsl(152, 65%, 40%, 0.25);
+    --shadow-card: 0 1px 2px hsl(220, 20%, 20%, 0.04), 0 8px 24px hsl(220, 20%, 20%, 0.06);
+    --shadow-elevated: 0 2px 4px hsl(220, 20%, 20%, 0.05), 0 16px 32px hsl(220, 20%, 20%, 0.08);
+    --shadow-floating: 0 4px 8px hsl(220, 20%, 20%, 0.06), 0 24px 48px hsl(220, 20%, 20%, 0.1);
 
     /* ── Layout ── */
     --sidebar-width: 240px;
     --sidebar-collapsed-width: 56px;
     --header-height: 56px;
-    --radius-xl: 0;
-    --radius-2xl: 0;
+    --radius-xl: 1.5rem;
+    --radius-2xl: 1.75rem;
+
+    /* ── Motion — one easing family, three speeds. No overshoot anywhere. ──
+       Every transition and animation in this file resolves to one of these.
+       If a new curve is ever needed, add it here rather than inline. */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);   /* the default for everything */
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);  /* symmetric moves only */
+    --dur-fast: 160ms;   /* tool tier: state feedback, hover, focus */
+    --dur-base: 260ms;   /* tool tier: panel/tab transitions */
+    --dur-slow: 520ms;   /* landing tier: scroll reveals only */
+    --reveal-blur: 8px;
+    --reveal-shift: 12px;
+
+    /* ── Inset light (light theme: top highlight over a faint inner floor) ── */
+    --inset-lit: inset 0 1px 0 hsl(0, 0%, 100%, 0.7), inset 0 -1px 0 hsl(220, 20%, 20%, 0.06);
 
     /* ── Sidebar tokens ── */
-    --sidebar-background: 38 38% 96%;
-    --sidebar-foreground: 30 40% 11%;
-    --sidebar-primary: 38 80% 32%;
-    --sidebar-primary-foreground: 40 55% 96%;
-    --sidebar-accent: 36 22% 87%;
-    --sidebar-accent-foreground: 30 40% 11%;
-    --sidebar-border: 34 18% 80%;
-    --sidebar-ring: 38 80% 32%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 22% 12%;
+    --sidebar-primary: 152 65% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 18% 94%;
+    --sidebar-accent-foreground: 222 22% 12%;
+    --sidebar-border: 220 16% 88%;
+    --sidebar-ring: 152 65% 32%;
   }
 
   .dark {
-    /* ── Core palette — Neo Mirai: ink & amber (Dark) ── */
-    --background: 171 22% 5%;
-    --foreground: 36 30% 92%;
+    /* ── Core palette — Nightframe: off-black & spreadsheet-emerald (Dark) ── */
+    --background: 240 8% 6%;
+    --foreground: 210 20% 96%;
 
-    --card: 171 20% 8%;
-    --card-foreground: 36 30% 92%;
+    --card: 240 8% 9%;
+    --card-foreground: 210 20% 96%;
 
-    --popover: 171 20% 9%;
-    --popover-foreground: 36 30% 92%;
+    --popover: 240 8% 8%;
+    --popover-foreground: 210 20% 96%;
 
-    --primary: 40 90% 58%;
-    --primary-foreground: 171 22% 5%;
+    --primary: 152 68% 50%;
+    --primary-foreground: 240 10% 6%;
 
-    --secondary: 171 15% 13%;
-    --secondary-foreground: 36 25% 88%;
+    --secondary: 240 7% 14%;
+    --secondary-foreground: 210 15% 90%;
 
-    --muted: 171 15% 13%;
-    --muted-foreground: 34 12% 60%;
+    --muted: 240 7% 13%;
+    --muted-foreground: 220 10% 64%;
 
-    --accent: 176 40% 48%;
-    --accent-foreground: 171 22% 5%;
+    --accent: 152 68% 50%;
+    --accent-foreground: 240 10% 6%;
 
-    --destructive: 8 60% 55%;
-    --destructive-foreground: 36 30% 96%;
+    --destructive: 6 72% 58%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 171 15% 16%;
-    --input: 171 15% 16%;
-    --ring: 40 90% 58%;
+    --border: 240 8% 18%;
+    --input: 240 8% 18%;
+    --ring: 152 68% 50%;
 
-    --chart-1: 40 80% 55%;  /* Amber */
-    --chart-2: 176 40% 48%; /* Deep Teal */
-    --chart-3: 8 55% 55%;   /* Brick */
-    --chart-4: 90 35% 48%;  /* Olive */
-    --chart-5: 15 60% 55%;  /* Rust */
-    --chart-6: 200 20% 55%; /* Slate */
-    --chart-7: 48 65% 55%;  /* Mustard */
-    --chart-8: 35 12% 58%;  /* Warm Gray */
+    --chart-1: 152 65% 55%;  /* Emerald */
+    --chart-2: 199 89% 62%;  /* Sky */
+    --chart-3: 42 93% 58%;   /* Amber */
+    --chart-4: 262 70% 68%;  /* Violet */
+    --chart-5: 349 78% 63%;  /* Rose */
+    --chart-6: 199 25% 62%;  /* Slate blue */
+    --chart-7: 30 85% 58%;   /* Orange */
+    --chart-8: 210 10% 68%;  /* Neutral gray */
 
-    --success: 90 35% 48%;
-    --success-foreground: 171 22% 5%;
-    --warning: 45 75% 55%;
-    --warning-foreground: 171 22% 5%;
-    --info: 176 40% 48%;
-    --info-foreground: 171 22% 5%;
+    --success: 152 60% 50%;
+    --success-foreground: 240 10% 6%;
+    --warning: 42 90% 55%;
+    --warning-foreground: 240 10% 6%;
+    --info: 199 85% 60%;
+    --info-foreground: 240 10% 6%;
 
     /* ── Surface hierarchy (dark) ── */
-    --surface-0: 171 22% 5%;
-    --surface-1: 171 20% 8%;
-    --surface-2: 171 18% 10%;
-    --surface-3: 171 16% 12%;
+    --surface-0: 240 8% 6%;
+    --surface-1: 240 8% 9%;
+    --surface-2: 240 7% 12%;
+    --surface-3: 240 7% 15%;
 
-    /* ── Surface backgrounds (dark, flat, no hue gradients) ── */
-    --gradient-card: linear-gradient(145deg, hsl(171, 20%, 9%), hsl(171, 20%, 7%));
-    --gradient-hero: hsl(171, 22%, 5%);
-    --gradient-glow: hsl(171, 22%, 5%);
+    /* ── Surface backgrounds (dark) ── */
+    --gradient-card: linear-gradient(145deg, hsl(240, 8%, 11%), hsl(240, 8%, 7%));
+    --gradient-hero: radial-gradient(ellipse 80% 55% at 50% -10%, hsl(152, 65%, 32%, 0.35), transparent 62%), hsl(240, 8%, 6%);
+    --gradient-glow: radial-gradient(circle, hsl(152, 68%, 45%, 0.3), transparent 70%);
 
-    /* ── Shadows (dark, hard offset, no blur) ── */
-    --shadow-glow: 2px 2px 0 hsl(40, 90%, 58%, 0.35);
-    --shadow-card: 2px 2px 0 hsl(0, 0%, 0%, 0.5);
-    --shadow-elevated: 3px 3px 0 hsl(0, 0%, 0%, 0.6);
-    --shadow-floating: 4px 4px 0 hsl(0, 0%, 0%, 0.7);
+    /* ── Inset light (dark theme: the reference's lit-pill treatment, toned down) ── */
+    --inset-lit: inset 0 1px 0 hsl(0, 0%, 100%, 0.14), inset 0 -1px 0 hsl(0, 0%, 0%, 0.3);
+
+    /* ── Shadows (dark, soft glow, inner highlight) ── */
+    --shadow-glow: 0 0 40px hsl(152, 68%, 50%, 0.35);
+    --shadow-card: inset 0 1px 0 hsl(0, 0%, 100%, 0.04), 0 8px 24px hsl(240, 10%, 2%, 0.5);
+    --shadow-elevated: inset 0 1px 0 hsl(0, 0%, 100%, 0.05), 0 16px 40px hsl(240, 10%, 2%, 0.55);
+    --shadow-floating: inset 0 1px 0 hsl(0, 0%, 100%, 0.06), 0 24px 56px hsl(240, 10%, 2%, 0.65);
 
     /* ── Sidebar tokens (dark) ── */
-    --sidebar-background: 171 20% 6%;
-    --sidebar-foreground: 36 25% 90%;
-    --sidebar-primary: 40 90% 58%;
-    --sidebar-primary-foreground: 171 22% 5%;
-    --sidebar-accent: 171 15% 13%;
-    --sidebar-accent-foreground: 36 25% 90%;
-    --sidebar-border: 171 15% 16%;
-    --sidebar-ring: 40 90% 58%;
+    --sidebar-background: 240 8% 7%;
+    --sidebar-foreground: 210 18% 94%;
+    --sidebar-primary: 152 68% 50%;
+    --sidebar-primary-foreground: 240 10% 6%;
+    --sidebar-accent: 240 7% 13%;
+    --sidebar-accent-foreground: 210 18% 94%;
+    --sidebar-border: 240 8% 16%;
+    --sidebar-ring: 152 68% 50%;
   }
 
   /* ── Chart color palettes (independent of light/dark mode) ── */
@@ -213,18 +232,18 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Zen Old Mincho', 'Hiragino Mincho ProN', serif;
+    font-family: var(--font-sans), 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Chakra Petch', 'Noto Sans JP', sans-serif;
-    letter-spacing: 0.01em;
+    font-family: var(--font-sans), 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.015em;
   }
 
   button, input, select, textarea, table, code, pre {
-    font-family: 'Azeret Mono', monospace;
+    font-family: var(--font-mono), 'JetBrains Mono', ui-monospace, monospace;
   }
 }
 
@@ -235,10 +254,10 @@
 
   /* ── Glassmorphism surface ── */
   .glass-card {
-    background: hsl(var(--card) / 0.82);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--border) / 0.6);
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid hsl(var(--foreground) / 0.08);
     box-shadow: var(--shadow-card);
   }
 
@@ -260,11 +279,12 @@
     box-shadow: var(--shadow-elevated);
     position: relative;
     overflow: hidden;
-    transition: border-color 200ms ease;
+    transition: border-color 200ms ease, box-shadow 200ms ease;
   }
 
   .elevated-card:hover {
-    border-color: hsl(var(--primary) / 0.3);
+    border-color: hsl(var(--primary) / 0.4);
+    box-shadow: var(--shadow-elevated), 0 0 0 1px hsl(var(--primary) / 0.12);
   }
 
   /* ── Panel (secondary content areas) ── */
@@ -281,35 +301,472 @@
   .sidebar-surface {
     background: hsl(var(--sidebar-background));
     border-right: 1px solid hsl(var(--sidebar-border));
-    box-shadow: 2px 0 16px hsl(220, 47%, 40%, 0.04);
+    box-shadow: 2px 0 16px hsl(240, 10%, 2%, 0.12);
   }
 
-  /* ── Hero surface background ── */
+  /* ── Hero surface background — radial spotlight glow ── */
   .hero-surface {
     background: var(--gradient-hero);
   }
 
-  /* ── Brand text (display type, deep-teal accent — amber stays reserved for actions) ── */
-  .brand-text {
-    color: hsl(var(--accent));
-    font-family: 'Chakra Petch', 'Noto Sans JP', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+  /* ── Site header — the one signature motion moment ──
+     Sticky and near-transparent at rest; once the page moves under it the bar
+     tightens, deepens its blur and picks up a hairline edge, so content reads
+     as passing beneath glass rather than under a fixed strip. `SiteHeader.tsx`
+     only toggles [data-scrolled]; everything below is CSS so that reduced
+     motion can flatten it without touching JS. */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    width: 100%;
   }
 
-  /* ── Stat chip (data badges in header) ── */
+  .site-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    max-width: 72rem;
+    height: 3.75rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+    /* Transparent at rest — the hero's own radial glow shows through. */
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition:
+      height var(--dur-base) var(--ease-out),
+      max-width var(--dur-base) var(--ease-out),
+      background-color var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out),
+      box-shadow var(--dur-base) var(--ease-out),
+      backdrop-filter var(--dur-base) var(--ease-out);
+  }
+
+  .site-header[data-scrolled] .site-header-bar {
+    height: 3.25rem;
+    max-width: 68rem;
+    background: hsl(var(--background) / 0.72);
+    border-bottom-color: hsl(var(--foreground) / 0.08);
+    box-shadow: var(--shadow-card);
+    /* saturate() is what keeps colour behind the glass from going flat — the
+       single most recognisable part of this treatment. */
+    backdrop-filter: blur(16px) saturate(1.6);
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  }
+
+  @media (max-width: 640px) {
+    .site-header-bar { padding-inline: 1rem; }
+  }
+
+  /* Reduced motion: keep the scrolled *appearance*, drop the travel. */
+  @media (prefers-reduced-motion: reduce) {
+    .site-header-bar { transition: none !important; }
+  }
+
+  /* ── Brand mark (wordmark, small — the one place brand-emerald is used as text) ── */
+  .brand-mark {
+    color: hsl(var(--primary));
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  /* ══════════════════════════════════════════
+     DISPLAY HEADING — scroll-scrubbed light sweep
+     The reference's most recognisable treatment: a heading sits dim, and a
+     band of full-brightness sweeps through it as the section scrolls into
+     place, so a two-line heading is often caught mid-reveal (line one lit,
+     line two still dim). It is a scrub, not a one-shot — scrolling back
+     un-reveals it, which is what makes it feel attached to the page rather
+     than triggered by it.
+     Landing/marketing only. Nothing in the dashboard uses this.
+  ══════════════════════════════════════════ */
+  .display-heading {
+    font-size: clamp(2rem, 1.2rem + 3.2vw, 3.5rem);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+    /* Bright band on the left, dim to the right; the animation slides the
+       bright band across. Ends fully lit. */
+    background-image: linear-gradient(
+      95deg,
+      hsl(var(--foreground)) 0%,
+      hsl(var(--foreground)) 38%,
+      hsl(var(--foreground) / 0.28) 58%,
+      hsl(var(--foreground) / 0.28) 100%
+    );
+    background-size: 260% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  @keyframes heading-sweep {
+    from { background-position: 100% 0; }
+    to   { background-position: 0% 0; }
+  }
+
+  @supports ((animation-timeline: view()) and (animation-range: 0% 100%)) {
+    .display-heading {
+      animation: heading-sweep auto linear both;
+      animation-timeline: view();
+      animation-range: entry 15% cover 40%;
+    }
+  }
+
+  /* Firefox and friends: driven by the .in-view class from useFallbackReveal. */
+  @supports not ((animation-timeline: view()) and (animation-range: 0% 100%)) {
+    .display-heading {
+      transition: background-position var(--dur-slow) var(--ease-out);
+    }
+    .display-heading.in-view { background-position: 0% 0; }
+  }
+
+  /* Reduced motion: a flat, fully-lit heading. A sweep tied to scroll is
+     exactly the kind of movement the preference asks us to remove, and a
+     half-lit heading left frozen would be a legibility problem. */
+  @media (prefers-reduced-motion: reduce) {
+    .display-heading {
+      animation: none !important;
+      transition: none !important;
+      background-image: none;
+      color: hsl(var(--foreground));
+    }
+  }
+
+  /* ══════════════════════════════════════════
+     GLOW CARD — pointer-tracked border light
+     A soft light follows the cursor around the card's 1px border. Driven by
+     --mx/--my, set by useGlowCards on a single container-level listener, so
+     the cost is one pointermove handler per section rather than per card.
+     Border only (mask-composite carves out the middle) — filling the card
+     body would wash out the text sitting on it.
+  ══════════════════════════════════════════ */
+  .glow-card {
+    position: relative;
+  }
+
+  .glow-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      12rem circle at var(--mx, 50%) var(--my, 0%),
+      hsl(var(--primary) / 0.85),
+      transparent 65%
+    );
+    -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+    mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity var(--dur-base) var(--ease-out);
+    pointer-events: none;
+  }
+
+  .glow-card:hover::before,
+  .glow-card:focus-within::before {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glow-card::before { transition: none; }
+  }
+
+  /* ══════════════════════════════════════════
+     GRID BACKDROP — hero texture
+     A ruled plane fading out at the edges. Static: the hero already runs an
+     entrance sequence, and a moving background behind a file drop target
+     would be a distraction at exactly the wrong moment.
+  ══════════════════════════════════════════ */
+  .grid-backdrop {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .grid-backdrop::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(to right, hsl(var(--foreground) / 0.055) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.055) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 25%, transparent 78%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 25%, transparent 78%);
+    pointer-events: none;
+  }
+
+  /* ══════════════════════════════════════════
+     CTA STAGE — the closing section
+     A tall stage rather than a card. Everything decorative here is driven by
+     one named view timeline (--cta-stage) so the grid settling, the rules
+     drawing and the heading all track the same scroll position instead of
+     running on three independent clocks.
+  ══════════════════════════════════════════ */
+  .cta-stage {
+    view-timeline-name: --cta-stage;
+    view-timeline-axis: block;
+    isolation: isolate;
+  }
+
+  /* Ruled plane, held inside a radial vignette so it fades out well before the
+     section edges — a grid that runs to a hard edge looks like a mistake. */
+  .cta-grid {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at center,
+      hsl(var(--primary) / 0.1) 0%,
+      hsl(var(--foreground) / 0.04) 30%,
+      transparent 70%
+    );
+    opacity: 0;
+    transform: scale(0.85);
+  }
+
+  .cta-grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(hsl(var(--foreground) / 0.09) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.09) 1px, transparent 1px);
+    background-size: 120px 120px;
+    -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 20%, transparent 75%);
+  }
+
+  /* Chamfered rules bracketing the content. Hidden below lg — at narrow widths
+     they would crowd the text rather than frame it. */
+  .cta-rule {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    z-index: 0;
+    display: none;
+    pointer-events: none;
+  }
+
+  .cta-rule-left { left: 0; }
+  .cta-rule-right { right: 0; }
+
+  @media (min-width: 1024px) {
+    .cta-rule { display: block; }
+  }
+
+  .cta-rule path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  @keyframes cta-grid-settle {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes cta-rule-draw {
+    from { stroke-dashoffset: 1; }
+    to   { stroke-dashoffset: 0; }
+  }
+
+  @supports ((animation-timeline: view()) and (animation-range: 0% 100%)) {
+    .cta-grid {
+      animation: cta-grid-settle auto linear both;
+      animation-timeline: --cta-stage;
+      animation-range: entry 10% cover 45%;
+    }
+    .cta-rule path {
+      animation: cta-rule-draw auto linear both;
+      animation-timeline: --cta-stage;
+      animation-range: entry 15% cover 60%;
+    }
+  }
+
+  /* Firefox and reduced motion both get the finished state, drawn statically.
+     A half-drawn rule frozen in place would look broken rather than restrained. */
+  @supports not ((animation-timeline: view()) and (animation-range: 0% 100%)) {
+    .cta-grid { opacity: 1; transform: none; }
+    .cta-rule path { stroke-dashoffset: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta-grid {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .cta-rule path {
+      animation: none !important;
+      stroke-dashoffset: 0 !important;
+    }
+  }
+
+  /* Closing headline. A vertical metallic ramp — dim at the cap line, full
+     brightness through the middle, dim again at the baseline — which is what
+     gives large type on a dark field its sense of being lit from the front
+     rather than simply coloured white. */
+  .cta-heading {
+    font-size: clamp(2.25rem, 1.2rem + 4.2vw, 4rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+    background-image: linear-gradient(
+      180deg,
+      hsl(var(--foreground) / 0.45) 0%,
+      hsl(var(--foreground)) 48%,
+      hsl(var(--foreground) / 0.5) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta-heading { /* the ramp is static, so it stays; nothing to disable */ }
+  }
+
+  /* The one lit control on the page. Top highlight, inner floor and an outer
+     bloom — the "physical pill" treatment, kept for this single moment rather
+     than applied to every button. */
+  .cta-lit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.875rem 1.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(var(--primary-foreground));
+    background: linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.82) 100%);
+    border: 1px solid hsl(var(--primary) / 0.55);
+    box-shadow:
+      inset 0 1px 0 hsl(0, 0%, 100%, 0.45),
+      inset 0 -8px 14px hsl(0, 0%, 0%, 0.12),
+      0 8px 28px hsl(var(--primary) / 0.35);
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+  }
+
+  .cta-lit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 hsl(0, 0%, 100%, 0.55),
+      inset 0 -8px 14px hsl(0, 0%, 0%, 0.12),
+      0 12px 40px hsl(var(--primary) / 0.5);
+  }
+
+  .cta-lit-btn:active { transform: translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta-lit-btn { transition: none; }
+    .cta-lit-btn:hover { transform: none; }
+  }
+
+  /* ── Brand text (section display headings — neutral ink/white, not accent-tinted) ── */
+  .brand-text {
+    color: hsl(var(--foreground));
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* ── Hero gradient text — reserved for the single true headline moment ── */
+  .hero-gradient-text {
+    background: radial-gradient(120% 140% at 30% -20%, hsl(var(--foreground)) 0%, hsl(var(--foreground) / 0.5) 45%, hsl(var(--foreground)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ── Stat chip (data badges in header) — glass pill ── */
   .stat-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.625rem;
+    gap: 0.3rem;
+    padding: 0.3rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.6875rem;
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: 0.01em;
-    background: hsl(var(--secondary));
-    color: hsl(var(--secondary-foreground));
-    border: 1px solid hsl(var(--border) / 0.5);
+    background: hsl(var(--foreground) / 0.05);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: hsl(var(--foreground) / 0.85);
+    border: 1px solid hsl(var(--foreground) / 0.12);
+    box-shadow: var(--inset-lit);
+  }
+
+  /* ── Edge-fade masks ──
+     For regions that scroll independently: content dissolves at the boundary
+     instead of being guillotined, which also signals "there is more here".
+     Deliberately limited to genuinely scrollable areas — used as decoration on
+     static blocks it just makes text hard to read at the edges. */
+  .edge-fade-y {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+  }
+
+  .edge-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+  }
+
+  /* Bottom-only. For panes with a header row that must stay crisp — fading the
+     top would dim the column headings, which is worse than a hard edge. */
+  .edge-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
+  }
+
+  /* ── Indeterminate progress — for work whose duration is unknowable ── */
+  .progress-indeterminate {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--primary) / 0.2) 0%,
+      hsl(var(--primary)) 45%,
+      hsl(var(--primary)) 55%,
+      hsl(var(--primary) / 0.2) 100%
+    );
+    background-size: 200% 100%;
+    animation: sheen 1.1s infinite linear;
+  }
+
+  /* ── Skeleton sheen — replaces a whole-block opacity pulse ── */
+  .skeleton-sheen {
+    background-color: hsl(var(--muted));
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--foreground) / 0.07) 45%,
+      hsl(var(--foreground) / 0.07) 55%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: sheen 1.6s infinite linear;
+  }
+
+  /* Both collapse to a flat surface when motion is reduced — a looping sheen
+     is exactly the kind of persistent movement the preference asks us to drop. */
+  @media (prefers-reduced-motion: reduce) {
+    .progress-indeterminate {
+      background: hsl(var(--primary));
+      animation: none;
+    }
+    .skeleton-sheen {
+      background-image: none;
+      animation: none;
+    }
   }
 
   /* ── Sidebar nav item ── */
@@ -334,7 +791,7 @@
   }
 
   .sidebar-nav-item > svg {
-    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform var(--dur-fast) var(--ease-out);
     flex-shrink: 0;
   }
 
@@ -347,14 +804,14 @@
   }
 
   /* ── Stagger animation helpers ── */
-  .stagger-1 { animation: stagger-fade-up 0.5s ease-out 0.05s both; }
-  .stagger-2 { animation: stagger-fade-up 0.5s ease-out 0.10s both; }
-  .stagger-3 { animation: stagger-fade-up 0.5s ease-out 0.15s both; }
-  .stagger-4 { animation: stagger-fade-up 0.5s ease-out 0.20s both; }
-  .stagger-5 { animation: stagger-fade-up 0.5s ease-out 0.25s both; }
-  .stagger-6 { animation: stagger-fade-up 0.5s ease-out 0.30s both; }
-  .stagger-7 { animation: stagger-fade-up 0.5s ease-out 0.35s both; }
-  .stagger-8 { animation: stagger-fade-up 0.5s ease-out 0.40s both; }
+  .stagger-1 { animation: stagger-fade-up var(--dur-slow) var(--ease-out) 0.05s backwards; }
+  .stagger-2 { animation: stagger-fade-up var(--dur-slow) var(--ease-out) 0.10s backwards; }
+  .stagger-3 { animation: stagger-fade-up var(--dur-slow) var(--ease-out) 0.15s backwards; }
+  .stagger-4 { animation: stagger-fade-up var(--dur-slow) var(--ease-out) 0.20s backwards; }
+  .stagger-5 { animation: stagger-fade-up var(--dur-slow) var(--ease-out) 0.25s backwards; }
+  .stagger-6 { animation: stagger-fade-up var(--dur-slow) var(--ease-out) 0.30s backwards; }
+  .stagger-7 { animation: stagger-fade-up var(--dur-slow) var(--ease-out) 0.35s backwards; }
+  .stagger-8 { animation: stagger-fade-up var(--dur-slow) var(--ease-out) 0.40s backwards; }
 
   .sidebar-nav-item:hover {
     background: hsl(var(--sidebar-accent));
@@ -424,10 +881,19 @@
   to { height: 0; }
 }
 
-/* Zone 1: opacity-only — NEVER uses transform so drag-drop is never blocked */
+/* Zone 1: NEVER uses transform so drag-drop is never blocked.
+   Blur is safe here — it does not affect hit-testing — and at half the Zone 2
+   radius it softens the entrance without turning the fold into a smear. The
+   drop target itself opts out entirely; see .hero-appear-upload below. */
 @keyframes hero-appear {
+  from { opacity: 0; filter: blur(calc(var(--reveal-blur) / 2)); }
+  to   { opacity: 1; filter: blur(0); }
+}
+
+/* Opacity-only variant for the primary interaction target. */
+@keyframes hero-appear-plain {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 @keyframes fade-in {
@@ -460,9 +926,16 @@
   to { transform: rotate(360deg); }
 }
 
+/* A sheen travelling left-to-right. Used for both skeleton placeholders and
+   indeterminate progress — one idiom for "working, duration unknown". */
+@keyframes sheen {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
 @keyframes stagger-fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(var(--reveal-shift)); filter: blur(var(--reveal-blur)); }
+  to   { opacity: 1; transform: translateY(0);                   filter: blur(0); }
 }
 
 @keyframes bounce {
@@ -507,20 +980,24 @@
 }
 
 
-/* ── Zone 2: Scroll-driven narrative keyframes ── */
+/* ── Zone 2: Scroll-driven narrative keyframes ──
+   Blur-led, short travel. The blur carries the depth cue, so the element only
+   needs to move ~12px instead of 48px — long travel reads as "slidey" rather
+   than smooth. Scale is deliberately gone: scaling text mid-reveal causes a
+   visible re-rasterisation shimmer. */
 @keyframes narrative-reveal {
-  from { opacity: 0; translate: 0 48px; scale: 0.97; }
-  to   { opacity: 1; translate: 0 0;    scale: 1; }
+  from { opacity: 0; translate: 0 var(--reveal-shift); filter: blur(var(--reveal-blur)); }
+  to   { opacity: 1; translate: 0 0;                    filter: blur(0); }
 }
 
 @keyframes narrative-reveal-left {
-  from { opacity: 0; translate: -36px 0; }
-  to   { opacity: 1; translate: 0 0; }
+  from { opacity: 0; translate: calc(-1 * var(--reveal-shift)) 0; filter: blur(var(--reveal-blur)); }
+  to   { opacity: 1; translate: 0 0;                              filter: blur(0); }
 }
 
 @keyframes narrative-reveal-right {
-  from { opacity: 0; translate: 36px 0; }
-  to   { opacity: 1; translate: 0 0; }
+  from { opacity: 0; translate: var(--reveal-shift) 0; filter: blur(var(--reveal-blur)); }
+  to   { opacity: 1; translate: 0 0;                   filter: blur(0); }
 }
 
 @keyframes problem-pin-line {
@@ -528,17 +1005,9 @@
   to   { scale: 1 1; }
 }
 
-@keyframes cta-settle {
-  0%   { opacity: 0; translate: 0 24px; scale: 0.97; }
-  60%  { opacity: 1; translate: 0 -4px; scale: 1.01; }
-  80%  { translate: 0 2px; scale: 0.995; }
-  100% { opacity: 1; translate: 0 0;    scale: 1; }
-}
-
-@keyframes cta-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.35); }
-  50%       { box-shadow: 0 0 0 10px hsl(var(--primary) / 0); }
-}
+/* cta-settle / cta-pulse removed with the old boxed CTA card. The closing
+   section is now .cta-stage, whose motion is scrubbed by the --cta-stage view
+   timeline rather than run on a delay-and-loop. */
 
 /* ══════════════════════════════════════════
    COMPONENT OVERRIDES
@@ -546,9 +1015,9 @@
 
 /* ── PDF card transitions ── */
 [data-pdf-card] {
-  transition: transform 200ms cubic-bezier(0.25, 1, 0.5, 1),
-              opacity 200ms ease,
-              box-shadow 200ms ease;
+  transition: transform var(--dur-fast) var(--ease-out),
+              opacity var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
 }
 
 /* ── Touch behavior for drag ── */
@@ -562,13 +1031,27 @@
 
 /* ── Sheet slide-in ── */
 [data-state="open"][role="dialog"] {
-  animation: slide-in-right 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slide-in-right var(--dur-base) var(--ease-out);
 }
 
-/* ── Collapsible ── */
+/* ── Dashboard tab panels ──
+   Tool tier: a 4px lift and a fade, no blur. Radix unmounts the inactive panel,
+   so this fires on mount and needs no JS. `backwards` keeps the transform from
+   persisting afterwards, which would otherwise leave a containing block around
+   the dashboard grid and interfere with drag-and-drop. */
+@keyframes tab-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+[role="tabpanel"][data-state="active"] {
+  animation: tab-enter var(--dur-base) var(--ease-out) backwards;
+}
+
+/* ── Collapsible — symmetric open/close, so ease-in-out rather than ease-out ── */
 [data-radix-collapsible-content] {
   overflow: hidden;
-  transition: height 250ms cubic-bezier(0.87, 0, 0.13, 1);
+  transition: height var(--dur-base) var(--ease-in-out);
 }
 
 /* ── Scrollbar styling ── */
@@ -605,23 +1088,33 @@
    MODERN NATIVE ANIMATIONS
 ══════════════════════════════════════════ */
 @layer utilities {
-  /* ── Zone 1: hero-appear — opacity only, no transform ── */
+  /* ── Zone 1: hero entrance ──
+     `backwards` rather than `both` throughout: it holds the start state during
+     the delay but lets each element fall back to its natural, unfiltered value
+     once finished. `both` would pin `filter: blur(0)` permanently, and a
+     zero-radius filter still establishes a stacking context and containing
+     block — an invisible side effect sitting on top of the primary fold. */
   .hero-appear {
-    animation: hero-appear 0.45s ease-out both;
+    /* Container only; its children carry the blur, so this stays opacity-led
+       to avoid stacking a second filter layer over the whole hero. */
+    animation: hero-appear-plain var(--dur-base) var(--ease-out) backwards;
   }
 
-  /* ── Zone 1: hero sub-elements — very fast, opacity-led, no translate ── */
-  .hero-appear-badge  { animation: hero-appear 0.3s ease-out 0.05s both; }
-  .hero-appear-title  { animation: hero-appear 0.35s ease-out 0.1s both; }
-  .hero-appear-sub    { animation: hero-appear 0.35s ease-out 0.15s both; }
-  .hero-appear-pills  { animation: hero-appear 0.3s ease-out 0.2s both; }
-  /* Upload zone: zero delay, opacity-only — drop target is live at frame 1 */
-  .hero-appear-upload { animation: hero-appear 0.25s ease-out 0s both; }
-  .hero-appear-feats  { animation: hero-appear 0.3s ease-out 0.25s both; }
+  /* ── Zone 1: hero sub-elements — very fast, no translate ── */
+  .hero-appear-badge  { animation: hero-appear var(--dur-base) var(--ease-out) 0.05s backwards; }
+  .hero-appear-title  { animation: hero-appear var(--dur-base) var(--ease-out) 0.10s backwards; }
+  .hero-appear-sub    { animation: hero-appear var(--dur-base) var(--ease-out) 0.15s backwards; }
+  .hero-appear-pills  { animation: hero-appear var(--dur-base) var(--ease-out) 0.20s backwards; }
+  /* Upload zone: zero delay AND no blur — the drop target is the one element
+     on the page that must be fully live and legible at frame 1, so it gets no
+     compositing layer of its own. */
+  .hero-appear-upload { animation: hero-appear-plain var(--dur-fast) var(--ease-out) 0s backwards; }
+  .hero-appear-feats  { animation: hero-appear var(--dur-base) var(--ease-out) 0.25s backwards; }
 
-  /* Logo gentle float — starts after hero-appear-title finishes (0.1s + 0.35s = 0.45s) */
+  /* Logo gentle float — starts once the title entrance has finished */
   .logo-float {
-    animation: hero-appear 0.35s ease-out 0.1s both, float 4s ease-in-out 0.45s infinite;
+    animation: hero-appear var(--dur-base) var(--ease-out) 0.1s backwards,
+               float 4s var(--ease-in-out) 0.45s infinite;
   }
 
   /* prefers-reduced-motion: Zone 1 collapses to instant reveal, no float */
@@ -636,12 +1129,14 @@
     .logo-float {
       animation: none !important;
       opacity: 1 !important;
+      filter: none !important;
     }
     /* Demo animation: instant-reveal all animated elements */
     .demo-anim-wrapper * {
       animation: none !important;
       opacity: 1 !important;
       transform: none !important;
+      filter: none !important;
       stroke-dashoffset: 0 !important;
       clip-path: none !important;
     }
@@ -652,13 +1147,13 @@
     @keyframes reveal-up {
       from {
         opacity: 0;
-        translate: 0 40px;
-        scale: 0.95;
+        translate: 0 var(--reveal-shift);
+        filter: blur(var(--reveal-blur));
       }
       to {
         opacity: 1;
         translate: 0 0;
-        scale: 1;
+        filter: blur(0);
       }
     }
 
@@ -701,12 +1196,6 @@
       animation-range: entry 10% cover 60%;
     }
 
-    /* CTA settle with micro-bounce on entry */
-    .cta-settle {
-      animation: cta-settle 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 50%;
-    }
   }
 
   /* ── Zone 2: fallback initial state (hidden until JS observer fires) ── */
@@ -721,8 +1210,11 @@
     .narrative-reveal-left,
     .narrative-reveal-right {
       opacity: 0;
-      transform: translateY(40px);
-      transition: opacity 0.55s ease-out, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      transform: translateY(var(--reveal-shift));
+      filter: blur(var(--reveal-blur));
+      transition: opacity var(--dur-slow) var(--ease-out),
+                  transform var(--dur-slow) var(--ease-out),
+                  filter var(--dur-slow) var(--ease-out);
     }
 
     .narrative-reveal.in-view,
@@ -730,18 +1222,109 @@
     .narrative-reveal-right.in-view {
       opacity: 1;
       transform: translateY(0);
+      filter: blur(0);
     }
 
-    .narrative-reveal-left { transform: translateX(-36px); }
+    .narrative-reveal-left { transform: translateX(calc(-1 * var(--reveal-shift))); }
     .narrative-reveal-left.in-view { transform: translateX(0); }
 
-    .narrative-reveal-right { transform: translateX(36px); }
+    .narrative-reveal-right { transform: translateX(var(--reveal-shift)); }
     .narrative-reveal-right.in-view { transform: translateX(0); }
   }
 
-  /* CTA pulse (runs after settle, loops slowly) */
-  .cta-pulse-btn {
-    animation: cta-pulse 2.4s ease-in-out 0.8s infinite;
+  /* ── Scroll-scrubbed chart construction (Proof bars + How-it-works line) ──
+     Unlike .narrative-reveal (a quick trigger over a short range), these track
+     scroll position across nearly the whole time the element is in view, so
+     the chart visibly builds — and un-builds on scroll-back — with the
+     visitor's own scroll motion instead of firing once and holding. */
+  .chart-bar-rise {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+
+  .chart-line-progress {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  /* Named scroll timeline for the How-it-works block — the line fill and
+     each step badge's highlight are both slices of this ONE timeline, so
+     "how far the line has drawn" and "which step is active" are always the
+     same underlying scroll position instead of two independently-timed
+     guesses. Scoped to .how-steps-scope so it doesn't leak to other
+     sections. */
+  .how-steps-scope {
+    view-timeline-name: --how-steps;
+    view-timeline-axis: block;
+  }
+
+  .how-step-badge {
+    transform: scale(1);
+  }
+
+  @supports ((animation-timeline: view()) and (animation-range: 0% 100%)) {
+    @keyframes chart-bar-rise-scroll {
+      from { transform: scaleY(0); }
+      to   { transform: scaleY(1); }
+    }
+    @keyframes chart-line-progress-scroll {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+    @keyframes how-step-focus {
+      from { transform: scale(1); }
+      to   { transform: scale(1.12); }
+    }
+
+    /* Proof bars: a quick construction moment on entry, matching
+       .scroll-reveal elsewhere — not a full-section scrub, since a single
+       stat row doesn't need reading-lockstep timing. */
+    .chart-bar-rise {
+      animation: chart-bar-rise-scroll auto linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+
+    /* How-it-works line: tracks the WHOLE steps block via --how-steps,
+       not its own 1px box, so it actually spans the time it takes to
+       scroll past the four step cards instead of finishing early. */
+    .chart-line-progress {
+      animation: chart-line-progress-scroll auto linear both;
+      animation-timeline: --how-steps;
+      animation-range: cover 0% cover 100%;
+    }
+
+    /* Step badges: each highlights as the shared line-fill progress
+       reaches it, then freezes scaled-up ("checkpoint reached") until
+       scrolled back past. */
+    .how-step-badge {
+      animation: how-step-focus auto linear both;
+      animation-timeline: --how-steps;
+    }
+    .how-step-badge-1 { animation-range: cover 0%  cover 25%; }
+    .how-step-badge-2 { animation-range: cover 20% cover 45%; }
+    .how-step-badge-3 { animation-range: cover 45% cover 70%; }
+    .how-step-badge-4 { animation-range: cover 65% cover 90%; }
+  }
+
+  /* Fallback (Firefox and other non-scroll-timeline browsers): a single
+     eased entrance triggered by the existing Zone-2 IntersectionObserver,
+     matching how .narrative-reveal already degrades. */
+  @supports not ((animation-timeline: view()) and (animation-range: 0% 100%)) {
+    .chart-bar-rise,
+    .chart-line-progress {
+      transition: transform var(--dur-slow) var(--ease-out);
+    }
+    .chart-bar-rise.in-view,
+    .chart-line-progress.in-view {
+      transform: none;
+    }
+    .how-step-badge {
+      transition: transform var(--dur-slow) var(--ease-out);
+    }
+    .how-step-badge.in-view {
+      transform: scale(1.06);
+    }
   }
 
   /* prefers-reduced-motion: collapse all Zone 2 narrative animations */
@@ -749,15 +1332,18 @@
     .narrative-reveal,
     .narrative-reveal-left,
     .narrative-reveal-right,
-    .cta-settle,
-    .problem-pin-line {
+    .problem-pin-line,
+    .chart-bar-rise,
+    .chart-line-progress,
+    .how-step-badge {
       animation: none !important;
       opacity: 1 !important;
       transform: none !important;
       translate: none !important;
       scale: none !important;
+      filter: none !important;
+      transition: none !important;
     }
-    .cta-pulse-btn { animation: none !important; }
   }
 
   /* 2. Discrete Transitions / Entry Effects */
@@ -766,11 +1352,11 @@
      * Requires the layout to define its visible state (e.g., opacity: 1, display: block).
      * And a hidden state (e.g., via a `.hidden` class or inline `display: none`). 
      */
-    transition: 
-      display 0.4s, 
-      opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-      transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-      filter 0.4s ease-out;
+    transition:
+      display var(--dur-base),
+      opacity var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out),
+      filter var(--dur-base) var(--ease-out);
     transition-behavior: allow-discrete;
   }
 
@@ -788,6 +1374,55 @@
     opacity: 0;
     transform: translateY(10px) scale(0.98);
     filter: blur(4px);
+  }
+
+  /* ══════════════════════════════════════════
+     prefers-reduced-motion — TOOL TIER
+     The two blocks above cover the landing page (Zone 1 hero, Zone 2
+     narrative). This one covers the dashboard, which previously ignored the
+     preference entirely: the analyzing overlay, drag-and-drop, Tailwind's
+     animate-pulse/animate-bounce, and the discrete panel transitions.
+     Anything that animates inside the working tool belongs here.
+  ══════════════════════════════════════════ */
+  @media (prefers-reduced-motion: reduce) {
+    /* Panel/overlay swaps become instant. Blur in particular must never
+       survive here — a stuck filter makes body text unreadable. */
+    .discrete-transition,
+    .discrete-transition.hidden {
+      transition: none !important;
+      transform: none !important;
+      filter: none !important;
+    }
+    .discrete-transition:not(.hidden) {
+      opacity: 1 !important;
+    }
+
+    /* The sidebar icon nudge is a hover affordance, not a state change. */
+    .sidebar-nav-item > svg {
+      transition: none !important;
+      transform: none !important;
+    }
+
+    /* Backstop for everything else in the dashboard — looping pulse/bounce,
+       dnd-kit drag travel, the chart-type crossfade, Radix enter/exit. This
+       is deliberately a `*` rule: the analyzing-overlay dots set `animation`
+       via an inline style attribute, which only an `!important` declaration
+       can override.
+
+       Durations collapse to 1ms rather than 0 so `transitionend` and
+       `animationend` listeners still fire — several components (the chart
+       crossfade, the collapsible) drive state off those events, and removing
+       the animation outright would hang them. */
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-delay: 0ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      transition-delay: 0ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

@@ -47,6 +47,7 @@ interface DashboardGridProps {
 }
 
 function EditableTitle({ value, onChange, className }: { value: string; onChange: (v: string) => void; className?: string }) {
+  const { t } = useI18n();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
 
@@ -79,7 +80,7 @@ function EditableTitle({ value, onChange, className }: { value: string; onChange
       type="button"
       onClick={() => { setDraft(value); setEditing(true); }}
       className={`text-left truncate hover:underline decoration-dotted underline-offset-2 text-xs sm:text-sm w-full ${className || ''}`}
-      title="Click to rename"
+      title={t('clickToRename')}
     >
       {value}
     </button>
@@ -87,6 +88,7 @@ function EditableTitle({ value, onChange, className }: { value: string; onChange
 }
 
 function DashboardTable({ item, onRename }: { item: DashboardItem; onRename: (v: string) => void }) {
+  const { t } = useI18n();
   const cols = item.tableColumns || (item.data.length > 0 ? Object.keys(item.data[0]) : []);
   return (
     <Card className="dashboard-panel animate-fade-in h-full flex flex-col">
@@ -96,26 +98,32 @@ function DashboardTable({ item, onRename }: { item: DashboardItem; onRename: (v:
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 sm:p-4 pt-2 flex-1 overflow-auto max-h-[280px]">
-        <div className="overflow-x-auto w-full">
-        <Table className="text-xs sm:text-sm min-w-[500px] sm:min-w-0">
-          <TableHeader>
-            <TableRow>
-              {cols.map(c => (
-                <TableHead key={c}>{c}</TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {item.data.map((row, i) => (
-              <TableRow key={i}>
+        {item.data.length === 0 ? (
+          <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+            {t('noDataToDisplay')}
+          </div>
+        ) : (
+          <div className="overflow-x-auto w-full">
+          <Table className="text-xs sm:text-sm min-w-[500px] sm:min-w-0">
+            <TableHeader>
+              <TableRow>
                 {cols.map(c => (
-                  <TableCell key={c} className="px-2 sm:px-4 py-1 sm:py-2 truncate max-w-[100px] sm:max-w-none">{String(row[c] ?? '')}</TableCell>
+                  <TableHead key={c}>{c}</TableHead>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        </div>
+            </TableHeader>
+            <TableBody>
+              {item.data.map((row, i) => (
+                <TableRow key={i}>
+                  {cols.map(c => (
+                    <TableCell key={c} className="px-2 sm:px-4 py-1 sm:py-2 truncate max-w-[100px] sm:max-w-none">{String(row[c] ?? '')}</TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -315,6 +323,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
               variant="ghost"
               size="sm"
               className="pointer-events-auto h-6 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border/60 hover:bg-secondary shadow-sm rounded-lg"
+              aria-label={t('moreActions')}
             >
               <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>

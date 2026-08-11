@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun, Check, Languages } from 'lucide-react';
+import { Moon, Sun, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/lib/theme';
 import { useI18n, languageMeta, Language } from '@/lib/i18n';
