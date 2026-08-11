@@ -28,7 +28,6 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import logo from '@/assets/ExcelInsight_Logo.png';
 import { toast } from 'sonner';
 import { trackEvent, getFileExt } from '@/lib/analytics';
 import type { DashboardItem } from '@/components/DashboardGrid';
@@ -37,6 +36,9 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+// Served from public/ so logo swaps don't need a rebuild (SiteHeader uses the same path).
+const LOGO_SRC = '/logo.png';
 
 function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: () => void; addLabel: string }) {
   const [type, setType] = useState<ChartType>(s.type);
@@ -356,7 +358,7 @@ export default function Index() {
       await exportDashboardToPDF(dashboardRef.current, {
         appName: 'ExcelInsight', fileName,
         rowCount: filteredData.length, colCount: columns.length,
-        chartCount, tableCount, insightCount, logoUrl: logo.src,
+        chartCount, tableCount, insightCount, logoUrl: LOGO_SRC,
         accentColor,
       });
       toast.success(t('pdfReady'), { id: toastId });
@@ -445,7 +447,7 @@ export default function Index() {
             {/* Row 1: logo icon + brand name */}
             <div className="flex items-center gap-2.5 justify-center hero-appear-badge">
               <img
-                src={logo.src}
+                src={LOGO_SRC}
                 alt="ExcelInsight logo"
                 width="32"
                 height="32"
@@ -547,7 +549,7 @@ export default function Index() {
           {/* Sidebar header */}
           <div className="flex items-center gap-3 px-3 py-4 border-b border-border/50 min-h-[57px]">
             <img
-              src={logo.src}
+              src={LOGO_SRC}
               alt="ExcelInsight"
               width="28"
               height="28"
@@ -617,7 +619,7 @@ export default function Index() {
             {/* Left: breadcrumb + file badge */}
             <div className="flex items-center gap-2 min-w-0">
               {isMobile && (
-                <img src={logo.src} alt="ExcelInsight" width="22" height="22" decoding="async" className="h-5 w-5 flex-shrink-0" />
+                <img src={LOGO_SRC} alt="ExcelInsight" width="22" height="22" decoding="async" className="h-5 w-5 flex-shrink-0" />
               )}
               <div className="flex items-center gap-1.5 min-w-0">
                 <span className="text-xs font-semibold brand-mark hidden sm:inline">{t('appName')}</span>
