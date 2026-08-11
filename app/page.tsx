@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect, Suspense, startTransition } from 'react';
 import { FileUpload } from '@/components/FileUpload';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
+import { SiteHeader } from '@/components/SiteHeader';
 import { ChartThemeSwitcher } from '@/components/ChartThemeSwitcher';
 import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } from '@/lib/chart-themes';
 import { hslStringToRgb } from '@/lib/color-utils';
@@ -434,10 +435,8 @@ export default function Index() {
   /* ─── LANDING PAGE ─── */
   if (!mounted || !data.length) {
     return (
-      <div className="min-h-screen hero-surface">
-        <div className="absolute top-4 right-4 z-10">
-          <ThemeLangSwitcher />
-        </div>
+      <div className="min-h-screen hero-surface grid-backdrop">
+        <SiteHeader />
 
         <main className="relative">
           {/* ── Hero section — single column, upload-first tool front door (works identically on every breakpoint) ── */}
@@ -454,11 +453,14 @@ export default function Index() {
                 decoding="async"
                 className="h-8 w-8 flex-shrink-0"
               />
-              <span className="font-bold text-base brand-text tracking-tight">ExcelInsight</span>
+              <span className="font-bold text-base brand-mark tracking-tight">ExcelInsight</span>
             </div>
 
-            {/* Headline — compact and functional, not a marketing display treatment */}
-            <h1 className="mt-3 text-xl sm:text-2xl font-semibold text-foreground tracking-tight hero-appear-title">
+            {/* Headline — compact and functional, not a marketing display treatment. The shimmer gradient is reserved for this one moment on the page. */}
+            {/* Scaled up from text-xl/2xl: at 24px this read as a caption rather
+                than a headline. Still deliberately short of a marketing display
+                size — the upload zone below it must stay above the fold. */}
+            <h1 className="mt-3 text-2xl sm:text-4xl font-bold hero-gradient-text tracking-tight hero-appear-title">
               {t('heroTitle')}
             </h1>
 
@@ -553,7 +555,7 @@ export default function Index() {
               className="h-7 w-7 flex-shrink-0"
             />
             {!sidebarCollapsed && (
-              <span className="font-bold brand-text text-sm leading-none truncate animate-[fade-in_0.2s_ease-out]">
+              <span className="font-bold brand-mark text-sm leading-none truncate animate-[fade-in_0.2s_ease-out]">
                 {t('appName')}
               </span>
             )}
@@ -618,7 +620,7 @@ export default function Index() {
                 <img src={logo.src} alt="ExcelInsight" width="22" height="22" decoding="async" className="h-5 w-5 flex-shrink-0" />
               )}
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-xs font-semibold brand-text hidden sm:inline">{t('appName')}</span>
+                <span className="text-xs font-semibold brand-mark hidden sm:inline">{t('appName')}</span>
                 <ChevronRight className="h-3 w-3 text-muted-foreground/40 hidden sm:block" />
                 <span className="text-xs font-medium text-foreground truncate max-w-[120px] sm:max-w-[260px]">
                   {activeItem ? t(activeItem.labelKey) : t('dashboard')}
@@ -892,25 +894,35 @@ export default function Index() {
                   <DataSummary columns={filteredColumns} rowCount={filteredData.length} />
                 </Suspense>
               </Card>
-              <Card className="elevated-card p-4 overflow-auto max-h-96 min-h-[300px]">
-                <Table className="text-xs">
-                  <TableHeader>
-                    <TableRow>
-                      {columns.slice(0, 10).map(c => (
-                        <TableHead key={c.name} className="font-semibold">{c.name}</TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredData.slice(0, 50).map((row, i) => (
-                      <TableRow key={i} className="hover:bg-secondary/30">
+              {/* The scroll container is an inner div, not the Card itself:
+                  .elevated-card sets `overflow: hidden` to clip its rounded
+                  corners, which silently defeated the `overflow-auto` that used
+                  to live here — the table was capped at ~20 visible rows with no
+                  way to reach the rest.
+                  edge-fade-b then dissolves the bottom edge as a truthful signal
+                  that more rows follow. Bottom only: a top fade would dim the
+                  column headings. */}
+              <Card className="elevated-card p-4 min-h-[300px]">
+                <div className="overflow-auto max-h-96 edge-fade-b">
+                  <Table className="text-xs">
+                    <TableHeader>
+                      <TableRow>
                         {columns.slice(0, 10).map(c => (
-                          <TableCell key={c.name} className="truncate max-w-[150px]">{String(row[c.name] ?? '')}</TableCell>
+                          <TableHead key={c.name} className="font-semibold">{c.name}</TableHead>
                         ))}
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredData.slice(0, 50).map((row, i) => (
+                        <TableRow key={i} className="hover:bg-secondary/30">
+                          {columns.slice(0, 10).map(c => (
+                            <TableCell key={c.name} className="truncate max-w-[150px]">{String(row[c.name] ?? '')}</TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </Card>
             </TabsContent>
           </Tabs>

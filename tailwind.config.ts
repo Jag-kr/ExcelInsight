@@ -14,10 +14,12 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Zen Old Mincho", "Hiragino Mincho ProN", "serif"],
-        serif: ["Zen Old Mincho", "Hiragino Mincho ProN", "serif"],
-        display: ["Chakra Petch", "Noto Sans JP", "sans-serif"],
-        mono: ["Azeret Mono", "monospace"],
+        // var(--font-sans) / var(--font-mono) are supplied by next/font in
+        // app/layout.tsx; the literal names remain as a fallback so the type
+        // scale is unchanged if the variable is ever missing.
+        sans: ["var(--font-sans)", "Plus Jakarta Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-sans)", "Plus Jakarta Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -88,19 +90,32 @@ export default {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        xl: "0",
-        "2xl": "0",
-        "3xl": "0",
+        md: "calc(var(--radius) - 8px)",
+        sm: "calc(var(--radius) - 12px)",
+        xl: "var(--radius-xl)",
+        "2xl": "var(--radius-2xl)",
+        "3xl": "9999px",
       },
       boxShadow: {
-        sm: "1px 1px 0 hsl(var(--foreground))",
-        DEFAULT: "2px 2px 0 hsl(var(--foreground))",
-        md: "2px 2px 0 hsl(var(--foreground))",
-        lg: "3px 3px 0 hsl(var(--foreground))",
-        xl: "4px 4px 0 hsl(var(--foreground))",
-        "2xl": "6px 6px 0 hsl(var(--foreground))",
+        sm: "var(--shadow-card)",
+        DEFAULT: "var(--shadow-card)",
+        md: "var(--shadow-elevated)",
+        lg: "var(--shadow-elevated)",
+        xl: "var(--shadow-floating)",
+        "2xl": "var(--shadow-floating)",
+        glow: "var(--shadow-glow)",
+      },
+      // Motion tokens, mirrored from the CSS custom properties in globals.css
+      // so components can write `duration-base ease-smooth` instead of
+      // arbitrary `[var(--…)]` values, which Tailwind cannot disambiguate.
+      transitionTimingFunction: {
+        smooth: "var(--ease-out)",
+        "smooth-inout": "var(--ease-in-out)",
+      },
+      transitionDuration: {
+        fast: "var(--dur-fast)",
+        base: "var(--dur-base)",
+        slow: "var(--dur-slow)",
       },
       keyframes: {
         "accordion-down": {

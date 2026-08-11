@@ -1,7 +1,6 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
+import { SiteHeader } from '@/components/SiteHeader';
 import { SeoPageContent } from '@/components/SeoPageContent';
 import { seoPageMap, seoPages } from '@/content/seo-pages';
 
@@ -54,21 +53,8 @@ export async function generateMetadata({
   };
 }
 
-// 3. Landing page header (server component — no i18n needed here)
-function LandingHeader() {
-  return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="max-w-6xl mx-auto flex items-center justify-between h-14 px-6">
-        <Link href="/" className="flex items-center gap-2 font-bold brand-text">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="ExcelInsight" width="24" height="24" className="h-6 w-6" />
-          ExcelInsight
-        </Link>
-        <ThemeLangSwitcher />
-      </div>
-    </header>
-  );
-}
+// 3. Header now comes from the shared <SiteHeader> client component, which all
+//    three public surfaces (landing, legal, SEO pages) use.
 
 // 4. Page — server component wrapper for SSG + JSON-LD
 export default async function SeoLandingPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -123,7 +109,7 @@ export default async function SeoLandingPage({ params }: { params: Promise<{ slu
         />
       ))}
 
-      <LandingHeader />
+      <SiteHeader />
 
       {/*
         SeoPageContent is a "use client" component.

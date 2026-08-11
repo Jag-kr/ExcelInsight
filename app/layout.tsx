@@ -1,7 +1,29 @@
 import { Metadata } from "next";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from '@vercel/analytics/react';
 import { Providers } from "./providers";
 import "./globals.css";
+
+/**
+ * Self-hosted via next/font rather than the `@import url(fonts.googleapis.com)`
+ * that used to sit at the top of globals.css. That import was render-blocking on
+ * a third-party origin — the browser could not paint until it resolved — which
+ * is the single largest contributor to the page feeling slow, regardless of how
+ * well the animations are tuned.
+ */
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-sans",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-mono",
+});
 
 const SITE_URL = 'https://excelinsight.xyz';
 const OG_IMAGE = 'https://storage.googleapis.com/gpt-engineer-file-uploads/neEqO6MCG2bHfGf0v6pME35dIMA2/social-images/social-1774898677243-ExcelInsight.webp';
@@ -61,7 +83,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${jakarta.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
         {/* AdSense */}
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2734357253126302" crossOrigin="anonymous"></script>
