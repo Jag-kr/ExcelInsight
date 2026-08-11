@@ -60,6 +60,7 @@ function SuggestionCard({
   isAdded: boolean;
   onAdd: () => void;
 }) {
+  const { t } = useI18n();
   const [chartType, setChartType] = useState<ChartType>(suggestion.type);
 
   return (
@@ -89,7 +90,7 @@ function SuggestionCard({
             variant="secondary"
             className="gap-1 text-[10px] bg-success/20 text-success border-0 px-2 py-1"
           >
-            <Check className="h-3 w-3" /> Added
+            <Check className="h-3 w-3" /> {t('added')}
           </Badge>
         ) : (
           <Button
@@ -97,7 +98,7 @@ function SuggestionCard({
             onClick={onAdd}
             className="h-7 text-xs gap-1 shadow-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
           >
-            <Plus className="h-3 w-3" /> Add
+            <Plus className="h-3 w-3" /> {t('add')}
           </Button>
         )}
       </div>
@@ -293,17 +294,17 @@ export function QuickAddPanel({
           <SheetHeader className="mb-3">
             <SheetTitle className="flex items-center gap-2 text-base">
               <Plus className="h-4 w-4 text-primary" />
-              {t('addToDashboardPanel') || 'Add to Dashboard'}
+              {t('addToDashboardPanel')}
             </SheetTitle>
             <SheetDescription className="text-xs">
-              {t('suggestedCharts') || 'Browse suggestions, build custom charts, or add insights'}
+              {t('addToDashboardPanelDesc')}
             </SheetDescription>
           </SheetHeader>
 
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
-              placeholder={t('searchChartsInsights') || 'Search charts & insights...'}
+              placeholder={t('searchChartsInsights')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="pl-8 h-8 text-sm bg-secondary/50 border-border/50"
@@ -314,7 +315,7 @@ export function QuickAddPanel({
         <div className="p-4 space-y-1">
           {/* Suggested Charts Section */}
           <CollapsibleSection
-            title={t('suggestedCharts') || 'Suggested Charts'}
+            title={t('suggestedCharts')}
             icon={BarChart3}
             count={filteredSuggestions.length}
             defaultOpen={true}
@@ -323,7 +324,7 @@ export function QuickAddPanel({
               <div className="flex flex-col items-center py-6 text-center">
                 <Check className="h-6 w-6 text-success mb-2" />
                 <p className="text-xs text-muted-foreground">
-                  {t('noSuggestionsLeft') || 'All suggestions added!'}
+                  {t('noSuggestionsLeft')}
                 </p>
               </div>
             ) : (
@@ -343,7 +344,7 @@ export function QuickAddPanel({
             {addedSuggestions.length > 0 && (
               <div className="mt-3 pt-3 border-t border-border/30">
                 <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">
-                  Already on dashboard
+                  {t('alreadyOnDashboard')}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {addedSuggestions.map(s => (
@@ -385,7 +386,7 @@ export function QuickAddPanel({
                       variant="secondary"
                       className="gap-1 text-[10px] bg-success/20 text-success border-0 px-2 py-0.5 font-normal shrink-0"
                     >
-                      <Check className="h-2.5 w-2.5" /> Added
+                      <Check className="h-2.5 w-2.5" /> {t('added')}
                     </Badge>
                   ) : (
                     <Button
@@ -394,14 +395,14 @@ export function QuickAddPanel({
                       className="h-6 px-2 text-[10px] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity shrink-0"
                       onClick={item.onAdd}
                     >
-                      <Plus className="h-3 w-3 mr-0.5" /> Add
+                      <Plus className="h-3 w-3 mr-0.5" /> {t('add')}
                     </Button>
                   )}
                 </div>
               ))}
               {filteredInsights.length === 0 && (
                 <p className="text-xs text-muted-foreground text-center py-4">
-                  No matching insights
+                  {t('noMatchingInsights')}
                 </p>
               )}
             </div>
@@ -411,7 +412,7 @@ export function QuickAddPanel({
 
           {/* Custom Chart Builder Section */}
           <CollapsibleSection
-            title={t('customChart') || 'Custom Chart'}
+            title={t('customChart')}
             icon={Wrench}
             defaultOpen={false}
           >

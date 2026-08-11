@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Upload, Sparkles, LayoutDashboard, FileSpreadsheet, Filter, Lightbulb,
@@ -12,6 +12,8 @@ import { FaqAccordion } from '@/components/FaqAccordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
+import { useFallbackReveal } from '@/hooks/use-reveal';
+import { useGlowCards } from '@/hooks/use-glow-cards';
 import { seoPagesByCategory, categoryLabel, type SeoCategory } from '@/content/seo-pages';
 
 const ChartShowcase = dynamic(
@@ -63,33 +65,43 @@ function useCountUp(target: number, duration = 1400, start = false) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Individual animated stat card
+   Proof section — one column of the scroll-scrubbed bar chart.
+   The bar itself (.chart-bar-rise) tracks scroll position directly;
+   the number keeps its own count-up, triggered the moment the row
+   enters view, so the two motions read as one construction moment
+   rather than two competing timers.
 ───────────────────────────────────────────────────────────── */
-function StatCard({
+function ProofColumn({
   target, suffix, label, icon: Icon, color,
-  inView, delay,
+  inView, delay, index,
 }: {
   target: number; suffix: string; label: string;
   icon: React.ElementType; color: string;
-  inView: boolean; delay: number;
+  inView: boolean; delay: number; index: number;
 }) {
   const value = useCountUp(target, 1400, inView);
   return (
-    <div
-      className="narrative-reveal elevated-card p-6 text-center flex flex-col items-center gap-3"
-      style={{ transitionDelay: inView ? `${delay}ms` : '0ms' }}
-    >
-      <div
-        className="w-12 h-12 rounded-2xl flex items-center justify-center"
-        style={{ background: `${color}18` }}
+    <div className="relative z-10 flex flex-col items-center text-center gap-3">
+      <p
+        className="text-2xl md:text-3xl font-bold tabular-nums"
+        style={{ color, transitionDelay: inView ? `${delay}ms` : '0ms' }}
       >
-        <Icon className="h-5 w-5" style={{ color }} />
+        {value.toLocaleString()}{suffix}
+      </p>
+      <div className="w-full h-20 md:h-24 flex items-end justify-center" aria-hidden="true">
+        <div
+          className={`chart-bar-rise narrative-stagger-${index + 1} w-8 md:w-10 h-full rounded-t-md`}
+          style={{ background: color, transitionDelay: `${delay}ms` }}
+        />
       </div>
-      <div>
-        <p className="text-3xl font-bold tabular-nums" style={{ color }}>
-          {value.toLocaleString()}{suffix}
-        </p>
-        <p className="text-sm text-muted-foreground mt-1 font-medium">{label}</p>
+      <div className="flex items-center gap-1.5">
+        <div
+          className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: `${color}18` }}
+        >
+          <Icon className="h-3.5 w-3.5" style={{ color }} />
+        </div>
+        <p className="text-sm text-muted-foreground font-medium text-left">{label}</p>
       </div>
     </div>
   );
@@ -99,32 +111,8 @@ function StatCard({
    Zone-2 fallback observer for browsers without scroll-driven
    animations (primarily Firefox). Fires once on entry.
 ───────────────────────────────────────────────────────────── */
-function useFallbackReveal(containerRef: React.RefObject<HTMLElement | null>) {
-  useEffect(() => {
-    const supportsScrollDriven =
-      typeof CSS !== 'undefined' &&
-      CSS.supports('(animation-timeline: view()) and (animation-range: 0% 100%)');
-    if (supportsScrollDriven) return; // native CSS handles it
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            (entry.target as HTMLElement).classList.add('in-view');
-            observer.unobserve(entry.target); // fire once
-          }
-        }
-      },
-      { threshold: 0.12 }
-    );
-
-    const targets = containerRef.current?.querySelectorAll(
-      '.narrative-reveal, .narrative-reveal-left, .narrative-reveal-right'
-    );
-    targets?.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [containerRef]);
-}
+/* Moved to src/hooks/use-reveal.ts so LegalPage — which also uses reveal
+   classes — gets the same Firefox back-fill instead of rendering blank. */
 
 /* ─────────────────────────────────────────────────────────────
    Main component
@@ -137,6 +125,9 @@ export function LandingContent() {
 
   // Zone-2 fallback reveal for Firefox
   useFallbackReveal(zone2Ref);
+
+  // Pointer-tracked border light on .glow-card elements in this section
+  useGlowCards(zone2Ref);
 
   // Stats in-view trigger
   useEffect(() => {
@@ -232,7 +223,7 @@ export function LandingContent() {
           </span>
           <h2
             id="problem-heading"
-            className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3"
+            className="display-heading mb-3"
           >
             {t('problemHeading')}
           </h2>
@@ -284,7 +275,7 @@ export function LandingContent() {
             <Sparkles className="h-3.5 w-3.5" />
             {t('everythingYouNeedBadge')}
           </span>
-          <h2 id="features-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
+          <h2 id="features-heading" className="display-heading mb-3">
             {t('featuresTitle')}
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">{t('featuresIntro')}</p>
@@ -293,7 +284,9 @@ export function LandingContent() {
           {features.map(({ icon: Icon, title, desc, color }, i) => (
             <article
               key={title}
-              className={`narrative-reveal elevated-card scroll-reveal p-5 group hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 narrative-stagger-${(i % 4) + 1}`}
+              /* scroll-reveal removed: it and narrative-reveal both set the
+                 `animation` shorthand, so one was silently overriding the other. */
+              className={`narrative-reveal elevated-card glow-card p-5 group hover:-translate-y-1 transition-transform duration-base ease-smooth narrative-stagger-${(i % 4) + 1}`}
             >
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-transform duration-200 group-hover:scale-110"
@@ -317,7 +310,7 @@ export function LandingContent() {
           </span>
           <h2
             id="demo-section-heading"
-            className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3"
+            className="display-heading mb-3"
           >
             {t('demoSectionTitle')}
           </h2>
@@ -340,18 +333,30 @@ export function LandingContent() {
             <TrendingUp className="h-3.5 w-3.5" />
             {t('builtForSpeedBadge')}
           </span>
-          <h2 id="proof-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
+          <h2 id="proof-heading" className="display-heading mb-3">
             {t('proofHeading')}
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">
             {t('proofDesc')}
           </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard target={100} suffix="%" label={t('statBrowserOnly')} icon={ShieldCheck} color="hsl(var(--chart-3))" inView={statsInView} delay={0} />
-          <StatCard target={0} suffix="" label={t('statFilesUploaded')} icon={Zap} color="hsl(var(--chart-1))" inView={statsInView} delay={120} />
-          <StatCard target={30} suffix="s" label={t('statTimeToChart')} icon={Clock} color="hsl(var(--chart-4))" inView={statsInView} delay={240} />
-          <StatCard target={8} suffix="+" label={t('statChartTypesGenerated')} icon={BarChart3} color="hsl(var(--chart-2))" inView={statsInView} delay={360} />
+        <div
+          className="relative rounded-2xl overflow-hidden"
+          style={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(var(--border)/0.5)', boxShadow: 'var(--shadow-card)' }}
+        >
+          {/* Gridlines — chart atmosphere, echoes the mini chart cards used in the demo showcase */}
+          <div className="absolute inset-x-6 md:inset-x-10 top-8 md:top-10 bottom-[4.75rem] pointer-events-none hidden sm:block" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="absolute inset-x-0 h-px" style={{ top: `${i * 32}%`, background: 'hsl(var(--border)/0.15)' }} />
+            ))}
+          </div>
+
+          <div className="relative grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 px-6 md:px-10 pt-8 md:pt-10 pb-6 md:pb-8">
+            <ProofColumn index={0} target={100} suffix="%" label={t('statBrowserOnly')} icon={ShieldCheck} color="hsl(var(--chart-3))" inView={statsInView} delay={0} />
+            <ProofColumn index={1} target={0} suffix="" label={t('statFilesUploaded')} icon={Zap} color="hsl(var(--chart-1))" inView={statsInView} delay={120} />
+            <ProofColumn index={2} target={30} suffix="s" label={t('statTimeToChart')} icon={Clock} color="hsl(var(--chart-4))" inView={statsInView} delay={240} />
+            <ProofColumn index={3} target={8} suffix="+" label={t('statChartTypesGenerated')} icon={BarChart3} color="hsl(var(--chart-2))" inView={statsInView} delay={360} />
+          </div>
         </div>
       </section>
 
@@ -361,16 +366,21 @@ export function LandingContent() {
           <span className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-1.5 text-sm text-accent font-medium mb-4">
             {t('getStartedMinutesBadge')}
           </span>
-          <h2 id="how-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
+          <h2 id="how-heading" className="display-heading mb-3">
             {t('howTitle')}
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">{t('howIntro')}</p>
         </div>
 
-        {/* Steps with connecting line */}
-        <div className="relative">
-          {/* Desktop connector line */}
-          <div className="hidden md:block absolute top-8 left-[calc(12.5%+20px)] right-[calc(12.5%+20px)] h-px bg-primary/20" />
+        {/* Steps with connecting line — .how-steps-scope is the shared scroll timeline
+            source; the line fill and each badge's highlight are slices of that one
+            timeline, so they visibly track the same scroll position. */}
+        <div className="relative how-steps-scope">
+          {/* Desktop connector line — track + scroll-scrubbed fill drawing left to right through the steps */}
+          <div className="hidden md:block absolute top-8 left-[calc(12.5%+20px)] right-[calc(12.5%+20px)] h-px overflow-hidden" aria-hidden="true">
+            <div className="absolute inset-0 bg-primary/15" />
+            <div className="chart-line-progress absolute inset-0 bg-primary" />
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {steps.map(({ n, title, desc }, i) => (
@@ -379,7 +389,7 @@ export function LandingContent() {
                 className={`narrative-reveal flex flex-col items-center text-center md:items-center narrative-stagger-${i + 1}`}
               >
                 <div className="relative mb-4">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-primary text-primary-foreground font-bold text-xl shadow-lg shadow-primary/20">
+                  <div className={`how-step-badge how-step-badge-${i + 1} w-16 h-16 rounded-2xl flex items-center justify-center bg-primary text-primary-foreground font-bold text-xl shadow-lg shadow-primary/20`}>
                     {n}
                   </div>
                 </div>
@@ -427,7 +437,7 @@ export function LandingContent() {
       {/* ── Tools hub ── */}
       <section aria-labelledby="tools-heading">
         <div className="text-center mb-12">
-          <h2 id="tools-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
+          <h2 id="tools-heading" className="display-heading mb-3">
             {t('toolsHeading')}
           </h2>
           <p className="narrative-reveal text-muted-foreground max-w-2xl mx-auto">
@@ -464,7 +474,7 @@ export function LandingContent() {
       {/* ── FAQ ── */}
       <section aria-labelledby="faq-heading">
         <div className="text-center mb-12">
-          <h2 id="faq-heading" className="narrative-reveal text-3xl md:text-4xl font-bold brand-text mb-3">
+          <h2 id="faq-heading" className="display-heading mb-3">
             {t('faqTitle')}
           </h2>
           <p className="narrative-reveal text-muted-foreground">{t('faqIntro')}</p>
@@ -474,43 +484,72 @@ export function LandingContent() {
         </div>
       </section>
 
-      {/* ── Zone 2 CTA — settles with micro-bounce, then pulses ── */}
-      <section aria-labelledby="cta-heading" className="text-center">
-        <div className="cta-settle narrative-reveal inline-block rounded-3xl p-10 md:p-14 w-full max-w-2xl mx-auto relative overflow-hidden"
-          style={{
-            background: 'hsl(var(--primary) / 0.06)',
-            border: '1px solid hsl(var(--border)/0.6)',
-          }}
-        >
-          <div className="relative z-10 space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm text-primary font-medium">
-              <Sparkles className="h-3.5 w-3.5" />
-              {t('noAccountNeededBadge')}
-            </div>
-            <h2
-              id="cta-heading"
-              className="text-3xl md:text-4xl font-bold brand-text"
+      {/* ══════════════════════════════════════════════════════════════
+          Zone 2 CTA — the closing statement.
+
+          Rebuilt from a small rounded card to a full-height stage. The old
+          version boxed everything into a max-w-2xl pill with a green radial
+          wash behind it, which at wide viewports read as a smudge floating in
+          empty space. What actually gives a closing section presence is room
+          and structure, not a container: a tall stage, a ruled plane receding
+          into a vignette, chamfered rules bracketing the content, and one lit
+          control at the centre.
+      ══════════════════════════════════════════════════════════════ */}
+      <section
+        aria-labelledby="cta-heading"
+        className="cta-stage relative -mx-4 sm:-mx-6 flex min-h-[70vh] items-center justify-center overflow-hidden px-4 text-center md:min-h-[80vh]"
+      >
+        {/* Ruled plane + vignette. Scale and fade in together so the grid
+            reads as settling into place rather than switching on. */}
+        <div className="cta-grid" aria-hidden="true">
+          <div className="cta-grid-lines" />
+        </div>
+
+        {/* Chamfered rules. They draw themselves top-to-bottom as the section
+            enters — stroke-dasharray on a pathLength of 1, scrubbed by the
+            same view timeline everything else in Zone 2 uses. */}
+        <svg className="cta-rule cta-rule-left" width="89" height="568" viewBox="0 0 89 568" fill="none" aria-hidden="true">
+          <path d="M1 0.24V207.65L88 285.7C88 285.7 87.5 493.95 88 567.81" stroke="url(#cta-rule-gradient)" strokeWidth="1" pathLength={1} />
+          <defs>
+            <linearGradient id="cta-rule-gradient" x1="0" y1="0" x2="0" y2="568" gradientUnits="userSpaceOnUse">
+              <stop stopColor="hsl(var(--foreground))" stopOpacity="0" />
+              <stop offset="0.5" stopColor="hsl(var(--primary))" stopOpacity="0.55" />
+              <stop offset="1" stopColor="hsl(var(--foreground))" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <svg className="cta-rule cta-rule-right" width="89" height="568" viewBox="0 0 89 568" fill="none" aria-hidden="true">
+          <path d="M88 0.24V207.65L1 285.7C1 285.7 1.5 493.95 1 567.81" stroke="url(#cta-rule-gradient)" strokeWidth="1" pathLength={1} />
+        </svg>
+
+        <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center gap-6">
+          <div className="narrative-reveal inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+            <Sparkles className="h-3.5 w-3.5" />
+            {t('noAccountNeededBadge')}
+          </div>
+
+          <h2 id="cta-heading" className="cta-heading">
+            {t('ctaHeading')}
+          </h2>
+
+          <p className="narrative-reveal max-w-md text-muted-foreground">
+            {t('ctaDesc')}
+          </p>
+
+          <div className="narrative-reveal flex flex-wrap items-center justify-center gap-4 pt-2">
+            <button
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="cta-lit-btn font-mono"
+              aria-label={t('uploadFileFreeAriaLabel')}
             >
-              {t('ctaHeading')}
-            </h2>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              {t('ctaDesc')}
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <a
-                href="#"
-                onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                className="cta-pulse-btn font-mono inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
-                aria-label={t('uploadFileFreeAriaLabel')}
-              >
-                <Upload className="h-4 w-4" />
-                {t('uploadFileFreeCta')}
-              </a>
-              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <ShieldCheck className="h-3.5 w-3.5 text-success" />
-                {t('neverLeavesBrowser')}
-              </span>
-            </div>
+              <Upload className="h-4 w-4" />
+              {t('uploadFileFreeCta')}
+            </button>
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 text-success" />
+              {t('neverLeavesBrowser')}
+            </span>
           </div>
         </div>
       </section>
@@ -519,7 +558,7 @@ export function LandingContent() {
       <footer className="border-t border-border pt-10 pb-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-center sm:text-left">
-            <p className="text-sm font-semibold brand-text">ExcelInsight</p>
+            <p className="text-sm font-semibold brand-mark">ExcelInsight</p>
             <p className="text-xs text-muted-foreground mt-0.5">{t('footerCopy')}</p>
           </div>
           <nav className="flex items-center gap-4 text-sm">

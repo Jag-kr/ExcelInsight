@@ -111,19 +111,69 @@ export function ChartShowcase({ className = '' }: { className?: string }) {
   const [active, setActive] = useState<TabKey>('overview');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const rootRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
+  /**
+   * True only while the showcase is actually on screen.
+   *
+   * Panels have different natural heights and the container animates to fit,
+   * so every advance nudges the page below it. Advancing while the reader is
+   * somewhere else entirely means the layout moves under them for no reason —
+   * the demo should only play while it is being watched.
+   */
+  const [inView, setInView] = useState(false);
+  // Stopped for good once the reader takes manual control of the tabs.
+  const [userTookOver, setUserTookOver] = useState(false);
+
   useEffect(() => {
-    if (prefersReducedMotion) return;
-    intervalRef.current = setInterval(() => {
-      setActive((cur) => TAB_KEYS[(TAB_KEYS.indexOf(cur) + 1) % TAB_KEYS.length]);
-    }, AUTO_ADVANCE_MS);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+    const el = rootRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      // A good slice of it has to be showing, not just one edge clipping in.
+      { threshold: 0.35 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion || !inView || userTookOver) return;
+
+    // Background tabs get throttled timers and no paint, so an advance there
+    // would just queue up work and land as a jump on return.
+    const onVisibility = () => {
+      if (document.hidden) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      } else if (!intervalRef.current) {
+        start();
+      }
     };
-  }, [prefersReducedMotion]);
+
+    const start = () => {
+      intervalRef.current = setInterval(() => {
+        setActive((cur) => TAB_KEYS[(TAB_KEYS.indexOf(cur) + 1) % TAB_KEYS.length]);
+      }, AUTO_ADVANCE_MS);
+    };
+
+    if (!document.hidden) start();
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [prefersReducedMotion, inView, userTookOver]);
 
   const stopAutoAdvance = () => {
+    setUserTookOver(true);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -148,6 +198,7 @@ export function ChartShowcase({ className = '' }: { className?: string }) {
 
   return (
     <div
+      ref={rootRef}
       className={`demo-anim-wrapper rounded-2xl overflow-hidden shadow-2xl border border-border/60 select-none ${className}`}
       style={{ background: 'hsl(var(--card))' }}
       aria-label={t('demoShowcaseRegionLabel')}
@@ -225,7 +276,16 @@ export function ChartShowcase({ className = '' }: { className?: string }) {
       </div>
 
       {/* ── Chart panel ── */}
-      <motion.div layout="size" transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: 'easeOut' }} className="p-3">
+      {/* w-full is what stops the horizontal breathing: without it the box was
+          sized by panel content, so layout="size" measured a different width
+          per panel and animated between them. Pinned to the card width, the
+          measured width is now constant and only height settles — which is a
+          real difference between panels, and worth easing rather than snapping. */}
+      <motion.div
+        layout="size"
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: 'easeOut' }}
+        className="w-full p-3"
+      >
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={active}

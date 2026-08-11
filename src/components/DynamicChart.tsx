@@ -233,7 +233,7 @@ export function DynamicChart({
                     <h3
                       className={`text-xs sm:text-sm lg:text-base font-semibold text-foreground truncate ${onRenameTitle ? 'cursor-pointer hover:underline decoration-dotted underline-offset-2' : ''}`}
                       onClick={() => { if (onRenameTitle) { setDraft(title); setEditing(true); } }}
-                      title={onRenameTitle ? 'Click to rename' : undefined}
+                      title={onRenameTitle ? t('clickToRename') : undefined}
                     >
                       {title}
                     </h3>
@@ -293,7 +293,7 @@ export function DynamicChart({
                           </button>
                         </PopoverTrigger>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom"><span className="text-xs">{t('moreTypes') || 'More types'}</span></TooltipContent>
+                      <TooltipContent side="bottom"><span className="text-xs">{t('moreTypes')}</span></TooltipContent>
                     </Tooltip>
                     <PopoverContent side="bottom" align="end" className="w-auto p-1 flex gap-0.5">
                       {OVERFLOW_CHART_TYPES.map(ct => {
@@ -329,7 +329,7 @@ export function DynamicChart({
                 <div className="flex sm:hidden">
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" aria-label={t('moreActions')}>
                         {(() => {
                           const Icon = CHART_TYPE_ICONS[type];
                           return <Icon className="h-3.5 w-3.5" />;
@@ -366,21 +366,27 @@ export function DynamicChart({
                 </div>
               </TooltipProvider>
             )}
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleExport} title="Export PNG">
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleExport} title={t('exportPng')} aria-label={t('exportPng')}>
               <Download className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
       </CardHeader>
       <CardContent className="p-3 sm:p-4 pt-2 flex-1">
-        <div
-          className="transition-opacity duration-200"
-          style={{ opacity: transitioning ? 0 : 1 }}
-        >
-          <ChartContainer config={chartConfig} className={`w-full ${SIZE_CLASSES[size]}`}>
-            {renderChart() || <div />}
-          </ChartContainer>
-        </div>
+        {data.length === 0 ? (
+          <div className={`flex items-center justify-center text-sm text-muted-foreground ${SIZE_CLASSES[size]}`}>
+            {t('noDataToDisplay')}
+          </div>
+        ) : (
+          <div
+            className="transition-opacity duration-200"
+            style={{ opacity: transitioning ? 0 : 1 }}
+          >
+            <ChartContainer config={chartConfig} className={`w-full ${SIZE_CLASSES[size]}`}>
+              {renderChart() || <div />}
+            </ChartContainer>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

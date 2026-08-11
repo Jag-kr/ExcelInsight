@@ -19,15 +19,34 @@ export const en = {
   data: 'Data',
   filter: 'Filter',
   insights: 'Insights',
+  collapseSidebar: 'Collapse sidebar',
+  expandSidebar: 'Expand sidebar',
+  analyzingData: 'Analyzing your data…',
+  buildingChartsInsights: 'Building charts and insights',
+  nothingToExport: 'Nothing to export',
+  exploreTabDesc: 'Auto-generated chart suggestions from your data',
+  insightsTabDesc: 'Smart analysis of your data patterns and quality',
+  buildTabDesc: 'Create custom charts and transform your columns',
+  filterTabDesc: 'Filter rows by column values to focus your analysis',
+  dataTabDesc: 'Column statistics and raw data preview',
+  mainNavigation: 'Main navigation',
+  moreTabs: 'More tabs',
+  more: 'More',
 
   // File upload
   dropFile: 'Drop your Excel file here',
+  loadedSuccessfully: 'Loaded successfully',
+  parsingFile: '% — parsing your file…',
   orClickBrowse: 'or click to browse • .xlsx, .xls, .csv',
   processing: 'Processing...',
   invalidFileType: 'Invalid file type. Please upload an .xlsx, .xls, or .csv file.',
 
   // Dashboard
   noDashboardCharts: 'No charts on dashboard yet',
+  chartFailedToRender: 'Chart failed to render',
+  chartFailedToRenderSuffix: 'failed to render',
+  chartErrorDesc: 'This chart encountered an error. Try resizing or removing it.',
+  retry: 'Retry',
   noDashboardChartsDesc: 'Auto-generated charts and manual charts will appear here',
   addToDashboard: '+ Dashboard',
   exportPng: 'Export PNG',
@@ -71,6 +90,7 @@ export const en = {
   allValues: 'All values',
   activeFilters: 'active filters',
   noFilters: 'No filterable columns found',
+  noDataToDisplay: 'No data to display',
 
   // Smart Analysis / Insights
   smartInsights: 'Smart Insights',
@@ -80,6 +100,8 @@ export const en = {
   occurrences: 'occurrences',
   topValues: 'Top values',
   columnStats: 'Column Statistics',
+  table: 'Table',
+  addAsTable: 'Add as Table',
   min: 'Min',
   max: 'Max',
   mean: 'Mean',
@@ -129,6 +151,7 @@ export const en = {
 
   // Quick Add Panel
   addToDashboardPanel: 'Add to Dashboard',
+  addToDashboardPanelDesc: 'Browse suggestions, build custom charts, or add insights',
   suggestedCharts: 'Suggested Charts',
   customChart: 'Custom Chart',
   searchChartsInsights: 'Search charts & insights...',
@@ -136,12 +159,17 @@ export const en = {
   quickAdd: 'Quick Add',
   dashboardActions: 'Dashboard Actions',
   noSuggestionsLeft: 'All suggestions added!',
+  added: 'Added',
+  add: 'Add',
+  alreadyOnDashboard: 'Already on dashboard',
+  noMatchingInsights: 'No matching insights',
   longPressToMove: 'Long press to reorder',
   expandChart: 'Expand',
   collapseSection: 'Collapse',
   expandSection: 'Expand',
 
   renameTitle: 'Rename',
+  clickToRename: 'Click to rename',
   clickAgainToRemove: 'Click again to remove',
 
   // Landing page

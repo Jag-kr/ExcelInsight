@@ -1,4 +1,4 @@
-import { en, TranslationKey } from './en';
+import { TranslationKey } from './en';
 
 export const hi: Record<TranslationKey, string> = {
   appName: 'ExcelInsight',
@@ -19,12 +19,32 @@ export const hi: Record<TranslationKey, string> = {
   data: 'डेटा',
   filter: 'फ़िल्टर',
   insights: 'अंतर्दृष्टि',
+  collapseSidebar: 'साइडबार संक्षिप्त करें',
+  expandSidebar: 'साइडबार विस्तृत करें',
+  analyzingData: 'आपके डेटा का विश्लेषण हो रहा है…',
+  buildingChartsInsights: 'चार्ट और अंतर्दृष्टि बनाई जा रही है',
+  nothingToExport: 'निर्यात के लिए कुछ नहीं',
+  exploreTabDesc: 'आपके डेटा से स्वतः जनित चार्ट सुझाव',
+  insightsTabDesc: 'आपके डेटा पैटर्न और गुणवत्ता का स्मार्ट विश्लेषण',
+  buildTabDesc: 'कस्टम चार्ट बनाएं और अपने स्तंभों को रूपांतरित करें',
+  filterTabDesc: 'अपने विश्लेषण को केंद्रित करने के लिए स्तंभ मानों के अनुसार पंक्तियाँ फ़िल्टर करें',
+  dataTabDesc: 'स्तंभ सांख्यिकी और कच्चे डेटा का पूर्वावलोकन',
+  mainNavigation: 'मुख्य नेविगेशन',
+  moreTabs: 'अधिक टैब',
+  more: 'अधिक',
 
   dropFile: 'अपनी एक्सेल फ़ाइल यहाँ छोड़ें',
+  loadedSuccessfully: 'सफलतापूर्वक लोड हुआ',
+  parsingFile: '% — आपकी फ़ाइल पार्स की जा रही है…',
   orClickBrowse: 'या ब्राउज़ करने के लिए क्लिक करें • .xlsx, .xls, .csv',
   processing: 'प्रोसेसिंग...',
+  invalidFileType: 'अमान्य फ़ाइल प्रकार। कृपया .xlsx, .xls, या .csv फ़ाइल अपलोड करें।',
 
   noDashboardCharts: 'डैशबोर्ड पर अभी कोई चार्ट नहीं',
+  chartFailedToRender: 'चार्ट प्रस्तुत नहीं हो सका',
+  chartFailedToRenderSuffix: 'प्रस्तुत नहीं हो सका',
+  chartErrorDesc: 'इस चार्ट में एक त्रुटि आई। इसका आकार बदलने या इसे हटाने का प्रयास करें।',
+  retry: 'पुनः प्रयास करें',
   noDashboardChartsDesc: 'ऑटो-जनरेटेड और मैनुअल चार्ट यहाँ दिखाई देंगे',
   addToDashboard: '+ डैशबोर्ड',
   exportPng: 'PNG निर्यात',
@@ -64,6 +84,7 @@ export const hi: Record<TranslationKey, string> = {
   allValues: 'सभी मान',
   activeFilters: 'सक्रिय फ़िल्टर',
   noFilters: 'कोई फ़िल्टर योग्य स्तंभ नहीं मिला',
+  noDataToDisplay: 'प्रदर्शित करने के लिए कोई डेटा नहीं',
 
   smartInsights: 'स्मार्ट अंतर्दृष्टि',
   repeatingValues: 'दोहराए जाने वाले मान पाए गए',
@@ -72,6 +93,8 @@ export const hi: Record<TranslationKey, string> = {
   occurrences: 'घटनाएँ',
   topValues: 'शीर्ष मान',
   columnStats: 'स्तंभ सांख्यिकी',
+  table: 'तालिका',
+  addAsTable: 'तालिका के रूप में जोड़ें',
   min: 'न्यूनतम',
   max: 'अधिकतम',
   mean: 'मध्यमान',
@@ -119,6 +142,7 @@ export const hi: Record<TranslationKey, string> = {
 
   // Quick Add Panel
   addToDashboardPanel: 'डैशबोर्ड में जोड़ें',
+  addToDashboardPanelDesc: 'सुझाव देखें, कस्टम चार्ट बनाएं, या अंतर्दृष्टि जोड़ें',
   suggestedCharts: 'सुझाए गए चार्ट',
   customChart: 'कस्टम चार्ट',
   searchChartsInsights: 'चार्ट और अंतर्दृष्टि खोजें...',
@@ -126,12 +150,17 @@ export const hi: Record<TranslationKey, string> = {
   quickAdd: 'त्वरित जोड़',
   dashboardActions: 'डैशबोर्ड कार्रवाइयाँ',
   noSuggestionsLeft: 'सभी सुझाव जोड़ दिए गए!',
+  added: 'जोड़ा गया',
+  add: 'जोड़ें',
+  alreadyOnDashboard: 'पहले से डैशबोर्ड पर है',
+  noMatchingInsights: 'कोई मेल खाती अंतर्दृष्टि नहीं',
   longPressToMove: 'पुनर्व्यवस्थित करने के लिए देर तक दबाएं',
   expandChart: 'विस्तृत करें',
   collapseSection: 'संक्षिप्त करें',
   expandSection: 'विस्तार करें',
 
   renameTitle: 'नाम बदलें',
+  clickToRename: 'नाम बदलने के लिए क्लिक करें',
   clickAgainToRemove: 'हटाने के लिए फिर से क्लिक करें',
 
   featuresTitle: 'एक्सेल फ़ाइलों का विश्लेषण करने के लिए सब कुछ',
