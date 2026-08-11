@@ -17,7 +17,7 @@ export const legalEs: LegalContent = {
       { heading: '7. Privacidad Infantil', body: 'ExcelInsight no está dirigido a niños menores de 13 años, y no recopilamos a sabiendas información personal de niños.' },
       { heading: '8. Tus Derechos', body: 'Como no recopilamos ni almacenamos datos personales en nuestros servidores, generalmente no hay nada que eliminar en tu nombre. Puedes borrar las preferencias del lado del navegador en cualquier momento limpiando los datos del sitio en tu navegador.' },
       { heading: '9. Cambios en esta Política', body: 'Podemos actualizar esta Política de Privacidad de vez en cuando. La fecha de "Última actualización" en la parte superior de esta página indica cuándo se realizó la última revisión.' },
-      { heading: '10. Contacto', body: '¿Preguntas sobre esta política? Contáctanos a través de la información de contacto publicada en el sitio web de ExcelInsight.' },
+      { heading: '10. Contacto', body: '¿Preguntas sobre esta política? Escríbenos a <a href="mailto:hello@excelinsight.xyz">hello@excelinsight.xyz</a>.' },
     ],
   },
   terms: {
@@ -38,7 +38,7 @@ export const legalEs: LegalContent = {
       { heading: '9. Modificaciones', body: 'Podemos actualizar estos Términos en cualquier momento. El uso continuado del Servicio después de que se publiquen los cambios constituye tu aceptación de los Términos revisados.' },
       { heading: '10. Terminación', body: 'Podemos suspender o discontinuar el Servicio (o tu acceso a él) en cualquier momento, con o sin previo aviso, por cualquier motivo.' },
       { heading: '11. Ley Aplicable', body: 'Estos Términos se regirán e interpretarán de acuerdo con las leyes locales aplicables, sin tener en cuenta los principios de conflicto de leyes.' },
-      { heading: '12. Contacto', body: '¿Preguntas sobre estos Términos? Contáctanos a través de la información de contacto publicada en el sitio web de ExcelInsight.' },
+      { heading: '12. Contacto', body: '¿Preguntas sobre estos Términos? Escríbenos a <a href="mailto:hello@excelinsight.xyz">hello@excelinsight.xyz</a>.' },
     ],
   },
 };

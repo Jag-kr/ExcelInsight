@@ -17,7 +17,7 @@ export const legalDe: LegalContent = {
       { heading: '7. Datenschutz für Kinder', body: 'ExcelInsight richtet sich nicht an Kinder unter 13 Jahren, und wir erfassen wissentlich keine persönlichen Informationen von Kindern.' },
       { heading: '8. Ihre Rechte', body: 'Da wir keine personenbezogenen Daten auf unseren Servern erfassen oder speichern, gibt es im Allgemeinen nichts, was wir in Ihrem Namen löschen können. Sie können browserseitige Einstellungen jederzeit löschen, indem Sie die Site-Daten Ihres Browsers löschen.' },
       { heading: '9. Änderungen dieser Richtlinie', body: 'Wir können diese Datenschutzerklärung von Zeit zu Zeit aktualisieren. Das Datum „Zuletzt aktualisiert" oben auf dieser Seite gibt an, wann die letzte Überarbeitung vorgenommen wurde.' },
-      { heading: '10. Kontakt', body: 'Fragen zu dieser Richtlinie? Kontaktieren Sie uns über die auf der ExcelInsight-Website veröffentlichten Kontaktinformationen.' },
+      { heading: '10. Kontakt', body: 'Fragen zu dieser Richtlinie? Schreiben Sie uns an <a href="mailto:hello@excelinsight.xyz">hello@excelinsight.xyz</a>.' },
     ],
   },
   terms: {
@@ -38,7 +38,7 @@ export const legalDe: LegalContent = {
       { heading: '9. Änderungen', body: 'Wir können diese Bedingungen jederzeit aktualisieren. Die fortgesetzte Nutzung des Dienstes nach der Veröffentlichung von Änderungen stellt Ihre Annahme der überarbeiteten Bedingungen dar.' },
       { heading: '10. Kündigung', body: 'Wir können den Dienst (oder Ihren Zugriff darauf) jederzeit, mit oder ohne Vorankündigung, aus beliebigen Gründen aussetzen oder einstellen.' },
       { heading: '11. Geltendes Recht', body: 'Diese Bedingungen unterliegen dem geltenden lokalen Recht und sind entsprechend auszulegen, ohne Berücksichtigung von Kollisionsnormen.' },
-      { heading: '12. Kontakt', body: 'Fragen zu diesen Bedingungen? Kontaktieren Sie uns über die auf der ExcelInsight-Website veröffentlichten Kontaktinformationen.' },
+      { heading: '12. Kontakt', body: 'Fragen zu diesen Bedingungen? Schreiben Sie uns an <a href="mailto:hello@excelinsight.xyz">hello@excelinsight.xyz</a>.' },
     ],
   },
 };
