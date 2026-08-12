@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useRef, useEffect, Suspense, startTransition } from 'react';
+import dynamic from 'next/dynamic';
 import { FileUpload } from '@/components/FileUpload';
 import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -38,7 +39,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 // Served from public/ so logo swaps don't need a rebuild (SiteHeader uses the same path).
-const LOGO_SRC = '/logo.png';
+const LOGO_SRC = '/logo-64.png';
 
 function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: () => void; addLabel: string }) {
   const [type, setType] = useState<ChartType>(s.type);
@@ -80,14 +81,30 @@ const PanelFallback = () => (
   </Card>
 );
 
-import { DataSummary } from '@/components/DataSummary';
-import { DynamicChart } from '@/components/DynamicChart';
-import { ManualChartBuilder } from '@/components/ManualChartBuilder';
-import { ColumnMerger } from '@/components/ColumnMerger';
-import { DashboardGrid } from '@/components/DashboardGrid';
-import { DataFilter } from '@/components/DataFilter';
-import { SmartInsights } from '@/components/SmartInsights';
-import { QuickAddPanel } from '@/components/QuickAddPanel';
+/**
+ * The dashboard half of this page is loaded on demand, not at import time.
+ *
+ * Nothing below can render while the `!mounted || !data.length` guard returns
+ * the landing view — but static imports don't care, so recharts (via
+ * DynamicChart), html2canvas (via DynamicChart's PNG export) and @dnd-kit (via
+ * DashboardGrid) were all downloaded and parsed by every visitor who only ever
+ * saw the upload box. That was ~209 KB over the wire on the critical path.
+ *
+ * Every call site below was already wrapped in <Suspense> with a skeleton, so
+ * no `loading` option is passed here: the existing boundaries do the work.
+ * `ssr: false` is honest about the guard — these never render on the server.
+ *
+ * FileUpload warms these chunks the moment a file is picked, so the download
+ * overlaps workbook parsing rather than following it. See prefetchDashboard().
+ */
+const DataSummary = dynamic(() => import('@/components/DataSummary').then(m => m.DataSummary), { ssr: false });
+const DynamicChart = dynamic(() => import('@/components/DynamicChart').then(m => m.DynamicChart), { ssr: false });
+const ManualChartBuilder = dynamic(() => import('@/components/ManualChartBuilder').then(m => m.ManualChartBuilder), { ssr: false });
+const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m => m.ColumnMerger), { ssr: false });
+const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false });
+const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
+const SmartInsights = dynamic(() => import('@/components/SmartInsights').then(m => m.SmartInsights), { ssr: false });
+const QuickAddPanel = dynamic(() => import('@/components/QuickAddPanel').then(m => m.QuickAddPanel), { ssr: false });
 
 const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
 
@@ -446,9 +463,11 @@ export default function Index() {
 
             {/* Row 1: logo icon + brand name */}
             <div className="flex items-center gap-2.5 justify-center hero-appear-badge">
+              {/* alt="" — decorative here: the span beside it carries the name, so
+                  alt text would just make screen readers say the brand twice. */}
               <img
                 src={LOGO_SRC}
-                alt="ExcelInsight logo"
+                alt=""
                 width="32"
                 height="32"
                 fetchPriority="high"
