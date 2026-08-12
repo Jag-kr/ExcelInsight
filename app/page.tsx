@@ -440,14 +440,52 @@ export default function Index() {
   }, []);
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
-    setDashboardItems(prev => prev.filter(i => i.id !== id));
+    /* Captured inside the updaters so Undo can put the card back exactly where it was,
+       along with the "already added" flags the sidebar uses. */
+    const removed: {
+      item: DashboardItem | null;
+      index: number;
+      chartBaseId: string | null;
+      insightId: string | null;
+    } = { item: null, index: 0, chartBaseId: null, insightId: null };
+
+    setDashboardItems(prev => {
+      const index = prev.findIndex(i => i.id === id);
+      if (index === -1) return prev;
+      removed.item = prev[index];
+      removed.index = index;
+      return prev.filter(i => i.id !== id);
+    });
     setAddedChartIds(prev => {
       const next = new Set(prev);
-      for (const baseId of next) { if (id.startsWith(baseId)) { next.delete(baseId); break; } }
+      for (const baseId of next) { if (id.startsWith(baseId)) { removed.chartBaseId = baseId; next.delete(baseId); break; } }
       return next;
     });
-    setAddedInsightIds(prev => { const next = new Set(prev); next.delete(id); return next; });
-  }, []);
+    setAddedInsightIds(prev => {
+      if (!prev.has(id)) return prev;
+      removed.insightId = id;
+      const next = new Set(prev); next.delete(id); return next;
+    });
+
+    toast.success(t('chartRemoved'), {
+      action: {
+        label: t('undo'),
+        onClick: () => {
+          const item = removed.item;
+          if (item) {
+            setDashboardItems(prev => {
+              if (prev.some(i => i.id === item.id)) return prev;
+              const next = [...prev];
+              next.splice(Math.min(removed.index, next.length), 0, item);
+              return next;
+            });
+          }
+          if (removed.chartBaseId) setAddedChartIds(prev => new Set(prev).add(removed.chartBaseId!));
+          if (removed.insightId) setAddedInsightIds(prev => new Set(prev).add(removed.insightId!));
+        },
+      },
+    });
+  }, [t]);
 
   /* ─── ANALYZING SKELETON (Moved to Dashboard Shell) ─── */
 

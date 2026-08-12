@@ -161,7 +161,8 @@ export const de: Record<TranslationKey, string> = {
 
   renameTitle: 'Umbenennen',
   clickToRename: 'Zum Umbenennen klicken',
-  clickAgainToRemove: 'Erneut klicken zum Entfernen',
+  chartRemoved: 'Karte entfernt',
+  undo: 'Rückgängig',
 
   featuresTitle: 'Alles, was Sie zur Analyse von Excel-Dateien brauchen',
   featuresIntro: 'ExcelInsight ist ein kostenloser Online-Excel-Analyse- und Dashboard-Builder. Laden Sie eine Tabelle hoch und erhalten Sie sofort Diagramme, Statistiken und teilbare Dashboards — ohne eine einzige Formel zu schreiben.',

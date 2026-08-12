@@ -161,7 +161,8 @@ export const hi: Record<TranslationKey, string> = {
 
   renameTitle: 'नाम बदलें',
   clickToRename: 'नाम बदलने के लिए क्लिक करें',
-  clickAgainToRemove: 'हटाने के लिए फिर से क्लिक करें',
+  chartRemoved: 'कार्ड हटाया गया',
+  undo: 'पूर्ववत करें',
 
   featuresTitle: 'एक्सेल फ़ाइलों का विश्लेषण करने के लिए सब कुछ',
   featuresIntro: 'ExcelInsight एक मुफ़्त ऑनलाइन एक्सेल एनालिटिक्स और डैशबोर्ड बिल्डर है। स्प्रेडशीट अपलोड करें और तुरंत चार्ट, सांख्यिकी और साझा करने योग्य डैशबोर्ड पाएं — बिना कोई फ़ॉर्मूला लिखे।',

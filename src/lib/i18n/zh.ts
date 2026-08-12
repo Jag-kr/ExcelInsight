@@ -161,7 +161,8 @@ export const zh: Record<TranslationKey, string> = {
 
   renameTitle: '重命名',
   clickToRename: '点击重命名',
-  clickAgainToRemove: '再次点击以删除',
+  chartRemoved: '已删除卡片',
+  undo: '撤销',
 
   featuresTitle: '分析Excel文件所需的一切',
   featuresIntro: 'ExcelInsight是一款免费的在线Excel分析和仪表板构建工具。上传电子表格即可获得即时图表、统计数据和可分享的仪表板——无需编写任何公式。',
