@@ -1,5 +1,11 @@
 # Funnel Event Tracking Implementation Plan
 
+> **Historical record — all 7 tasks completed 2026-08-08. Do not edit or re-run.**
+> Unchecked `- [ ]` boxes below are the original plan text, not outstanding work.
+> Execution notes, deferred minor findings and the final verification pass are in
+> `.superpowers/sdd/2026-08-08-event-tracking/progress.md`. For the current event
+> taxonomy see [`docs/analytics/events.md`](../../analytics/events.md).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Instrument the upload → chart → export funnel with custom events so we can see whether visitors actually get value from ExcelInsight, before investing further in distribution (SEO/i18n).

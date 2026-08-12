@@ -201,6 +201,14 @@ export function ChartShowcase({ className = '' }: { className?: string }) {
       ref={rootRef}
       className={`demo-anim-wrapper rounded-2xl overflow-hidden shadow-2xl border border-border/60 select-none ${className}`}
       style={{ background: 'hsl(var(--card))' }}
+      /**
+       * role="group" is required for the aria-label to mean anything: ARIA prohibits
+       * aria-label on a plain div (implicit generic role), so assistive tech was
+       * dropping this name entirely. "group" — not "img" — because this box contains
+       * the live tablist and panel below; img would prune those children from the
+       * accessibility tree and make the demo unreachable.
+       */
+      role="group"
       aria-label={t('demoShowcaseRegionLabel')}
     >
       {/* ── Browser-chrome header ── */}
@@ -253,7 +261,7 @@ export function ChartShowcase({ className = '' }: { className?: string }) {
               role="tab"
               id={`chart-tab-${tab}`}
               aria-selected={isActive}
-              aria-controls={`chart-panel-${tab}`}
+              aria-controls="chart-panel"
               tabIndex={isActive ? 0 : -1}
               onClick={() => handleTabClick(tab)}
               onKeyDown={(e) => handleKeyDown(e, idx)}
@@ -288,9 +296,13 @@ export function ChartShowcase({ className = '' }: { className?: string }) {
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
+            // key stays per-tab — it drives the enter/exit transition. The id does not:
+            // it is the target of every tab's aria-controls and must be stable and
+            // unique. mode="wait" guarantees the outgoing panel is gone before the
+            // incoming one mounts, so the id is never duplicated mid-transition.
             key={active}
             role="tabpanel"
-            id={`chart-panel-${active}`}
+            id="chart-panel"
             aria-labelledby={`chart-tab-${active}`}
             aria-label={t(TAB_META[active].ariaKey)}
             tabIndex={0}
