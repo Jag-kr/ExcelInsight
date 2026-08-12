@@ -201,6 +201,14 @@ export function ChartShowcase({ className = '' }: { className?: string }) {
       ref={rootRef}
       className={`demo-anim-wrapper rounded-2xl overflow-hidden shadow-2xl border border-border/60 select-none ${className}`}
       style={{ background: 'hsl(var(--card))' }}
+      /**
+       * role="group" is required for the aria-label to mean anything: ARIA prohibits
+       * aria-label on a plain div (implicit generic role), so assistive tech was
+       * dropping this name entirely. "group" — not "img" — because this box contains
+       * the live tablist and panel below; img would prune those children from the
+       * accessibility tree and make the demo unreachable.
+       */
+      role="group"
       aria-label={t('demoShowcaseRegionLabel')}
     >
       {/* ── Browser-chrome header ── */}

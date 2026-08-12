@@ -463,9 +463,11 @@ export default function Index() {
 
             {/* Row 1: logo icon + brand name */}
             <div className="flex items-center gap-2.5 justify-center hero-appear-badge">
+              {/* alt="" — decorative here: the span beside it carries the name, so
+                  alt text would just make screen readers say the brand twice. */}
               <img
                 src={LOGO_SRC}
-                alt="ExcelInsight logo"
+                alt=""
                 width="32"
                 height="32"
                 fetchPriority="high"
