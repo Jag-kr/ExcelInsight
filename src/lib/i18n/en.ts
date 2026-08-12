@@ -170,7 +170,8 @@ export const en = {
 
   renameTitle: 'Rename',
   clickToRename: 'Click to rename',
-  clickAgainToRemove: 'Click again to remove',
+  chartRemoved: 'Card removed',
+  undo: 'Undo',
 
   // Landing page
   featuresTitle: 'Everything you need to analyze Excel files',

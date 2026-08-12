@@ -161,7 +161,8 @@ export const fr: Record<TranslationKey, string> = {
 
   renameTitle: 'Renommer',
   clickToRename: 'Cliquez pour renommer',
-  clickAgainToRemove: 'Cliquez à nouveau pour supprimer',
+  chartRemoved: 'Carte supprimée',
+  undo: 'Annuler',
 
   featuresTitle: 'Tout ce dont vous avez besoin pour analyser des fichiers Excel',
   featuresIntro: 'ExcelInsight est un constructeur d\'analyses et de tableaux de bord Excel en ligne gratuit. Téléchargez une feuille de calcul et obtenez instantanément des graphiques, des statistiques et des tableaux de bord partageables — sans écrire la moindre formule.',
