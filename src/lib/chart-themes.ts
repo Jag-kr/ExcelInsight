@@ -16,8 +16,14 @@ export const chartTypeOptions: { value: ChartType; label: string }[] = [
   { value: 'radar', label: 'Radar Chart' },
 ];
 
-/** Total number of chart CSS variables available (--chart-1 through --chart-8). */
-const CHART_COLOR_COUNT = 8;
+/**
+ * Total number of chart CSS variables available (--chart-1 through --chart-8).
+ *
+ * Exported because it is also a cap on how many categories can be coloured
+ * distinctly: past this count the palette wraps, and two unrelated categories
+ * would share a colour.
+ */
+export const CHART_COLOR_COUNT = 8;
 
 /**
  * Get the CSS variable reference for a chart color index.

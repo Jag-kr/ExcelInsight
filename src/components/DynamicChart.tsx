@@ -12,7 +12,7 @@ import { Download, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIc
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, getChartColor, getChartVarColor, getChartColorVar } from '@/lib/chart-themes';
+import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, getChartColor, getChartVarColor, getChartColorVar, CHART_COLOR_COUNT } from '@/lib/chart-themes';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useI18n } from '@/lib/i18n';
@@ -68,6 +68,34 @@ export function DynamicChart({
     return buildChartConfig(dataKeys);
   }, [dataKeys, data, xKey, type]);
 
+  /**
+   * Whether bars should be coloured per category rather than per series.
+   *
+   * A bar chart with one series was drawing every bar in the same colour while
+   * a pie of the identical data got eight — so the two views of one dataset
+   * looked unrelated. Colouring by category fixes that, but only under two
+   * conditions:
+   *
+   *  - Single series only. With several dataKeys the bars are grouped and
+   *    colour has to encode *which series*, or the legend stops being true.
+   *  - Categories must fit the palette. It wraps at CHART_COLOR_COUNT, so a
+   *    20-bar chart would hand bar 1 and bar 9 the same colour and imply a
+   *    grouping that does not exist. Past the cap, one colour is the honest
+   *    answer.
+   */
+  const colorByCategory = dataKeys.length === 1 && data.length <= CHART_COLOR_COUNT;
+
+  /**
+   * Recharts reads the tooltip's swatch colour from `payload.fill` (see
+   * ChartTooltipContent's `item.payload.fill || item.color`), which the <Cell>
+   * elements below do not reach. Writing the colour onto the row as well keeps
+   * the swatch matched to the bar the cursor is over.
+   */
+  const barData = useMemo(() => {
+    if (!colorByCategory) return data;
+    return data.map((row, i) => ({ ...row, fill: getChartColor(i) }));
+  }, [data, colorByCategory]);
+
   const handleExport = async () => {
     if (!chartRef.current) return;
     try {
@@ -103,27 +131,39 @@ export function DynamicChart({
     switch (type) {
       case 'bar':
         return (
-          <BarChart data={data} accessibilityLayer>
+          <BarChart data={barData} accessibilityLayer>
             <CartesianGrid vertical={false} />
             <XAxis dataKey={xKey} tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 11 }} angle={-25} textAnchor="end" height={60} />
             <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
+            {/* One series means one legend entry — which, once the bars are
+                coloured per category, describes none of them. The axis already
+                names every bar, so the legend is dropped rather than left
+                showing a swatch that matches nothing on screen. */}
+            {!colorByCategory && <ChartLegend content={<ChartLegendContent />} />}
             {dataKeys.map((key) => (
-              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={[4, 4, 0, 0]} />
+              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={[4, 4, 0, 0]}>
+                {colorByCategory && barData.map((_, i) => (
+                  <Cell key={i} fill={getChartColor(i)} />
+                ))}
+              </Bar>
             ))}
           </BarChart>
         );
       case 'horizontalBar':
         return (
-          <BarChart data={data} layout="vertical" accessibilityLayer>
+          <BarChart data={barData} layout="vertical" accessibilityLayer>
             <CartesianGrid horizontal={false} />
             <XAxis type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
             <YAxis dataKey={xKey} type="category" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} width={80} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
+            {!colorByCategory && <ChartLegend content={<ChartLegendContent />} />}
             {dataKeys.map((key) => (
-              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={[0, 4, 4, 0]} />
+              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={[0, 4, 4, 0]}>
+                {colorByCategory && barData.map((_, i) => (
+                  <Cell key={i} fill={getChartColor(i)} />
+                ))}
+              </Bar>
             ))}
           </BarChart>
         );
