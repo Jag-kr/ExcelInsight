@@ -161,7 +161,8 @@ export const es: Record<TranslationKey, string> = {
 
   renameTitle: 'Renombrar',
   clickToRename: 'Haz clic para renombrar',
-  clickAgainToRemove: 'Haz clic de nuevo para eliminar',
+  chartRemoved: 'Tarjeta eliminada',
+  undo: 'Deshacer',
 
   featuresTitle: 'Todo lo que necesitas para analizar archivos Excel',
   featuresIntro: 'ExcelInsight es un constructor de análisis y paneles de Excel en línea gratuito. Sube una hoja de cálculo y obtén gráficos, estadísticas y paneles compartibles al instante — todo sin escribir una sola fórmula.',
