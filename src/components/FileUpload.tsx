@@ -22,7 +22,7 @@ function isValidFile(file: File): boolean {
 }
 
 function prefetchDashboard(): void {
-  void import('@/components/DashboardGrid').catch(() => {});
+  void import('@/components/dashboard/DashboardApp').catch(() => {});
 }
 
 interface FileUploadProps {
