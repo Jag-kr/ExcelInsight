@@ -1,5 +1,13 @@
 # Funnel event tracking — design
 
+> **Historical record — shipped 2026-08-08. Do not edit.**
+> This is the design as approved. It was implemented as specified, with one
+> difference: `trackEvent`'s signature is
+> `<N extends AnalyticsEvent['name']>(name: N, props: Extract<AnalyticsEvent, { name: N }>['props'])`
+> rather than the `<E extends AnalyticsEvent>` form sketched below.
+> For the current event taxonomy, call sites and how to add an event, see
+> [`docs/analytics/events.md`](../../analytics/events.md).
+
 ## Context
 
 ExcelInsight is a free, client-side spreadsheet-to-dashboard tool. A recent
