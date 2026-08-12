@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/logo.svg', type: 'image/svg+xml' },
+      { url: '/logo-64.png', sizes: '64x64', type: 'image/png' },
       { url: '/logo.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: '/apple-touch-icon.png',
