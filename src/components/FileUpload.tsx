@@ -33,6 +33,7 @@ interface FileUploadProps {
 export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
   const { t } = useI18n();
   const formatId = useId();
+  const inputId = useId();
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -135,16 +136,27 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
   }
 
   return (
+    /**
+     * No `role`, `tabIndex` or key handler on this label.
+     *
+     * ARIA in HTML allows no role attribute on <label> at all, so `role="button"`
+     * made the accessibility tree malformed — a labelling element claiming to be a
+     * widget. It was only there because the real control, the file input below, was
+     * `display: none` and therefore unfocusable, leaving nothing for the keyboard to
+     * land on.
+     *
+     * The input is `sr-only` instead: off-screen but still focusable and still
+     * announced, so Enter/Space open the file picker through the browser's own
+     * behaviour rather than a synthetic click. Clicking anywhere on the label still
+     * forwards to it via htmlFor. focus-within draws the ring, since the focused
+     * element is now the invisible input rather than this box.
+     */
     <label
+      htmlFor={inputId}
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
-      aria-label={t('dropFile')}
-      aria-describedby={formatId}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.currentTarget.click(); }}
-      className={`relative flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-10 sm:p-14 backdrop-blur-sm transition-all duration-300 overflow-hidden ${
+      className={`relative flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-10 sm:p-14 backdrop-blur-sm transition-all duration-300 overflow-hidden focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-background ${
         isDragging
           ? 'border-primary bg-primary/8 shadow-glow scale-[1.01]'
           : 'border-foreground/15 bg-foreground/[0.02] hover:border-primary/40 hover:bg-primary/[0.03]'
@@ -220,12 +232,18 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
         </div>
       )}
 
+      {/* sr-only, not `hidden`: this is the actual control, so it has to stay
+          focusable and exposed. aria-describedby is conditional because the format
+          badges it points at are only rendered while !loading — pointing at a
+          removed element is the same dangling-reference problem in miniature. */}
       <input
+        id={inputId}
         type="file"
         accept=".xlsx,.xls,.csv"
         onChange={handleFileInput}
-        aria-hidden="true"
-        className="hidden"
+        aria-label={t('dropFile')}
+        aria-describedby={loading ? undefined : formatId}
+        className="sr-only"
       />
     </label>
   );
