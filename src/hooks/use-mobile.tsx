@@ -8,11 +8,9 @@ export function useIsMobile() {
 
   React.useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
+    const onChange = () => setIsMobile(mql.matches);
     mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    onChange();
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
@@ -23,11 +21,8 @@ export function useIsTablet() {
   const [isTablet, setIsTablet] = React.useState<boolean | undefined>(undefined);
 
   React.useEffect(() => {
-    const onChange = () => {
-      const w = window.innerWidth;
-      setIsTablet(w >= MOBILE_BREAKPOINT && w < TABLET_BREAKPOINT);
-    };
     const mql = window.matchMedia(`(min-width: ${MOBILE_BREAKPOINT}px) and (max-width: ${TABLET_BREAKPOINT - 1}px)`);
+    const onChange = () => setIsTablet(mql.matches);
     mql.addEventListener("change", onChange);
     onChange();
     return () => mql.removeEventListener("change", onChange);

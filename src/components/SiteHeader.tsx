@@ -53,9 +53,8 @@ export function SiteHeader({ children }: SiteHeaderProps) {
     <header className="site-header" data-scrolled={scrolled ? '' : undefined}>
       <div className="site-header-bar">
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/logo.png"
+            src="/logo-64.png"
             alt="ExcelInsight"
             width="24"
             height="24"

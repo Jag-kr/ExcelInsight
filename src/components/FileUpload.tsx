@@ -21,6 +21,10 @@ function isValidFile(file: File): boolean {
   return false;
 }
 
+function prefetchDashboard(): void {
+  void import('@/components/DashboardGrid').catch(() => {});
+}
+
 interface FileUploadProps {
   onDataLoaded: (data: Record<string, any>[], fileName: string) => void;
   onClear?: () => void;
@@ -48,6 +52,8 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
       toast.error(t('invalidFileType'));
       return;
     }
+    
+    prefetchDashboard();
 
     setLoading(true);
     setPhase('reading');

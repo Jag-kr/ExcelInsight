@@ -253,7 +253,7 @@ export function ChartShowcase({ className = '' }: { className?: string }) {
               role="tab"
               id={`chart-tab-${tab}`}
               aria-selected={isActive}
-              aria-controls={`chart-panel-${tab}`}
+              aria-controls="chart-panel"
               tabIndex={isActive ? 0 : -1}
               onClick={() => handleTabClick(tab)}
               onKeyDown={(e) => handleKeyDown(e, idx)}
@@ -288,9 +288,13 @@ export function ChartShowcase({ className = '' }: { className?: string }) {
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
+            // key stays per-tab — it drives the enter/exit transition. The id does not:
+            // it is the target of every tab's aria-controls and must be stable and
+            // unique. mode="wait" guarantees the outgoing panel is gone before the
+            // incoming one mounts, so the id is never duplicated mid-transition.
             key={active}
             role="tabpanel"
-            id={`chart-panel-${active}`}
+            id="chart-panel"
             aria-labelledby={`chart-tab-${active}`}
             aria-label={t(TAB_META[active].ariaKey)}
             tabIndex={0}
