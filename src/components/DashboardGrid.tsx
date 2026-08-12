@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent,
 } from '@dnd-kit/core';
@@ -254,21 +254,6 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
   const { t } = useI18n();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
   const size = (item.size || 'md') as 'sm' | 'md' | 'lg';
-  const [confirmRemove, setConfirmRemove] = useState(false);
-  const confirmTimer = useRef<number | null>(null);
-
-  useEffect(() => () => { if (confirmTimer.current) window.clearTimeout(confirmTimer.current); }, []);
-
-  const handleRemoveClick = () => {
-    if (confirmRemove) {
-      if (confirmTimer.current) window.clearTimeout(confirmTimer.current);
-      setConfirmRemove(false);
-      onRemove();
-      return;
-    }
-    setConfirmRemove(true);
-    confirmTimer.current = window.setTimeout(() => setConfirmRemove(false), 2000);
-  };
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -308,7 +293,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
       {/* ─── Action pill (top-right, appears on hover) ─── */}
       <div
         data-pdf-hide
-        className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150 pointer-events-none"
+        className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity duration-150 pointer-events-none"
       >
         {/* Size badge */}
         <span className="pointer-events-auto inline-flex items-center gap-0.5 rounded-lg bg-background/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/60 shadow-sm">
@@ -365,11 +350,11 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              onClick={handleRemoveClick}
+              onSelect={() => onRemove()}
               className="text-xs text-destructive focus:text-destructive rounded-lg"
             >
               <Trash2 className="h-3.5 w-3.5 mr-2" />
-              {confirmRemove ? t('clickAgainToRemove') : t('remove')}
+              {t('remove')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
