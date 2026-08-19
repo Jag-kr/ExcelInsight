@@ -24,6 +24,9 @@ export interface NumericStats {
 
 export interface ChartSuggestion {
   id: string;
+  /** Stable semantic id. `id` is positional and shifts when suggestions are
+      regenerated, so anything surviving a re-run must match on `key`. */
+  key: string;
   title: string;
   type: 'bar' | 'line' | 'pie' | 'area' | 'scatter' | 'radar';
   xKey?: string;
@@ -147,6 +150,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
     if (cat.categories && cat.categories.length >= 2) {
       suggestions.push({
         id: `auto-${id++}`,
+        key: `dist:${cat.name}`,
         title: `${cat.name} Distribution`,
         type: 'bar',
         dataKeys: ['count'],
@@ -157,6 +161,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
       if (cat.categories.length <= 10) {
         suggestions.push({
           id: `auto-${id++}`,
+          key: `pie:${cat.name}`,
           title: `${cat.name} Breakdown`,
           type: 'pie',
           dataKeys: ['count'],
@@ -172,6 +177,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
     if (col.categories && col.categories.length >= 2) {
       suggestions.push({
         id: `auto-${id++}`,
+        key: `rdist:${col.name}`,
         title: `${col.name} Distribution`,
         type: 'bar',
         dataKeys: ['count'],
@@ -208,6 +214,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
         if (aggData.length >= 2) {
           suggestions.push({
             id: `auto-${id++}`,
+            key: `agg:${num.name}:${cat.name}`,
             title: `${num.name} by ${cat.name}`,
             type: 'bar',
             xKey: 'name',
@@ -237,6 +244,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
       if (scatterData.length >= 5) {
         suggestions.push({
           id: `auto-${id++}`,
+          key: `scatter:${xCol.name}:${yCol.name}`,
           title: `${xCol.name} vs ${yCol.name}`,
           type: 'scatter',
           xKey: xCol.name,
@@ -267,6 +275,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
     if (topData.length >= 2) {
       suggestions.push({
         id: `auto-${id++}`,
+        key: `top:${cat.name}:${num.name}`,
         title: `Top ${cat.name} by ${num.name}`,
         type: 'area',
         dataKeys: ['value'],

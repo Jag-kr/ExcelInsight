@@ -9,6 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { TopValueBar } from '@/components/TopValueBar';
 import { getChartColor, getChartColorVar } from '@/lib/chart-themes';
+import {
+  computeRepeatingColumns, computeNumericInsights, computeDataQuality,
+  statsTable, qualityTable, repeatTable, type RepeatingColumn,
+} from '@/lib/derive-dashboard-item';
 
 interface SmartInsightsProps {
   columns: ColumnMeta[];
@@ -18,61 +22,12 @@ interface SmartInsightsProps {
   addedInsightIds?: Set<string>;
 }
 
-interface RepeatingColumn {
-  name: string;
-  uniqueCount: number;
-  totalCount: number;
-  repetitionRatio: number;
-  topValues: { value: string; count: number; percentage: number }[];
-}
-
 export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDashboard, addedInsightIds = new Set() }: SmartInsightsProps) {
   const { t } = useI18n();
 
-  const repeatingColumns = useMemo(() => {
-    const result: RepeatingColumn[] = [];
-    columns.forEach(col => {
-      if (col.type === 'id') return;
-      const counts: Record<string, number> = {};
-      data.forEach(row => {
-        const v = row[col.name];
-        if (v !== null && v !== undefined && v !== '') {
-          counts[String(v)] = (counts[String(v)] || 0) + 1;
-        }
-      });
-      const entries = Object.entries(counts);
-      const uniqueCount = entries.length;
-      const totalCount = data.length;
-      const repetitionRatio = 1 - (uniqueCount / Math.max(totalCount, 1));
-
-      if (repetitionRatio > 0.3 && uniqueCount <= 50 && uniqueCount >= 2) {
-        const topValues = entries
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 8)
-          .map(([value, count]) => ({
-            value,
-            count,
-            percentage: Math.round((count / totalCount) * 100),
-          }));
-        result.push({ name: col.name, uniqueCount, totalCount, repetitionRatio, topValues });
-      }
-    });
-    return result.sort((a, b) => b.repetitionRatio - a.repetitionRatio);
-  }, [columns, data]);
-
-  const numericInsights = useMemo(() =>
-    columns.filter(c => (c.type === 'numeric' || c.type === 'range') && c.stats),
-    [columns]
-  );
-
-  const dataQuality = useMemo(() =>
-    columns.map(col => ({
-      name: col.name,
-      completeness: Math.round(((col.totalCount - col.nullCount) / col.totalCount) * 100),
-      nullCount: col.nullCount,
-    })).filter(c => c.nullCount > 0),
-    [columns]
-  );
+  const repeatingColumns = useMemo(() => computeRepeatingColumns(columns, data), [columns, data]);
+  const numericInsights = useMemo(() => computeNumericInsights(columns), [columns]);
+  const dataQuality = useMemo(() => computeDataQuality(columns), [columns]);
 
   const isAdded = (id: string) => addedInsightIds.has(id);
 
@@ -91,12 +46,7 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
   const addRepeatingAsTable = (col: RepeatingColumn) => {
     const id = `insight-repeat-table-${col.name}`;
     if (!onAddTableToDashboard || isAdded(id)) return;
-    onAddTableToDashboard({
-      id,
-      title: `${col.name} — ${t('repeatingValues')}`,
-      data: col.topValues.map(v => ({ [t('topValues')]: v.value, [t('count')]: v.count, '%': `${v.percentage}%` })),
-      columns: [t('topValues'), t('count'), '%'],
-    });
+    onAddTableToDashboard({ id, title: `${col.name} — ${t('repeatingValues')}`, ...repeatTable(col, t) });
   };
 
   const addStatsAsDashboardChart = () => {
@@ -108,19 +58,7 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
   const addStatsAsTable = () => {
     const id = 'insight-stats-table';
     if (!onAddTableToDashboard || isAdded(id)) return;
-    onAddTableToDashboard({
-      id,
-      title: t('columnStats'),
-      data: numericInsights.map(c => ({
-        [t('columns')]: c.name,
-        [t('min')]: c.stats!.min.toFixed(1),
-        [t('max')]: c.stats!.max.toFixed(1),
-        [t('mean')]: c.stats!.mean.toFixed(2),
-        [t('median')]: c.stats!.median.toFixed(1),
-        [t('stdDev')]: c.stats!.stdDev.toFixed(2),
-      })),
-      columns: [t('columns'), t('min'), t('max'), t('mean'), t('median'), t('stdDev')],
-    });
+    onAddTableToDashboard({ id, title: t('columnStats'), ...statsTable(columns, t) });
   };
 
   const addQualityAsDashboardChart = () => {
@@ -132,16 +70,7 @@ export function SmartInsights({ columns, data, onAddToDashboard, onAddTableToDas
   const addQualityAsTable = () => {
     const id = 'insight-quality-table';
     if (!onAddTableToDashboard || isAdded(id)) return;
-    onAddTableToDashboard({
-      id,
-      title: t('dataQuality'),
-      data: dataQuality.map(c => ({
-        [t('columns')]: c.name,
-        [`${t('complete')} %`]: `${c.completeness}%`,
-        [t('nullValues')]: c.nullCount,
-      })),
-      columns: [t('columns'), `${t('complete')} %`, t('nullValues')],
-    });
+    onAddTableToDashboard({ id, title: t('dataQuality'), ...qualityTable(columns, t) });
   };
 
   return (

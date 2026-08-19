@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
+import { buildManualChartData } from '@/lib/derive-dashboard-item';
 import { ChartType, chartTypeOptions } from '@/lib/chart-themes';
 import { DynamicChart } from './DynamicChart';
 import { Button } from '@/components/ui/button';
@@ -20,53 +21,19 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
   const [yCol, setYCol] = useState('');
   const [aggregation, setAggregation] = useState<'sum' | 'average' | 'count'>('sum');
 
-  const buildChartData = () => {
-    if (!xCol) return [];
-    if (chartType === 'pie' || !yCol) {
-      const counts: Record<string, number> = {};
-      data.forEach(row => {
-        const key = String(row[xCol] ?? 'Unknown');
-        counts[key] = (counts[key] || 0) + 1;
-      });
-      return Object.entries(counts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 20);
-    }
-
-    const grouped: Record<string, { sum: number; count: number }> = {};
-    data.forEach(row => {
-      const key = String(row[xCol] ?? 'Unknown');
-      const val = Number(row[yCol]);
-      if (!isNaN(val)) {
-        if (!grouped[key]) grouped[key] = { sum: 0, count: 0 };
-        grouped[key].sum += val;
-        grouped[key].count++;
-      }
-    });
-
-    return Object.entries(grouped)
-      .map(([name, g]) => ({
-        name,
-        value: aggregation === 'sum' ? Math.round(g.sum * 100) / 100
-          : aggregation === 'average' ? Math.round((g.sum / g.count) * 100) / 100
-          : g.count,
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 20);
-  };
-
-  const chartData = buildChartData();
-  const dataKey = !yCol ? 'count' : 'value';
+  const spec = { xCol, yCol: yCol && yCol !== '__none' ? yCol : null, aggregation };
+  const { data: chartData, dataKeys } = buildManualChartData(data, spec, chartType);
+  const chartTitle = spec.yCol ? `${spec.yCol} ${t('by')} ${xCol} (${t(aggregation)})` : `${xCol} ${t('distribution')}`;
 
   const handleAdd = () => {
     if (!chartData.length) return;
     onAddToDashboard({
       id: `manual-${Date.now()}`,
-      title: yCol ? `${yCol} ${t('by')} ${xCol} (${t(aggregation)})` : `${xCol} ${t('count')}`,
+      title: chartTitle,
       type: chartType,
       data: chartData,
-      dataKeys: [dataKey],
+      dataKeys,
+      spec, // rebuilt from this when filters change
     });
   };
 
@@ -126,10 +93,10 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard }: ManualCh
       {chartData.length > 0 && (
         <>
           <DynamicChart
-            title={yCol && yCol !== '__none' ? `${yCol} ${t('by')} ${xCol}` : `${xCol} ${t('distribution')}`}
+            title={chartTitle}
             type={chartType}
             data={chartData}
-            dataKeys={[dataKey]}
+            dataKeys={dataKeys}
             onChangeType={setChartType}
           />
           <Button onClick={handleAdd} className="w-full" size="sm">
