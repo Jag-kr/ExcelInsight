@@ -15,6 +15,7 @@ import {
 import type { ChartSuggestion, ColumnMeta } from '@/lib/data-analyzer';
 import type { DashboardItem } from './DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
+import { computeRepeatingColumns, computeDataQuality } from '@/lib/derive-dashboard-item';
 
 const DynamicChart = dynamic(() => import('./DynamicChart').then(m => m.DynamicChart), {
   ssr: false,
@@ -168,7 +169,7 @@ export function QuickAddPanel({
   const [searchQuery, setSearchQuery] = useState('');
 
   const availableSuggestions = useMemo(
-    () => suggestions.filter(s => !addedChartIds.has(s.id)),
+    () => suggestions.filter(s => !addedChartIds.has(s.key)),
     [suggestions, addedChartIds]
   );
 
@@ -184,7 +185,7 @@ export function QuickAddPanel({
   }, [availableSuggestions, searchQuery]);
 
   const addedSuggestions = useMemo(
-    () => suggestions.filter(s => addedChartIds.has(s.id)),
+    () => suggestions.filter(s => addedChartIds.has(s.key)),
     [suggestions, addedChartIds]
   );
 
@@ -194,47 +195,8 @@ export function QuickAddPanel({
     [columns]
   );
 
-  const repeatingColumns = useMemo(() => {
-    const result: any[] = [];
-    columns.forEach(col => {
-      if (col.type === 'id') return;
-      const counts: Record<string, number> = {};
-      data.forEach(row => {
-        const v = row[col.name];
-        if (v !== null && v !== undefined && v !== '')
-          counts[String(v)] = (counts[String(v)] || 0) + 1;
-      });
-      const entries = Object.entries(counts);
-      const uniqueCount = entries.length;
-      const totalCount = data.length;
-      const repetitionRatio = 1 - uniqueCount / Math.max(totalCount, 1);
-
-      if (repetitionRatio > 0.3 && uniqueCount <= 50 && uniqueCount >= 2) {
-        const topValues = entries
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 8)
-          .map(([value, count]) => ({
-            value,
-            count,
-            percentage: Math.round((count / totalCount) * 100),
-          }));
-        result.push({ name: col.name, uniqueCount, totalCount, repetitionRatio, topValues });
-      }
-    });
-    return result.sort((a: any, b: any) => b.repetitionRatio - a.repetitionRatio);
-  }, [columns, data]);
-
-  const dataQuality = useMemo(
-    () =>
-      columns
-        .map(col => ({
-          name: col.name,
-          completeness: Math.round(((col.totalCount - col.nullCount) / col.totalCount) * 100),
-          nullCount: col.nullCount,
-        }))
-        .filter(c => c.nullCount > 0),
-    [columns]
-  );
+  const repeatingColumns = useMemo(() => computeRepeatingColumns(columns, data), [columns, data]);
+  const dataQuality = useMemo(() => computeDataQuality(columns), [columns]);
 
   const insightItems = useMemo(() => {
     const items: { id: string; title: string; icon: React.ElementType; type: string; added: boolean; onAdd: () => void }[] = [];
@@ -333,7 +295,7 @@ export function QuickAddPanel({
                   <SuggestionCard
                     key={s.id}
                     suggestion={s}
-                    isAdded={addedChartIds.has(s.id)}
+                    isAdded={addedChartIds.has(s.key)}
                     onAdd={() => onAddSuggestion(s)}
                   />
                 ))}

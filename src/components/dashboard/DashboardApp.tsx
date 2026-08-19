@@ -9,6 +9,7 @@ import { hslStringToRgb } from '@/lib/color-utils';
 import { AdSlot } from '@/components/AdSlot';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
+import { deriveDashboardItems } from '@/lib/derive-dashboard-item';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -299,8 +300,15 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   }, [dashboardItems, fileName, columns.length, filteredData, t, paletteId]);
 
   const availableSuggestions = useMemo(() =>
-    filteredSuggestions.filter(s => !addedChartIds.has(s.id)),
+    filteredSuggestions.filter(s => !addedChartIds.has(s.key)),
     [filteredSuggestions, addedChartIds]
+  );
+
+  /* Render/export view: user-owned fields from dashboardItems, numbers re-derived
+     for the active filters. dashboardItems stays the source of truth for edits. */
+  const liveItems = useMemo(
+    () => deriveDashboardItems(dashboardItems, filteredSuggestions, filteredColumns, filteredData, t),
+    [dashboardItems, filteredSuggestions, filteredColumns, filteredData, t]
   );
 
   const handleMerge = useCallback((col1: string, col2: string, newName: string, separator: string) => {
@@ -318,8 +326,9 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     setDashboardItems(prev => [...prev, {
       id: `${s.id}-${Date.now()}`, title: s.title, description: s.description,
       type: s.type, data: s.data, dataKeys: s.dataKeys, xKey: s.xKey,
+      sourceKey: s.key,
     }]);
-    setAddedChartIds(prev => new Set(prev).add(s.id));
+    setAddedChartIds(prev => new Set(prev).add(s.key));
     trackEvent('chart_added', { source: 'suggestion' });
   }, []);
 
@@ -349,52 +358,33 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   }, []);
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
-    /* Captured inside the updaters so Undo can put the card back exactly where it was,
-       along with the "already added" flags the sidebar uses. */
-    const removed: {
-      item: DashboardItem | null;
-      index: number;
-      chartBaseId: string | null;
-      insightId: string | null;
-    } = { item: null, index: 0, chartBaseId: null, insightId: null };
+    /* Read up front, not inside an updater: un-marking needs item.sourceKey. */
+    const index = dashboardItems.findIndex(i => i.id === id);
+    if (index === -1) return;
+    const item = dashboardItems[index];
+    const chartKey = item.sourceKey && addedChartIds.has(item.sourceKey) ? item.sourceKey : null;
+    const insightId = addedInsightIds.has(id) ? id : null;
 
-    setDashboardItems(prev => {
-      const index = prev.findIndex(i => i.id === id);
-      if (index === -1) return prev;
-      removed.item = prev[index];
-      removed.index = index;
-      return prev.filter(i => i.id !== id);
-    });
-    setAddedChartIds(prev => {
-      const next = new Set(prev);
-      for (const baseId of next) { if (id.startsWith(baseId)) { removed.chartBaseId = baseId; next.delete(baseId); break; } }
-      return next;
-    });
-    setAddedInsightIds(prev => {
-      if (!prev.has(id)) return prev;
-      removed.insightId = id;
-      const next = new Set(prev); next.delete(id); return next;
-    });
+    setDashboardItems(prev => prev.filter(i => i.id !== id));
+    if (chartKey) setAddedChartIds(prev => { const next = new Set(prev); next.delete(chartKey); return next; });
+    if (insightId) setAddedInsightIds(prev => { const next = new Set(prev); next.delete(insightId); return next; });
 
     toast.success(t('chartRemoved'), {
       action: {
         label: t('undo'),
         onClick: () => {
-          const item = removed.item;
-          if (item) {
-            setDashboardItems(prev => {
-              if (prev.some(i => i.id === item.id)) return prev;
-              const next = [...prev];
-              next.splice(Math.min(removed.index, next.length), 0, item);
-              return next;
-            });
-          }
-          if (removed.chartBaseId) setAddedChartIds(prev => new Set(prev).add(removed.chartBaseId!));
-          if (removed.insightId) setAddedInsightIds(prev => new Set(prev).add(removed.insightId!));
+          setDashboardItems(prev => {
+            if (prev.some(i => i.id === item.id)) return prev;
+            const next = [...prev];
+            next.splice(Math.min(index, next.length), 0, item);
+            return next;
+          });
+          if (chartKey) setAddedChartIds(prev => new Set(prev).add(chartKey));
+          if (insightId) setAddedInsightIds(prev => new Set(prev).add(insightId));
         },
       },
     });
-  }, [t]);
+  }, [dashboardItems, addedChartIds, addedInsightIds, t]);
 
   /* ─── DASHBOARD APP SHELL ─── */
   const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
@@ -664,8 +654,11 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
               <div ref={dashboardRef} className="min-h-[400px]">
                 <Suspense fallback={<ChartFallback />}>
                   <DashboardGrid
-                    items={dashboardItems}
-                    onReorder={setDashboardItems}
+                    items={liveItems}
+                    onReorder={(reordered) => setDashboardItems(prev => {
+                      const byId = new Map(prev.map(i => [i.id, i]));
+                      return reordered.map(i => byId.get(i.id) ?? i);
+                    })}
                     onRemove={handleRemoveFromDashboard}
                     onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
                     onDuplicate={handleDuplicate}
