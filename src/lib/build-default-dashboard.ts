@@ -1,5 +1,6 @@
 import type { ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import type { DashboardItem } from '@/components/DashboardGrid';
+import { computeRepeatingColumns, computeNumericInsights, computeDataQuality } from '@/lib/derive-dashboard-item';
 
 const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
 
@@ -17,6 +18,7 @@ export function buildDefaultDashboard(
   charts: ChartSuggestion[],
   t: (key: any) => string
 ): { items: DashboardItem[]; usedChartIds: Set<string> } {
+  // usedChartIds holds ChartSuggestion.key, not .id.
   const items: DashboardItem[] = [];
   const usedChartIds = new Set<string>();
 
@@ -29,12 +31,13 @@ export function buildDefaultDashboard(
       data: c.data,
       dataKeys: c.dataKeys,
       xKey: c.xKey,
+      sourceKey: c.key,
       size: i === 0 ? 'lg' : 'md',
     });
-    usedChartIds.add(c.id);
+    usedChartIds.add(c.key);
   });
 
-  const numericCols = cols.filter(c => (c.type === 'numeric' || c.type === 'range') && c.stats);
+  const numericCols = computeNumericInsights(cols);
   if (numericCols.length > 0) {
     items.push({
       id: 'insight-stats-chart',
@@ -45,28 +48,7 @@ export function buildDefaultDashboard(
     });
   }
 
-  const repeating: any[] = [];
-  cols.forEach(col => {
-    if (col.type === 'id') return;
-    const counts: Record<string, number> = {};
-    newData.forEach(row => {
-      const v = row[col.name];
-      if (v !== null && v !== undefined && v !== '') counts[String(v)] = (counts[String(v)] || 0) + 1;
-    });
-    const entries = Object.entries(counts);
-    const uniqueCount = entries.length;
-    const totalCount = newData.length;
-    const repetitionRatio = 1 - (uniqueCount / Math.max(totalCount, 1));
-    if (repetitionRatio > 0.3 && uniqueCount <= 50 && uniqueCount >= 2) {
-      repeating.push({
-        name: col.name, uniqueCount, totalCount, repetitionRatio,
-        topValues: entries.sort((a, b) => b[1] - a[1]).slice(0, 8).map(([value, count]) => ({
-          value, count, percentage: Math.round((count / totalCount) * 100),
-        })),
-      });
-    }
-  });
-  repeating.sort((a, b) => b.repetitionRatio - a.repetitionRatio);
+  const repeating = computeRepeatingColumns(cols, newData);
   repeating.slice(0, 2).forEach(col => {
     items.push({
       id: `insight-repeat-chart-${col.name}`,
@@ -76,11 +58,7 @@ export function buildDefaultDashboard(
     });
   });
 
-  const quality = cols.map(c => ({
-    name: c.name,
-    completeness: Math.round(((c.totalCount - c.nullCount) / c.totalCount) * 100),
-    nullCount: c.nullCount,
-  })).filter(c => c.nullCount > 0);
+  const quality = computeDataQuality(cols);
   if (quality.length > 0) {
     items.push({
       id: 'insight-quality-chart', title: t('dataQuality'), description: '',
@@ -94,9 +72,9 @@ export function buildDefaultDashboard(
     items.push({
       id: c.id, title: c.title, description: c.description,
       type: CHART_TYPE_ROTATION[3 % CHART_TYPE_ROTATION.length],
-      data: c.data, dataKeys: c.dataKeys, xKey: c.xKey,
+      data: c.data, dataKeys: c.dataKeys, xKey: c.xKey, sourceKey: c.key,
     });
-    usedChartIds.add(c.id);
+    usedChartIds.add(c.key);
   }
 
   return { items, usedChartIds };
