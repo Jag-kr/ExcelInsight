@@ -21,6 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
+import type { ManualChartSpec } from '@/lib/derive-dashboard-item';
 
 export interface DashboardItem {
   id: string;
@@ -30,6 +31,10 @@ export interface DashboardItem {
   data: any[];
   dataKeys: string[];
   xKey?: string;
+  /* Recipe: how to rebuild `data` when filters move. Optional — sessions saved
+     before recipes existed keep their stored snapshot. */
+  sourceKey?: string;
+  spec?: ManualChartSpec;
   displayAs?: 'chart' | 'table' | 'insight';
   tableColumns?: string[];
   size?: 'sm' | 'md' | 'lg';
