@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SeoPageContent } from '@/components/SeoPageContent';
+import { AdsenseScript } from '@/components/AdsenseScript';
 import { seoPageMap, seoPages } from '@/content/seo-pages';
 import { SITE_URL } from '@/lib/site';
 
@@ -100,6 +101,8 @@ export default async function SeoLandingPage({ params }: { params: Promise<{ slu
 
   return (
     <div className="min-h-screen bg-background">
+      <AdsenseScript />
+
       {/* JSON-LD structured data */}
       {jsonLd.map((schema, i) => (
         <script

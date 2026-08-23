@@ -6,7 +6,6 @@ import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { ChartThemeSwitcher } from '@/components/ChartThemeSwitcher';
 import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } from '@/lib/chart-themes';
 import { hslStringToRgb } from '@/lib/color-utils';
-import { AdSlot } from '@/components/AdSlot';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
 import { deriveDashboardItems } from '@/lib/derive-dashboard-item';
@@ -674,9 +673,6 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     }
                   />
                 </Suspense>
-              </div>
-              <div className="min-h-[100px]">
-                <AdSlot slot="" label={t('sponsored')} />
               </div>
             </TabsContent>
 
