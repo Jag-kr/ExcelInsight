@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { FileUpload } from "@/components/FileUpload";
 import { SiteHeader } from "@/components/SiteHeader";
 import { LandingContent } from "@/components/LandingContent";
+import { AdsenseScript } from "@/components/AdsenseScript";
 import { useI18n } from "@/lib/i18n";
 import { hasStoredSession } from "@/lib/session-storage";
 import { BarChart3, Database, LayoutDashboard, Sparkles } from "lucide-react";
@@ -109,6 +110,10 @@ export default function Index() {
 
   return (
     <div className="min-h-screen hero-surface grid-backdrop">
+      {/* Only the landing view has real publisher content — the loading
+          overlay and post-upload dashboard don't, so this must not live in
+          the root layout (see AdsenseScript). */}
+      <AdsenseScript />
       <SiteHeader />
 
       <main className="relative">
