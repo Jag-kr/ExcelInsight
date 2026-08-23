@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { LegalPage } from '@/components/LegalPage';
+import { AdsenseScript } from '@/components/AdsenseScript';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://excelinsight.xyz';
 
@@ -12,5 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default function Terms() {
-  return <LegalPage docKey="terms" otherDocPath="/privacy/" />;
+  return (
+    <>
+      <AdsenseScript />
+      <LegalPage docKey="terms" otherDocPath="/privacy/" />
+    </>
+  );
 }
