@@ -13,6 +13,11 @@ export default {
       },
     },
     extend: {
+      // DynamicChart's card chrome and chart heights step at `xs:`; without it
+      // those utilities compile to nothing and every card stays stacked.
+      screens: {
+        xs: "475px",
+      },
       fontFamily: {
         // var(--font-sans) / var(--font-mono) are supplied by next/font in
         // app/layout.tsx; the literal names remain as a fallback so the type

@@ -32,7 +32,7 @@ export function buildDefaultDashboard(
       dataKeys: c.dataKeys,
       xKey: c.xKey,
       sourceKey: c.key,
-      size: i === 0 ? 'lg' : 'md',
+      size: 'md',
     });
     usedChartIds.add(c.key);
   });
