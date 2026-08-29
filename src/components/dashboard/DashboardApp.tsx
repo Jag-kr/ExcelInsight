@@ -8,7 +8,7 @@ import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } fro
 import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
-import { deriveDashboardItems } from '@/lib/derive-dashboard-item';
+import { deriveDashboardItems, computeKpis } from '@/lib/derive-dashboard-item';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -301,6 +301,11 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const availableSuggestions = useMemo(() =>
     filteredSuggestions.filter(s => !addedChartIds.has(s.key)),
     [filteredSuggestions, addedChartIds]
+  );
+
+  const kpis = useMemo(
+    () => computeKpis(filteredColumns, filteredData.length, t),
+    [filteredColumns, filteredData.length, t]
   );
 
   /* Render/export view: user-owned fields from dashboardItems, numbers re-derived
@@ -650,7 +655,23 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                 </div>
               </div>
 
-              <div ref={dashboardRef} className="min-h-[400px]">
+              <div ref={dashboardRef} className="min-h-[400px] space-y-3 sm:space-y-4">
+                {kpis.length > 1 && (
+                  <div data-pdf-card className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    {kpis.map((k, i) => (
+                      <Card
+                        key={k.label}
+                        className="dashboard-panel p-3 sm:p-4 border-0"
+                        style={{ background: `hsl(${getChartColorVar(i)} / 0.12)` }}
+                      >
+                        <p className="text-[11px] font-medium truncate" style={{ color: getChartColor(i) }} title={k.label}>
+                          {k.label}
+                        </p>
+                        <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-0.5">{k.value}</p>
+                      </Card>
+                    ))}
+                  </div>
+                )}
                 <Suspense fallback={<ChartFallback />}>
                   <DashboardGrid
                     items={liveItems}

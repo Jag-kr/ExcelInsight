@@ -222,3 +222,25 @@ export function deriveDashboardItems(
 ): DashboardItem[] {
   return items.map(item => deriveDashboardItem(item, suggestions, columns, data, t));
 }
+
+/* ─── KPI strip: auto-derived headline numbers, not a placeable card ─── */
+
+export interface Kpi { label: string; value: string }
+
+const compactNumber = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 2 });
+
+/**
+ * Headline tiles above the grid: row count plus up to three numeric columns —
+ * summable ones as a total, the rest as an average.
+ */
+export function computeKpis(columns: ColumnMeta[], rowCount: number, t: TFn): Kpi[] {
+  const numeric = computeNumericInsights(columns)
+    .sort((a, b) => Number(b.stats!.isSummable) - Number(a.stats!.isSummable));
+
+  return [
+    { label: t('rows'), value: compactNumber.format(rowCount) },
+    ...numeric.slice(0, 3).map(c => c.stats!.isSummable
+      ? { label: `${t('sum')} · ${c.name}`, value: compactNumber.format(c.stats!.sum) }
+      : { label: `${t('average')} · ${c.name}`, value: compactNumber.format(c.stats!.mean) }),
+  ];
+}

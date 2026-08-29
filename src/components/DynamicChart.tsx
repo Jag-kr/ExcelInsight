@@ -32,9 +32,9 @@ interface DynamicChartProps {
 }
 
 const SIZE_CLASSES: Record<'sm' | 'md' | 'lg', string> = {
-  sm: 'h-[180px] xs:h-[200px] sm:h-[220px] lg:h-[250px]',
-  md: 'h-[220px] xs:h-[240px] sm:h-[280px] lg:h-[350px]',
-  lg: 'h-[250px] xs:h-[280px] sm:h-[320px] lg:h-[420px]',
+  sm: 'h-[160px] xs:h-[170px] sm:h-[180px] lg:h-[190px]',
+  md: 'h-[180px] xs:h-[200px] sm:h-[220px] lg:h-[240px]',
+  lg: 'h-[200px] xs:h-[220px] sm:h-[250px] lg:h-[300px]',
 };
 
 /* Quick chart type pills — show the first 4 as icon buttons, rest in overflow */
