@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { analyzeColumns, generateChartSuggestions } from './data-analyzer';
 import { buildDefaultDashboard } from './build-default-dashboard';
-import { deriveDashboardItems } from './derive-dashboard-item';
+import { deriveDashboardItems, computeKpiValue } from './derive-dashboard-item';
 
 const t = ((k: string) => k) as any;
 
@@ -123,4 +123,66 @@ describe('dashboard cards follow the active filters', () => {
     expect(live[0].data.every((r: any) => r['count'] === 1)).toBe(true);
   });
 
+});
+
+describe('computeKpiValue', () => {
+  const rows = [{ v: 10 }, { v: 20 }, { v: 30 }, { v: 40 }, { v: null }];
+
+  it('counts rows when no column is given', () => {
+    expect(computeKpiValue(rows, { column: null, agg: 'count' })).toBe('5');
+  });
+
+  it('counts only non-empty cells for a column', () => {
+    expect(computeKpiValue(rows, { column: 'v', agg: 'count' })).toBe('4');
+  });
+
+  it('aggregates a numeric column', () => {
+    expect(computeKpiValue(rows, { column: 'v', agg: 'sum' })).toBe('100');
+    expect(computeKpiValue(rows, { column: 'v', agg: 'average' })).toBe('25');
+    expect(computeKpiValue(rows, { column: 'v', agg: 'min' })).toBe('10');
+    expect(computeKpiValue(rows, { column: 'v', agg: 'max' })).toBe('40');
+    // even count -> mean of the two middle values
+    expect(computeKpiValue(rows, { column: 'v', agg: 'median' })).toBe('25');
+  });
+
+  it('counts distinct values', () => {
+    expect(computeKpiValue([{ c: 'a' }, { c: 'a' }, { c: 'b' }, { c: '' }], { column: 'c', agg: 'distinct' })).toBe('2');
+  });
+
+  it('renders a dash rather than NaN when nothing is numeric', () => {
+    expect(computeKpiValue([{ c: 'x' }], { column: 'c', agg: 'sum' })).toBe('—');
+    expect(computeKpiValue([], { column: 'v', agg: 'average' })).toBe('—');
+  });
+});
+
+describe('KPI cards follow filters', () => {
+  it('recomputes the headline number against the filtered rows', () => {
+    const all = applyFilter({});
+    const seeded = buildDefaultDashboard(DATA, all.columns, all.suggestions, t).items;
+
+    const live = deriveDashboardItems(seeded, all.suggestions, all.columns, all.data, t);
+    const kpi = live.find(i => i.displayAs === 'kpi' && i.kpiSpec?.column === null);
+    expect(kpi?.kpiValue).toBe('6');
+
+    const north = applyFilter({ Region: 'North' });
+    const narrowed = deriveDashboardItems(seeded, north.suggestions, north.columns, north.data, t);
+    expect(narrowed.find(i => i.id === kpi!.id)?.kpiValue).toBe('2');
+  });
+});
+
+describe('time trends', () => {
+  const dated = Array.from({ length: 12 }, (_, i) => ({
+    OrderDate: `2025-${String(i + 1).padStart(2, '0')}-05`,
+    Revenue: (i + 1) * 100,
+  }));
+
+  it('emits a trend suggestion for a date column', () => {
+    const cols = analyzeColumns(dated);
+    expect(cols.find(c => c.name === 'OrderDate')?.type).toBe('date');
+
+    const trend = generateChartSuggestions(dated, cols).find(s => s.key.startsWith('trend:'));
+    expect(trend).toBeDefined();
+    expect(trend!.data).toHaveLength(12);
+    expect(trend!.data[0]).toEqual({ name: '2025-01', value: 100 });
+  });
 });

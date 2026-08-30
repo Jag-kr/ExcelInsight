@@ -7,11 +7,11 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DynamicChart } from './DynamicChart';
-import { ChartType, getChartColor, getChartColorVar } from '@/lib/chart-themes';
+import { ChartType, chartTypeOptions, getChartColor, getChartColorVar } from '@/lib/chart-themes';
 import { TopValueBar } from './TopValueBar';
 import {
   Trash2, Maximize2, Minimize2, Square, Repeat2, BarChart3, AlertTriangle,
-  Copy, MoreHorizontal, RectangleHorizontal,
+  Copy, MoreHorizontal, RectangleHorizontal, Rows3, LineChart as LineChartIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n';
@@ -21,7 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
-import type { ManualChartSpec } from '@/lib/derive-dashboard-item';
+import type { ManualChartSpec, KpiSpec } from '@/lib/derive-dashboard-item';
 
 export interface DashboardItem {
   id: string;
@@ -35,9 +35,12 @@ export interface DashboardItem {
      before recipes existed keep their stored snapshot. */
   sourceKey?: string;
   spec?: ManualChartSpec;
-  displayAs?: 'chart' | 'table' | 'insight';
+  displayAs?: 'chart' | 'table' | 'insight' | 'kpi';
   tableColumns?: string[];
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
+  /* KPI recipe + the number derived from it. Only `kpiSpec` is persisted. */
+  kpiSpec?: KpiSpec;
+  kpiValue?: string;
   insightType?: 'repeating' | 'stats' | 'quality';
   insightContent?: any;
 }
@@ -231,34 +234,56 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
   return null;
 }
 
+function DashboardKpiCard({ item, index, onRename }: { item: DashboardItem; index: number; onRename: (v: string) => void }) {
+  return (
+    <Card
+      className="dashboard-panel animate-fade-in h-full flex flex-col justify-center gap-1 p-3 sm:p-4 border-0"
+      style={{ background: `hsl(${getChartColorVar(index)} / 0.12)` }}
+    >
+      <div className="text-[11px] font-medium" style={{ color: getChartColor(index) }}>
+        <EditableTitle value={item.title} onChange={onRename} />
+      </div>
+      <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none">
+        {item.kpiValue ?? '—'}
+      </p>
+    </Card>
+  );
+}
+
 /* ─── Responsive size classes ─── */
+/* Base is a 2-column grid so KPI tiles sit two-up on a phone; every other
+   tier spans both, which is the full width they had before. */
 const sizeClasses: Record<string, string> = {
-  sm: 'col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-2',
-  md: 'col-span-1 sm:col-span-1 md:col-span-2 lg:col-span-3',
-  lg: 'col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-6',
+  xs: 'col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-3',
+  sm: 'col-span-2 sm:col-span-1 md:col-span-1 lg:col-span-4',
+  md: 'col-span-2 sm:col-span-1 md:col-span-2 lg:col-span-6',
+  lg: 'col-span-2 sm:col-span-2 md:col-span-2 lg:col-span-12',
 };
 
-const sizeFractionLabel: Record<'sm' | 'md' | 'lg', string> = {
+const sizeFractionLabel: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
+  xs: '¼',
   sm: '⅓',
   md: '½',
   lg: 'Full',
 };
 
 const sizeIcons = {
+  xs: Rows3,
   sm: Minimize2,
   md: Square,
   lg: Maximize2,
 };
 
-function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
+function SortableCard({ item, index, onRemove, onUpdateItem, onDuplicate }: {
   item: DashboardItem;
+  index: number;
   onRemove: () => void;
   onUpdateItem: (updates: Partial<DashboardItem>) => void;
   onDuplicate?: () => void;
 }) {
   const { t } = useI18n();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
-  const size = (item.size || 'md') as 'sm' | 'md' | 'lg';
+  const size = (item.size || (item.displayAs === 'kpi' ? 'xs' : 'md')) as 'xs' | 'sm' | 'md' | 'lg';
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -268,7 +293,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
     ...(isDragging ? { '--tw-ring-color': `hsl(${getChartColorVar(0)} / 0.3)` } : {}),
   };
 
-  const setSize = (s: 'sm' | 'md' | 'lg') => onUpdateItem({ size: s });
+  const setSize = (s: 'xs' | 'sm' | 'md' | 'lg') => onUpdateItem({ size: s });
   const renameTitle = (v: string) => onUpdateItem({ title: v });
 
   const SizeIcon = sizeIcons[size];
@@ -327,6 +352,7 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="rounded-xl">
                 {([
+                  { v: 'xs' as const, Icon: Rows3, label: t('tile'), fraction: '¼' },
                   { v: 'sm' as const, Icon: Minimize2, label: t('small'), fraction: '⅓' },
                   { v: 'md' as const, Icon: Square, label: t('medium'), fraction: '½' },
                   { v: 'lg' as const, Icon: Maximize2, label: t('large'), fraction: 'Full' },
@@ -344,6 +370,29 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
                 ))}
               </DropdownMenuSubContent>
             </DropdownMenuSub>
+
+            {/* Chart type lives here rather than as a pill row in the card
+                header, which cost every card a second header line. */}
+            {(!item.displayAs || item.displayAs === 'chart') && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="text-xs rounded-lg">
+                  <LineChartIcon className="h-3.5 w-3.5 mr-2" />
+                  {t('chartType')}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="rounded-xl">
+                  {chartTypeOptions.map(opt => (
+                    <DropdownMenuItem
+                      key={opt.value}
+                      onClick={() => onUpdateItem({ type: opt.value })}
+                      className="text-xs rounded-lg"
+                    >
+                      {opt.label}
+                      {item.type === opt.value && <span className="ml-auto text-primary">✓</span>}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
 
             {onDuplicate && (
               <DropdownMenuItem onClick={onDuplicate} className="text-xs rounded-lg">
@@ -365,7 +414,11 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
         </DropdownMenu>
       </div>
 
-      {item.displayAs === 'insight' ? (
+      {item.displayAs === 'kpi' ? (
+        <ChartErrorBoundary title={item.title}>
+          <DashboardKpiCard item={item} index={index} onRename={renameTitle} />
+        </ChartErrorBoundary>
+      ) : item.displayAs === 'insight' ? (
         <ChartErrorBoundary title={item.title}>
           <DashboardInsightCard item={item} onRename={renameTitle} />
         </ChartErrorBoundary>
@@ -382,8 +435,8 @@ function SortableCard({ item, onRemove, onUpdateItem, onDuplicate }: {
             data={item.data}
             dataKeys={item.dataKeys}
             xKey={item.xKey}
-            onChangeType={(type) => onUpdateItem({ type })}
             onRenameTitle={renameTitle}
+            showControls={false}
             size={size}
           />
         </ChartErrorBoundary>
@@ -454,11 +507,12 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 auto-rows-[minmax(0,auto)]">
-          {items.map(item => (
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4 auto-rows-[minmax(0,auto)]">
+          {items.map((item, i) => (
             <SortableCard
               key={item.id}
               item={item}
+              index={i}
               onRemove={() => onRemove(item.id)}
               onUpdateItem={(updates) => onUpdateItem(item.id, updates)}
               onDuplicate={onDuplicate ? () => onDuplicate(item.id) : undefined}
@@ -474,7 +528,9 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
       }}>
         {activeItem ? (
           <div className="dashboard-panel opacity-80 scale-[1.02] pointer-events-none">
-            {activeItem.displayAs === 'insight' ? (
+            {activeItem.displayAs === 'kpi' ? (
+              <DashboardKpiCard item={activeItem} index={items.findIndex(i => i.id === activeItem.id)} onRename={() => {}} />
+            ) : activeItem.displayAs === 'insight' ? (
               <DashboardInsightCard item={activeItem} onRename={() => {}} />
             ) : activeItem.displayAs === 'table' ? (
               <DashboardTable item={activeItem} onRename={() => {}} />
@@ -487,7 +543,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
                 dataKeys={activeItem.dataKeys}
                 xKey={activeItem.xKey}
                 showControls={false}
-                size={(activeItem.size || 'md') as 'sm' | 'md' | 'lg'}
+                size={(activeItem.size || 'md') as 'xs' | 'sm' | 'md' | 'lg'}
               />
             )}
           </div>

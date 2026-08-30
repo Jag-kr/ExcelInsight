@@ -8,7 +8,7 @@ import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } fro
 import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
-import { deriveDashboardItems, computeKpis } from '@/lib/derive-dashboard-item';
+import { deriveDashboardItems, kpiCardId, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -184,7 +184,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       const { items, usedChartIds } = buildDefaultDashboard(newData, cols, charts, t);
       setDashboardItems(items);
       setAddedChartIds(usedChartIds);
-      setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
+      setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi').map(i => i.id)));
       setAnalyzing(false);
 
       const fileExt = getFileExt(name);
@@ -221,7 +221,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     const { items, usedChartIds } = buildDefaultDashboard(data, columns, suggestions, t);
     setDashboardItems(items);
     setAddedChartIds(usedChartIds);
-    setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
+    setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi').map(i => i.id)));
     toast.success(t('resetLayout'));
   }, [data, columns, suggestions, t]);
 
@@ -303,11 +303,6 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     [filteredSuggestions, addedChartIds]
   );
 
-  const kpis = useMemo(
-    () => computeKpis(filteredColumns, filteredData.length, t),
-    [filteredColumns, filteredData.length, t]
-  );
-
   /* Render/export view: user-owned fields from dashboardItems, numbers re-derived
      for the active filters. dashboardItems stays the source of truth for edits. */
   const liveItems = useMemo(
@@ -350,6 +345,18 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     }]);
     setAddedInsightIds(prev => new Set(prev).add(card.id));
     trackEvent('chart_added', { source: 'insight' });
+  }, []);
+
+  const addKpiToDashboard = useCallback((spec: KpiSpec, title: string) => {
+    const id = kpiCardId(spec);
+    setDashboardItems(prev => (
+      prev.some(i => i.id === id) ? prev : [...prev, {
+        id, title, type: 'bar' as const, data: [], dataKeys: [], xKey: '',
+        displayAs: 'kpi' as const, kpiSpec: spec, size: 'xs' as const,
+      }]
+    ));
+    setAddedInsightIds(prev => new Set(prev).add(id));
+    trackEvent('chart_added', { source: 'kpi' });
   }, []);
 
   const addTableToDashboard = useCallback((card: { id: string; title: string; data: any[]; columns: string[] }) => {
@@ -655,23 +662,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                 </div>
               </div>
 
-              <div ref={dashboardRef} className="min-h-[400px] space-y-3 sm:space-y-4">
-                {kpis.length > 1 && (
-                  <div data-pdf-card className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                    {kpis.map((k, i) => (
-                      <Card
-                        key={k.label}
-                        className="dashboard-panel p-3 sm:p-4 border-0"
-                        style={{ background: `hsl(${getChartColorVar(i)} / 0.12)` }}
-                      >
-                        <p className="text-[11px] font-medium truncate" style={{ color: getChartColor(i) }} title={k.label}>
-                          {k.label}
-                        </p>
-                        <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums mt-0.5">{k.value}</p>
-                      </Card>
-                    ))}
-                  </div>
-                )}
+              <div ref={dashboardRef} className="min-h-[400px]">
                 <Suspense fallback={<ChartFallback />}>
                   <DashboardGrid
                     items={liveItems}
@@ -841,6 +832,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
           onAddSuggestion={addSuggestionToDashboard}
           onAddCustomChart={addToDashboard}
           onAddInsight={addInsightToDashboard}
+          onAddKpi={addKpiToDashboard}
           onAddTable={addTableToDashboard}
         />
       </Suspense>

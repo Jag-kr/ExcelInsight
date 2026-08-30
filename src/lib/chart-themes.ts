@@ -4,13 +4,14 @@ import { createContext, useContext } from 'react';
 import type { ChartConfig } from '@/components/ui/chart';
 import type { TranslationKey } from '@/lib/i18n';
 
-export type ChartType = 'bar' | 'horizontalBar' | 'line' | 'pie' | 'area' | 'scatter' | 'radar';
+export type ChartType = 'bar' | 'horizontalBar' | 'line' | 'pie' | 'donut' | 'area' | 'scatter' | 'radar';
 
 export const chartTypeOptions: { value: ChartType; label: string }[] = [
   { value: 'bar', label: 'Bar Chart' },
   { value: 'horizontalBar', label: 'Horizontal Bar' },
   { value: 'line', label: 'Line Chart' },
   { value: 'area', label: 'Area Chart' },
+  { value: 'donut', label: 'Donut Chart' },
   { value: 'pie', label: 'Pie Chart' },
   { value: 'scatter', label: 'Scatter Plot' },
   { value: 'radar', label: 'Radar Chart' },
