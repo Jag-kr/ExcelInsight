@@ -28,7 +28,7 @@ export interface ChartSuggestion {
       regenerated, so anything surviving a re-run must match on `key`. */
   key: string;
   title: string;
-  type: 'bar' | 'line' | 'pie' | 'area' | 'scatter' | 'radar';
+  type: 'bar' | 'line' | 'pie' | 'donut' | 'area' | 'scatter' | 'radar';
   xKey?: string;
   yKey?: string;
   dataKeys: string[];
@@ -145,7 +145,51 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
   const numericCols = columns.filter(c => c.type === 'numeric');
   const rangeCols = columns.filter(c => c.type === 'range');
 
-  // 1. Categorical distribution charts (bar + pie)
+  // 1. Time trends — a numeric column bucketed by month over each date column.
+  //    Date columns are detected but were otherwise unused, so a dataset with a
+  //    timeline produced no chart that actually showed the timeline.
+  const dateCols = columns.filter(c => c.type === 'date');
+  dateCols.slice(0, 2).forEach(dateCol => {
+    numericCols.slice(0, 2).forEach(num => {
+      const buckets = new Map<string, { sum: number; count: number }>();
+      data.forEach(row => {
+        const d = new Date(row[dateCol.name]);
+        if (isNaN(d.getTime())) return;
+        const val = Number(row[num.name]);
+        if (isNaN(val)) return;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const b = buckets.get(key) ?? { sum: 0, count: 0 };
+        b.sum += val;
+        b.count++;
+        buckets.set(key, b);
+      });
+
+      const summable = num.stats?.isSummable;
+      const trendData = Array.from(buckets.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, b]) => ({
+          name: month,
+          value: Math.round((summable ? b.sum : b.sum / b.count) * 100) / 100,
+        }));
+
+      // Two points is a line segment, not a trend.
+      if (trendData.length >= 3) {
+        suggestions.push({
+          id: `auto-${id++}`,
+          key: `trend:${dateCol.name}:${num.name}`,
+          title: `${num.name} over ${dateCol.name}`,
+          type: 'area',
+          xKey: 'name',
+          yKey: 'value',
+          dataKeys: ['value'],
+          data: trendData,
+          description: `${summable ? 'Total' : 'Average'} ${num.name} by month`,
+        });
+      }
+    });
+  });
+
+  // 2. Categorical distribution charts (bar + pie)
   categoricalCols.forEach(cat => {
     if (cat.categories && cat.categories.length >= 2) {
       suggestions.push({
@@ -163,7 +207,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
           id: `auto-${id++}`,
           key: `pie:${cat.name}`,
           title: `${cat.name} Breakdown`,
-          type: 'pie',
+          type: 'donut',
           dataKeys: ['count'],
           data: cat.categories.map(c => ({ name: c.value, count: c.count })),
           description: `Proportional breakdown of ${cat.name}`,
@@ -172,7 +216,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
     }
   });
 
-  // 2. Range column distributions (histogram-like bar)
+  // 3. Range column distributions (histogram-like bar)
   rangeCols.forEach(col => {
     if (col.categories && col.categories.length >= 2) {
       suggestions.push({
@@ -187,7 +231,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
     }
   });
 
-  // 3. Numeric by categorical (aggregated bars)
+  // 4. Numeric by categorical (aggregated bars)
   categoricalCols.forEach(cat => {
     numericCols.slice(0, 3).forEach(num => {
       if (cat.categories && cat.categories.length >= 2 && cat.categories.length <= 15) {
@@ -228,7 +272,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
     });
   });
 
-  // 4. Numeric scatter plots
+  // 5. Numeric scatter plots
   if (numericCols.length >= 2) {
     for (let i = 0; i < Math.min(numericCols.length - 1, 3); i++) {
       const xCol = numericCols[i];
@@ -257,7 +301,7 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
     }
   }
 
-  // 5. Top N summaries for numeric + categorical
+  // 6. Top N summaries for numeric + categorical
   if (categoricalCols.length && numericCols.length) {
     const cat = categoricalCols[0];
     const num = numericCols[0];

@@ -180,6 +180,10 @@ function deriveDashboardItem(
   data: Record<string, any>[],
   t: TFn
 ): DashboardItem {
+  if (item.displayAs === 'kpi') {
+    return { ...item, kpiValue: computeKpiValue(data, item.kpiSpec) };
+  }
+
   if (item.displayAs === 'insight') {
     if (item.insightType === 'stats') return { ...item, insightContent: computeNumericInsights(columns) };
     if (item.insightType === 'quality') return { ...item, insightContent: computeDataQuality(columns) };
@@ -221,4 +225,60 @@ export function deriveDashboardItems(
   t: TFn
 ): DashboardItem[] {
   return items.map(item => deriveDashboardItem(item, suggestions, columns, data, t));
+}
+
+/* ─── KPI cards ─── */
+
+export type KpiAgg = 'count' | 'sum' | 'average' | 'min' | 'max' | 'median' | 'distinct';
+
+/** How a KPI card was specified. `column: null` means "count the rows". */
+export interface KpiSpec {
+  column: string | null;
+  agg: KpiAgg;
+}
+
+const compactNumber = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 2 });
+
+/** Aggregations that read a numeric column; the rest work on any column. */
+export const NUMERIC_KPI_AGGS: KpiAgg[] = ['sum', 'average', 'min', 'max', 'median'];
+
+/**
+ * A KPI's headline number, recomputed against the filtered rows on every
+ * render pass — same contract as a chart's `data`, never persisted.
+ */
+export function computeKpiValue(data: Record<string, any>[], spec?: KpiSpec): string {
+  if (!spec) return '—';
+  const { column, agg } = spec;
+
+  if (!column || agg === 'count') return compactNumber.format(column ? data.filter(r => r[column] != null && r[column] !== '').length : data.length);
+
+  if (agg === 'distinct') {
+    return compactNumber.format(new Set(data.map(r => r[column]).filter(v => v != null && v !== '')).size);
+  }
+
+  /* Filter before coercing: Number(null) and Number('') are 0, not NaN, so a
+     blank cell would otherwise be counted as a real zero and drag the mean. */
+  const nums = data
+    .map(r => r[column])
+    .filter(v => v != null && v !== '')
+    .map(Number)
+    .filter(n => !isNaN(n));
+  if (!nums.length) return '—';
+
+  switch (agg) {
+    case 'sum': return compactNumber.format(nums.reduce((a, b) => a + b, 0));
+    case 'average': return compactNumber.format(nums.reduce((a, b) => a + b, 0) / nums.length);
+    case 'min': return compactNumber.format(Math.min(...nums));
+    case 'max': return compactNumber.format(Math.max(...nums));
+    case 'median': {
+      const sorted = [...nums].sort((a, b) => a - b);
+      const mid = sorted.length >> 1;
+      return compactNumber.format(sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2);
+    }
+  }
+}
+
+/** Stable card id, so Quick Add can tell an already-placed metric from a new one. */
+export function kpiCardId(spec: KpiSpec): string {
+  return `kpi:${spec.column ?? '__rows'}:${spec.agg}`;
 }

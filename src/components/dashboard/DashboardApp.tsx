@@ -8,7 +8,7 @@ import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } fro
 import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
-import { deriveDashboardItems } from '@/lib/derive-dashboard-item';
+import { deriveDashboardItems, kpiCardId, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -184,7 +184,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       const { items, usedChartIds } = buildDefaultDashboard(newData, cols, charts, t);
       setDashboardItems(items);
       setAddedChartIds(usedChartIds);
-      setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
+      setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi').map(i => i.id)));
       setAnalyzing(false);
 
       const fileExt = getFileExt(name);
@@ -221,7 +221,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     const { items, usedChartIds } = buildDefaultDashboard(data, columns, suggestions, t);
     setDashboardItems(items);
     setAddedChartIds(usedChartIds);
-    setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight').map(i => i.id)));
+    setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi').map(i => i.id)));
     toast.success(t('resetLayout'));
   }, [data, columns, suggestions, t]);
 
@@ -345,6 +345,18 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     }]);
     setAddedInsightIds(prev => new Set(prev).add(card.id));
     trackEvent('chart_added', { source: 'insight' });
+  }, []);
+
+  const addKpiToDashboard = useCallback((spec: KpiSpec, title: string) => {
+    const id = kpiCardId(spec);
+    setDashboardItems(prev => (
+      prev.some(i => i.id === id) ? prev : [...prev, {
+        id, title, type: 'bar' as const, data: [], dataKeys: [], xKey: '',
+        displayAs: 'kpi' as const, kpiSpec: spec, size: 'xs' as const,
+      }]
+    ));
+    setAddedInsightIds(prev => new Set(prev).add(id));
+    trackEvent('chart_added', { source: 'kpi' });
   }, []);
 
   const addTableToDashboard = useCallback((card: { id: string; title: string; data: any[]; columns: string[] }) => {
@@ -820,6 +832,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
           onAddSuggestion={addSuggestionToDashboard}
           onAddCustomChart={addToDashboard}
           onAddInsight={addInsightToDashboard}
+          onAddKpi={addKpiToDashboard}
           onAddTable={addTableToDashboard}
         />
       </Suspense>
