@@ -3,12 +3,12 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   AreaChart, Area, ScatterChart, Scatter, RadarChart, Radar,
   PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  XAxis, YAxis, CartesianGrid,
+  XAxis, YAxis, CartesianGrid, LabelList,
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import html2canvas from 'html2canvas';
-import { Download, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIcon, AreaChart as AreaChartIcon, ScatterChart as ScatterChartIcon, Radar as RadarIcon, MoreHorizontal, AlignLeft } from 'lucide-react';
+import { Download, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIcon, AreaChart as AreaChartIcon, ScatterChart as ScatterChartIcon, Radar as RadarIcon, MoreHorizontal, AlignLeft, Donut as DonutIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -28,13 +28,14 @@ interface DynamicChartProps {
   onChangeType?: (type: ChartType) => void;
   onRenameTitle?: (title: string) => void;
   showControls?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
-const SIZE_CLASSES: Record<'sm' | 'md' | 'lg', string> = {
-  sm: 'h-[180px] xs:h-[200px] sm:h-[220px] lg:h-[250px]',
-  md: 'h-[220px] xs:h-[240px] sm:h-[280px] lg:h-[350px]',
-  lg: 'h-[250px] xs:h-[280px] sm:h-[320px] lg:h-[420px]',
+const SIZE_CLASSES: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
+  xs: 'h-[130px] xs:h-[140px] sm:h-[150px] lg:h-[160px]',
+  sm: 'h-[160px] xs:h-[170px] sm:h-[180px] lg:h-[190px]',
+  md: 'h-[180px] xs:h-[200px] sm:h-[220px] lg:h-[240px]',
+  lg: 'h-[200px] xs:h-[220px] sm:h-[250px] lg:h-[300px]',
 };
 
 /* Quick chart type pills — show the first 4 as icon buttons, rest in overflow */
@@ -44,12 +45,13 @@ const CHART_TYPE_ICONS: Record<ChartType, React.ElementType> = {
   line: LineChartIcon,
   area: AreaChartIcon,
   pie: PieChartIcon,
+  donut: DonutIcon,
   scatter: ScatterChartIcon,
   radar: RadarIcon,
 };
 
-const PRIMARY_CHART_TYPES: ChartType[] = ['bar', 'line', 'area', 'pie'];
-const OVERFLOW_CHART_TYPES: ChartType[] = ['horizontalBar', 'scatter', 'radar'];
+const PRIMARY_CHART_TYPES: ChartType[] = ['bar', 'line', 'area', 'donut'];
+const OVERFLOW_CHART_TYPES: ChartType[] = ['horizontalBar', 'pie', 'scatter', 'radar'];
 
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
@@ -62,7 +64,7 @@ export function DynamicChart({
   const [transitioning, setTransitioning] = useState(false);
 
   const chartConfig = useMemo<ChartConfig>(() => {
-    if (type === 'pie' || type === 'scatter') {
+    if (type === 'pie' || type === 'donut' || type === 'scatter') {
       return buildPieChartConfig(data, xKey);
     }
     return buildChartConfig(dataKeys);
@@ -84,6 +86,10 @@ export function DynamicChart({
    *    answer.
    */
   const colorByCategory = dataKeys.length === 1 && data.length <= CHART_COLOR_COUNT;
+
+  /* Printed values only stay legible on a short, single-series bar chart —
+     past that they collide with each other and with the axis. */
+  const showValueLabels = dataKeys.length === 1 && data.length <= 8 && size !== 'xs';
 
   /**
    * Recharts reads the tooltip's swatch colour from `payload.fill` (see
@@ -146,6 +152,7 @@ export function DynamicChart({
                 {colorByCategory && barData.map((_, i) => (
                   <Cell key={i} fill={getChartColor(i)} />
                 ))}
+                {showValueLabels && <LabelList dataKey={key} position="top" fontSize={10} className="fill-muted-foreground" />}
               </Bar>
             ))}
           </BarChart>
@@ -163,6 +170,7 @@ export function DynamicChart({
                 {colorByCategory && barData.map((_, i) => (
                   <Cell key={i} fill={getChartColor(i)} />
                 ))}
+                {showValueLabels && <LabelList dataKey={key} position="right" fontSize={10} className="fill-muted-foreground" />}
               </Bar>
             ))}
           </BarChart>
@@ -202,9 +210,20 @@ export function DynamicChart({
           </AreaChart>
         );
       case 'pie':
+      case 'donut':
         return (
           <PieChart>
-            <Pie data={data} dataKey={dataKeys[0]} nameKey={xKey} cx="50%" cy="50%" outerRadius="75%" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+            <Pie
+              data={data}
+              dataKey={dataKeys[0]}
+              nameKey={xKey}
+              cx="50%"
+              cy="50%"
+              innerRadius={type === 'donut' ? '52%' : 0}
+              outerRadius="75%"
+              paddingAngle={type === 'donut' ? 2 : 0}
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+            >
               {data.map((_, i) => (
                 <Cell key={i} fill={getChartColor(i)} stroke="hsl(var(--card))" />
               ))}
@@ -282,7 +301,9 @@ export function DynamicChart({
                 </Tooltip>
               </TooltipProvider>
             )}
-            {description && <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">{description}</p>}
+            {description && size !== 'xs' && size !== 'sm' && (
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">{description}</p>
+            )}
           </div>
           <div className="flex items-center gap-0.5 shrink-0" data-export-hide data-pdf-hide>
             {showControls && onChangeType && (

@@ -10,12 +10,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/lib/i18n';
 import {
   ChevronDown, ChevronRight, Search, BarChart3, Lightbulb, Wrench,
-  Plus, Check, Sparkles,
+  Plus, Check, Sparkles, Hash,
 } from 'lucide-react';
 import type { ChartSuggestion, ColumnMeta } from '@/lib/data-analyzer';
 import type { DashboardItem } from './DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
-import { computeRepeatingColumns, computeDataQuality } from '@/lib/derive-dashboard-item';
+import { computeRepeatingColumns, computeDataQuality, kpiCardId, NUMERIC_KPI_AGGS, type KpiSpec, type KpiAgg } from '@/lib/derive-dashboard-item';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const DynamicChart = dynamic(() => import('./DynamicChart').then(m => m.DynamicChart), {
   ssr: false,
@@ -49,6 +50,7 @@ interface QuickAddPanelProps {
   onAddSuggestion: (s: ChartSuggestion) => void;
   onAddCustomChart: (chart: DashboardItem) => void;
   onAddInsight: (card: { id: string; title: string; content: any; type: 'insight' }) => void;
+  onAddKpi: (spec: KpiSpec, title: string) => void;
   onAddTable: (card: { id: string; title: string; data: any[]; columns: string[] }) => void;
 }
 
@@ -152,6 +154,52 @@ function CollapsibleSection({
   );
 }
 
+/** Every KpiAgg has an i18n key of the same name except `distinct`. */
+const aggKey = (a: KpiAgg) => (a === 'distinct' ? 'distinctCount' : a) as Exclude<KpiAgg, 'distinct'> | 'distinctCount';
+
+/** Pick a column + aggregation and drop the result on the board as a KPI tile. */
+function MetricBuilder({ columns, onAdd }: { columns: ColumnMeta[]; onAdd: (spec: KpiSpec, title: string) => void }) {
+  const { t } = useI18n();
+  const [column, setColumn] = useState('__rows');
+  const [agg, setAgg] = useState<KpiAgg>('count');
+
+  const numericNames = new Set(
+    columns.filter(c => c.type === 'numeric' || c.type === 'range').map(c => c.name)
+  );
+  const isNumeric = numericNames.has(column);
+  // A text column has no sum; offering one would only produce a dash.
+  const aggs: KpiAgg[] = column === '__rows' ? ['count'] : isNumeric ? [...NUMERIC_KPI_AGGS, 'count', 'distinct'] : ['count', 'distinct'];
+  const effectiveAgg = aggs.includes(agg) ? agg : aggs[0];
+
+  const spec: KpiSpec = { column: column === '__rows' ? null : column, agg: effectiveAgg };
+  const title = spec.column ? `${t(aggKey(effectiveAgg))} · ${spec.column}` : t('rowCount');
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <Select value={column} onValueChange={setColumn}>
+          <SelectTrigger className="h-8 text-xs bg-secondary/50 border-border/50"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__rows">{t('rowCount')}</SelectItem>
+            {columns.map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={effectiveAgg} onValueChange={v => setAgg(v as KpiAgg)}>
+          <SelectTrigger className="h-8 text-xs bg-secondary/50 border-border/50"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {aggs.map(a => (
+              <SelectItem key={a} value={a}>{t(aggKey(a))}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <Button size="sm" className="w-full h-8 text-xs" onClick={() => onAdd(spec, title)}>
+        <Plus className="h-3 w-3 mr-1" /> {t('addMetric')}
+      </Button>
+    </div>
+  );
+}
+
 export function QuickAddPanel({
   open,
   onOpenChange,
@@ -163,6 +211,7 @@ export function QuickAddPanel({
   onAddSuggestion,
   onAddCustomChart,
   onAddInsight,
+  onAddKpi,
   onAddTable,
 }: QuickAddPanelProps) {
   const { t } = useI18n();
@@ -240,6 +289,26 @@ export function QuickAddPanel({
     return items;
   }, [numericCols, repeatingColumns, dataQuality, addedInsightIds, onAddInsight, t]);
 
+  /* Suggested tiles: the row count plus one per numeric column, mirroring what
+     auto-generate seeds — so a deleted tile is one click away from coming back. */
+  const metricItems = useMemo(() => {
+    const specs: KpiSpec[] = [
+      { column: null, agg: 'count' },
+      ...numericCols.map((c): KpiSpec => ({ column: c.name, agg: c.stats!.isSummable ? 'sum' : 'average' })),
+    ];
+    return specs.map(spec => {
+      const id = kpiCardId(spec);
+      const title = spec.column ? `${t(aggKey(spec.agg))} · ${spec.column}` : t('rowCount');
+      return { id, title, spec, added: addedInsightIds.has(id) };
+    });
+  }, [numericCols, addedInsightIds, t]);
+
+  const filteredMetrics = useMemo(() => {
+    if (!searchQuery.trim()) return metricItems;
+    const q = searchQuery.toLowerCase();
+    return metricItems.filter(m => m.title.toLowerCase().includes(q));
+  }, [metricItems, searchQuery]);
+
   const filteredInsights = useMemo(() => {
     if (!searchQuery.trim()) return insightItems;
     const q = searchQuery.toLowerCase();
@@ -275,6 +344,48 @@ export function QuickAddPanel({
         </div>
 
         <div className="p-4 space-y-1">
+          {/* Metrics Section */}
+          <CollapsibleSection
+            title={t('metrics')}
+            icon={Hash}
+            count={filteredMetrics.filter(m => !m.added).length}
+            defaultOpen={true}
+          >
+            <p className="text-[10px] text-muted-foreground mb-2">{t('metricsDesc')}</p>
+            <div className="space-y-2">
+              {filteredMetrics.map(m => (
+                <div
+                  key={m.id}
+                  className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group"
+                >
+                  <span className="text-xs font-medium text-foreground truncate">{m.title}</span>
+                  {m.added ? (
+                    <Badge
+                      variant="secondary"
+                      className="gap-1 text-[10px] bg-success/20 text-success border-0 px-2 py-0.5 font-normal shrink-0"
+                    >
+                      <Check className="h-2.5 w-2.5" /> {t('added')}
+                    </Badge>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2 text-[10px] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity shrink-0"
+                      onClick={() => onAddKpi(m.spec, m.title)}
+                    >
+                      <Plus className="h-3 w-3 mr-0.5" /> {t('add')}
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 pt-3 border-t border-border/30">
+              <MetricBuilder columns={columns} onAdd={onAddKpi} />
+            </div>
+          </CollapsibleSection>
+
+          <div className="border-t border-border/30" />
+
           {/* Suggested Charts Section */}
           <CollapsibleSection
             title={t('suggestedCharts')}

@@ -5,7 +5,7 @@ type AnalyticsEvent =
   | { name: 'file_parsed'; props: { fileExt: string; rowCount: number; colCount: number } }
   | { name: 'file_parse_failed'; props: { fileExt: string } }
   | { name: 'file_analysis_empty'; props: { fileExt: string; colCount: number } }
-  | { name: 'chart_added'; props: { source: 'suggestion' | 'manual' | 'insight' | 'table' } }
+  | { name: 'chart_added'; props: { source: 'suggestion' | 'manual' | 'insight' | 'table' | 'kpi' } }
   | { name: 'export_pdf'; props: { status: 'success' | 'failed'; chartCount: number; tableCount: number; insightCount: number } }
   | { name: 'export_png'; props: { status: 'success' | 'failed'; chartType: string } };
 
