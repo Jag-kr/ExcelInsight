@@ -1,8 +1,6 @@
 import type { ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import type { DashboardItem } from '@/components/DashboardGrid';
-import { computeRepeatingColumns, computeNumericInsights, computeDataQuality } from '@/lib/derive-dashboard-item';
-
-const CHART_TYPE_ROTATION = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'horizontalBar'] as const;
+import { computeRepeatingColumns, computeNumericInsights, computeDataQuality, kpiCardId, type KpiSpec } from '@/lib/derive-dashboard-item';
 
 /**
  * Seeds the dashboard the user lands on straight after an upload: the first
@@ -22,12 +20,34 @@ export function buildDefaultDashboard(
   const items: DashboardItem[] = [];
   const usedChartIds = new Set<string>();
 
-  charts.slice(0, 3).forEach((c, i) => {
+  /* Headline tiles lead the board. They are ordinary cards — the user can
+     rename, resize, duplicate or delete any of them. */
+  const numericCols = computeNumericInsights(cols);
+  const kpiSpecs: KpiSpec[] = [
+    { column: null, agg: 'count' },
+    ...numericCols.slice(0, 3).map((c): KpiSpec => ({
+      column: c.name,
+      agg: c.stats!.isSummable ? 'sum' : 'average',
+    })),
+  ];
+  kpiSpecs.forEach(spec => {
+    items.push({
+      id: kpiCardId(spec),
+      title: spec.column ? `${t(spec.agg)} · ${spec.column}` : t('rowCount'),
+      type: 'bar', data: [], dataKeys: [], xKey: '',
+      displayAs: 'kpi', kpiSpec: spec, size: 'xs',
+    });
+  });
+
+  charts.slice(0, 6).forEach(c => {
     items.push({
       id: c.id,
       title: c.title,
       description: c.description,
-      type: CHART_TYPE_ROTATION[i % CHART_TYPE_ROTATION.length],
+      /* The suggestion's own type, not a rotation: data-analyzer already knows
+         a distribution is bars and a breakdown is a donut, and rotating over
+         that was drawing category counts as lines. */
+      type: c.type,
       data: c.data,
       dataKeys: c.dataKeys,
       xKey: c.xKey,
@@ -37,7 +57,6 @@ export function buildDefaultDashboard(
     usedChartIds.add(c.key);
   });
 
-  const numericCols = computeNumericInsights(cols);
   if (numericCols.length > 0) {
     items.push({
       id: 'insight-stats-chart',
@@ -65,16 +84,6 @@ export function buildDefaultDashboard(
       type: 'bar', data: [], dataKeys: [], xKey: '',
       displayAs: 'insight', insightType: 'quality', insightContent: quality,
     });
-  }
-
-  if (charts.length > 3) {
-    const c = charts[3];
-    items.push({
-      id: c.id, title: c.title, description: c.description,
-      type: CHART_TYPE_ROTATION[3 % CHART_TYPE_ROTATION.length],
-      data: c.data, dataKeys: c.dataKeys, xKey: c.xKey, sourceKey: c.key,
-    });
-    usedChartIds.add(c.key);
   }
 
   return { items, usedChartIds };
