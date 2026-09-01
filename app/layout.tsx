@@ -68,6 +68,10 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  other: {
+    // AdSense site verification — must be on every page, not just ad-bearing ones.
+    'google-adsense-account': 'ca-pub-2734357253126302',
+  },
   icons: {
     icon: [
       { url: '/logo-64.png', sizes: '64x64', type: 'image/png' },
