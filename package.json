@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seo:report": "node scripts/gsc-report.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
