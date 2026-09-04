@@ -47,3 +47,8 @@ yarn-error.log*
 *.sw?
 
 package-lock.json
+# Search programme baseline & strategy — kept local, not published.
+# GSC exports reveal traffic volume and converting queries; the phase doc
+# contains the growth plan. See scripts/gsc-report.mjs for the expected layout.
+/seo/
+/docs/seo/
