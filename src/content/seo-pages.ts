@@ -97,7 +97,7 @@ export const seoPages: SeoPage[] = [
         a: 'Yes. Use Export PDF to download the entire dashboard as a polished multi-page report, or use the Export PNG button on any chart to download just that visualization.',
       },
     ],
-    related: ['csv-visualization-tool', 'excel-chart-generator', 'excel-report-builder', 'sales-dashboard-template', 'free-dashboard-software-excel', 'csv-dashboard'],
+    related: ['csv-visualization-tool', 'excel-data-visualizer', 'excel-report-builder', 'ecommerce-analytics-dashboard', 'csv-dashboard'],
   },
   {
     slug: 'csv-visualization-tool',
@@ -134,45 +134,7 @@ export const seoPages: SeoPage[] = [
         a: 'That is exactly what ExcelInsight does. Parsing, charting, filtering and export all run client-side in your browser — your CSV never leaves your machine.',
       },
     ],
-    related: ['excel-dashboard-maker', 'excel-chart-generator', 'bar-chart-maker', 'startup-kpi-dashboard', 'csv-dashboard', 'csv-to-line-graph'],
-  },
-  {
-    slug: 'excel-chart-generator',
-    category: 'feature',
-    title: 'Excel Chart Generator — Make Charts Online from XLSX',
-    description: 'Generate beautiful charts from Excel files online. Excel chart creator with bar, line, pie, scatter, area and radar — all free, all in the browser.',
-    h1: 'Online Excel chart generator',
-    intro:
-      'ExcelInsight is a free Excel chart generator. Upload an .xlsx, .xls or .csv file and instantly get bar, line, pie, scatter, area, radar and horizontal-bar charts based on the columns it detects. Every chart is editable, themable and exportable as PNG.',
-    sections: [
-      {
-        heading: 'Seven chart types out of the box',
-        body: 'ExcelInsight ships with a curated set of chart types that cover 90% of real reporting needs. You can switch any chart between types in one click — the data binding stays the same, so you can compare a bar and a line view of the same metric without re-uploading.',
-        bullets: [
-          'Bar and horizontal bar — comparisons across categories',
-          'Line and area — trends over time',
-          'Pie — share of total',
-          'Scatter — correlations between two numeric columns',
-          'Radar — multi-axis profile comparisons',
-        ],
-      },
-      {
-        heading: 'Themed, exportable, embeddable',
-        body: 'Every chart picks up one of several built-in colour themes that match the ExcelInsight design system. Hover for tooltips, click the export icon to download a PNG, or add the chart to a dashboard for a combined PDF report.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Can I customize chart colours?',
-        a: 'Yes. Each chart has a theme picker with multiple curated palettes designed for legibility in both light and dark mode.',
-      },
-      ...baseFaq,
-      {
-        q: 'Can I build a chart from specific columns?',
-        a: 'Yes. The Build tab includes a manual chart builder where you pick the X axis, Y axis (or multiple Y series), chart type and theme.',
-      },
-    ],
-    related: ['excel-dashboard-maker', 'bar-chart-maker', 'pie-chart-maker', 'scatter-plot-generator', 'excel-chart-maker'],
+    related: ['excel-dashboard-maker', 'excel-data-visualizer', 'csv-dashboard', 'line-chart-maker'],
   },
   {
     slug: 'excel-report-builder',
@@ -209,7 +171,7 @@ export const seoPages: SeoPage[] = [
         a: 'The current export uses the ExcelInsight branding. White-labelled reports are on the roadmap — let us know if you need them.',
       },
     ],
-    related: ['excel-dashboard-maker', 'excel-to-pdf-dashboard', 'finance-reporting-dashboard', 'sales-dashboard-template'],
+    related: ['excel-dashboard-maker', 'excel-to-pdf-dashboard', 'finance-reporting-dashboard', 'ecommerce-analytics-dashboard'],
   },
   {
     slug: 'excel-to-pdf-dashboard',
@@ -388,39 +350,6 @@ export const seoPages: SeoPage[] = [
 
   // ───────────────────────── CHART TYPE PAGES ─────────────────────────
   {
-    slug: 'bar-chart-maker',
-    category: 'chart',
-    title: 'Bar Chart Maker — Make Bar Graph from Excel Online Free',
-    description: 'Make bar charts online from Excel or CSV. Vertical and horizontal bars, themable colours, export as PNG. Free, private, no signup.',
-    h1: 'Free online bar chart maker',
-    intro:
-      'ExcelInsight is a free bar chart maker that allows you to make bar graph from excel online free. Upload an Excel or CSV file and it automatically generates vertical or horizontal bar charts from your categorical and numeric columns. Create a bar graph from excel online free — themable, tooltipped and one-click exportable to PNG.',
-    sections: [
-      {
-        heading: 'When to use a bar chart',
-        body: 'Bar charts are the right pick whenever you need to compare a single numeric value across categories — sales by region, signups by source, defects by team. Use horizontal bars when category labels are long.',
-      },
-      {
-        heading: 'How ExcelInsight builds bar charts',
-        body: 'ExcelInsight automatically detects categorical columns (low-cardinality text) and pairs them with numeric columns to produce meaningful bar charts. You can also build a bar chart manually from any two columns in the Build tab.',
-        bullets: [
-          'Vertical and horizontal orientation',
-          'Multi-series (grouped) bar charts from multiple numeric columns',
-          'Themable colour palettes for light and dark mode',
-          'PNG export per chart and PDF export for the whole dashboard',
-        ],
-      },
-    ],
-    faqs: [
-      {
-        q: 'Can I make a stacked bar chart?',
-        a: 'Today ExcelInsight supports grouped (side-by-side) bar charts with multiple numeric series. Stacked bars are on the roadmap.',
-      },
-      ...baseFaq,
-    ],
-    related: ['line-chart-maker', 'pie-chart-maker', 'excel-chart-generator', 'excel-dashboard-maker', 'make-bar-graph-from-excel'],
-  },
-  {
     slug: 'line-chart-maker',
     category: 'chart',
     title: 'Line Graph Maker Excel — Free Online Line Chart Generator',
@@ -445,61 +374,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq,
     ],
-    related: ['bar-chart-maker', 'area-chart-maker', 'excel-chart-generator', 'startup-kpi-dashboard', 'line-graph-maker-excel', 'csv-to-line-graph'],
-  },
-  {
-    slug: 'pie-chart-maker',
-    category: 'chart',
-    title: 'Pie Chart Maker — Free Online Pie Chart Generator',
-    description: 'Create pie charts online from Excel or CSV. Show share of total with clean, themable slices. Free, private, no signup needed.',
-    h1: 'Free online pie chart maker',
-    intro:
-      'ExcelInsight is a free pie chart maker. Upload an Excel or CSV file and turn any categorical column into a themed, labelled pie chart that shows share of total at a glance.',
-    sections: [
-      {
-        heading: 'When a pie chart is the right call',
-        body: 'Pie charts work best when you have five or fewer categories and you want to communicate share of a whole — market share, traffic source mix, expense breakdown. For more categories, use a horizontal bar chart instead.',
-      },
-      {
-        heading: 'Smart defaults',
-        body: 'ExcelInsight orders slices by size, applies a high-contrast palette, and adds percentage labels automatically so the chart is readable both on screen and in the exported PDF.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Can I switch a pie chart to a donut?',
-        a: 'Pie variants are on the roadmap. For now you can switch any chart to another type (bar, horizontal bar, line, area) with one click.',
-      },
-      ...baseFaq,
-    ],
-    related: ['bar-chart-maker', 'excel-chart-generator', 'excel-dashboard-maker', 'ecommerce-analytics-dashboard'],
-  },
-  {
-    slug: 'scatter-plot-generator',
-    category: 'chart',
-    title: 'Scatter Plot Generator — Free Online Scatter Chart Tool',
-    description: 'Generate scatter plots online from Excel or CSV. Visualize correlation between two numeric columns. Free, private, no signup.',
-    h1: 'Free online scatter plot generator',
-    intro:
-      'ExcelInsight is a free scatter plot generator. Pick any two numeric columns and ExcelInsight will draw a scatter chart you can use to spot correlations, outliers and clusters in your data — no Python, no R, no notebooks.',
-    sections: [
-      {
-        heading: 'Find correlations in seconds',
-        body: 'Scatter plots are the fastest way to see whether two variables move together. ExcelInsight handles thousands of points smoothly and gives you a hover tooltip showing the exact X/Y values for any dot.',
-      },
-      {
-        heading: 'Spot outliers and clusters',
-        body: 'Outliers jump out visually on a scatter plot in a way they never do in a table. Use ExcelInsight scatter charts as the first step of any anomaly investigation on a fresh dataset.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'How many points can a scatter plot handle?',
-        a: 'Several thousand points render smoothly in modern browsers. Beyond ~10k points, performance depends on your device.',
-      },
-      ...baseFaq,
-    ],
-    related: ['line-chart-maker', 'bar-chart-maker', 'excel-chart-generator', 'manufacturing-report-dashboard'],
+    related: ['excel-data-visualizer', 'area-chart-maker', 'excel-dashboard-maker'],
   },
   {
     slug: 'area-chart-maker',
@@ -526,43 +401,10 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq,
     ],
-    related: ['line-chart-maker', 'bar-chart-maker', 'excel-chart-generator', 'finance-reporting-dashboard'],
+    related: ['line-chart-maker', 'excel-data-visualizer', 'finance-reporting-dashboard'],
   },
 
   // ───────────────────────── TEMPLATE PAGES ─────────────────────────
-  {
-    slug: 'sales-dashboard-template',
-    category: 'template',
-    title: 'Sales Dashboard Template — Free Excel Sales Dashboard',
-    description: 'Free sales dashboard template — upload your sales Excel file and get pipeline, revenue and rep performance charts instantly. Browser-based, private.',
-    h1: 'Free sales dashboard template',
-    intro:
-      'ExcelInsight gives you a working sales dashboard the moment you upload a sales spreadsheet — pipeline by stage, revenue over time, top accounts, rep performance, and deal counts. No template downloads, no formulas, no XLSX templates to maintain.',
-    sections: [
-      {
-        heading: 'What the sales dashboard includes',
-        body: 'ExcelInsight inspects your columns and assembles the most useful views for sales data automatically. Typical files include Stage, Amount, Owner, Account, Close Date and ARR — ExcelInsight builds a default dashboard around them.',
-        bullets: [
-          'Revenue or ARR over time as a line chart',
-          'Pipeline by stage as a horizontal bar chart',
-          'Top accounts and top owners ranked',
-          'Win rate and deal counts as KPI tiles',
-        ],
-      },
-      {
-        heading: 'How to use it',
-        body: 'Export your pipeline from Salesforce, HubSpot, Pipedrive or Close as CSV. Drop the file into ExcelInsight. Edit the dashboard layout if needed. Export to PDF and send to your sales leader. Repeat next week.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Do I need to pre-format my sales data?',
-        a: 'No. ExcelInsight reads the raw export from most CRMs as-is. The cleaner your column headers, the better the auto-suggested charts.',
-      },
-      ...baseFaq,
-    ],
-    related: ['excel-dashboard-maker', 'startup-kpi-dashboard', 'finance-reporting-dashboard', 'excel-report-builder'],
-  },
   {
     slug: 'inventory-dashboard-template',
     category: 'template',
@@ -594,7 +436,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq,
     ],
-    related: ['sales-dashboard-template', 'manufacturing-report-dashboard', 'excel-dashboard-maker', 'excel-report-builder'],
+    related: ['ecommerce-analytics-dashboard', 'excel-dashboard-maker', 'excel-report-builder'],
   },
   {
     slug: 'hr-dashboard-template',
@@ -621,7 +463,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq,
     ],
-    related: ['excel-dashboard-maker', 'finance-reporting-dashboard', 'startup-kpi-dashboard', 'excel-report-builder', 'hr-analytics-excel'],
+    related: ['excel-dashboard-maker', 'finance-reporting-dashboard', 'excel-report-builder'],
   },
   {
     slug: 'finance-reporting-dashboard',
@@ -648,7 +490,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq,
     ],
-    related: ['excel-dashboard-maker', 'excel-report-builder', 'excel-to-pdf-dashboard', 'sales-dashboard-template'],
+    related: ['excel-dashboard-maker', 'excel-report-builder', 'excel-to-pdf-dashboard', 'ecommerce-analytics-dashboard'],
   },
 
   // ───────────────────────── USE CASE PAGES ─────────────────────────
@@ -677,61 +519,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq,
     ],
-    related: ['startup-kpi-dashboard', 'sales-dashboard-template', 'excel-dashboard-maker', 'pie-chart-maker'],
-  },
-  {
-    slug: 'startup-kpi-dashboard',
-    category: 'usecase',
-    title: 'Startup KPI Dashboard — Free Online Metrics Tracker',
-    description: 'Free startup KPI dashboard — upload your weekly metrics Excel and get MRR, growth, retention and burn charts instantly. Browser-based.',
-    h1: 'Startup KPI dashboard',
-    intro:
-      'ExcelInsight is the fastest way to turn a startup metrics spreadsheet into an investor-ready KPI dashboard. MRR, ARR, growth rate, retention, burn, runway, customer count — drop your weekly metrics file and the dashboard appears.',
-    sections: [
-      {
-        heading: 'Designed for weekly metrics reviews',
-        body: 'Founders and operators already track metrics in a spreadsheet. ExcelInsight gives that spreadsheet a polished face — same source of truth, much better visualisation, instant PDF for board updates and investor emails.',
-      },
-      {
-        heading: 'Investor-ready exports',
-        body: 'The PDF export gives you a clean cover page, one chart per page, and ExcelInsight branding (white-label coming). It’s a usable artifact for monthly investor updates without any extra formatting work.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Can I update the dashboard each week?',
-        a: 'Yes. Append the latest week’s row(s) to your file, re-upload, and the dashboard regenerates from scratch with the latest data.',
-      },
-      ...baseFaq,
-    ],
-    related: ['sales-dashboard-template', 'finance-reporting-dashboard', 'excel-dashboard-maker', 'excel-report-builder'],
-  },
-  {
-    slug: 'manufacturing-report-dashboard',
-    category: 'usecase',
-    title: 'Manufacturing Report Dashboard — Free Excel OEE Tool',
-    description: 'Free manufacturing dashboard — upload production Excel and get OEE, downtime, defect and throughput charts instantly. Private, no signup.',
-    h1: 'Manufacturing report dashboard',
-    intro:
-      'ExcelInsight turns production line spreadsheets into clean manufacturing dashboards. Throughput, downtime, defect rate, OEE-style breakdowns, shift comparisons — all generated automatically from your daily or weekly production export.',
-    sections: [
-      {
-        heading: 'Plant-floor friendly',
-        body: 'Manufacturing data often lives in Excel sheets exported from MES or SCADA systems. ExcelInsight reads those exports as-is and gives plant managers a dashboard without needing IT to build a Power BI report.',
-      },
-      {
-        heading: 'Spot defects and outliers fast',
-        body: 'Use the scatter chart to plot cycle time vs defect rate, the bar chart to compare line performance, and the data quality tile to spot missing readings before they corrupt your reporting.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Does it work offline on a plant-floor laptop?',
-        a: 'After the first load, most functionality works without an internet connection because everything runs client-side.',
-      },
-      ...baseFaq,
-    ],
-    related: ['inventory-dashboard-template', 'scatter-plot-generator', 'excel-dashboard-maker', 'excel-report-builder'],
+    related: ['excel-dashboard-maker', 'excel-data-visualizer'],
   },
   {
     slug: 'marketing-analytics-dashboard',
@@ -758,7 +546,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq,
     ],
-    related: ['startup-kpi-dashboard', 'ecommerce-analytics-dashboard', 'excel-dashboard-maker', 'pie-chart-maker'],
+    related: ['excel-dashboard-maker', 'ecommerce-analytics-dashboard', 'excel-data-visualizer'],
   },
   {
     slug: 'analyse-excel-data',
@@ -790,101 +578,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq,
     ],
-    related: ['plot-excel-data', 'excel-dashboard-maker', 'excel-chart-generator', 'excel-data-insights', 'free-excel-data-analysis-tool'],
-  },
-  {
-    slug: 'plot-excel-data',
-    category: 'feature',
-    title: 'Plot Excel Data — Free Online Excel Plotter & Graph Maker',
-    description: 'Plot Excel data online instantly. Drop your spreadsheet to plot Excel charts, scatter plots, and time series graphs without any software install.',
-    h1: 'Plot Excel data online',
-    intro:
-      'ExcelInsight makes it incredibly easy to plot Excel data online. Forget fumbling with chart settings in a spreadsheet application — upload your file and let ExcelInsight plot bar charts, line graphs, and scatter plots automatically.',
-    sections: [
-      {
-        heading: 'Plot charts with zero friction',
-        body: 'We built ExcelInsight so you can plot your data without configuring axes, legends, and series ranges manually. It analyses your columns and plots them immediately, allowing you to cycle through different visualizations in a single click.',
-        bullets: [
-          'Plot line charts for time-series data',
-          'Plot scatter graphs to discover correlations',
-          'Plot bar and pie charts for categorical breakdowns',
-        ],
-      },
-      {
-        heading: 'Export and share your plots',
-        body: 'Once you plot your Excel data, you can export individual charts as high-resolution PNGs or the entire set of plots as a multi-page PDF report. Perfect for sharing with your team or including in presentations.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Can I plot CSV files too?',
-        a: 'Yes, ExcelInsight can plot both Excel (.xlsx, .xls) and CSV files out of the box.',
-      },
-      ...baseFaq,
-    ],
-    related: ['analyse-excel-data', 'excel-chart-generator', 'scatter-plot-generator'],
-  },
-  {
-    slug: 'make-bar-graph-from-excel',
-    category: 'chart',
-    title: 'Make Bar Graph from Excel — Free Online Graph Maker',
-    description: 'Learn how to make a bar graph from Excel online for free. Upload your spreadsheet and build beautiful interactive charts automatically.',
-    h1: 'Make Bar Graph from Excel',
-    intro: 'Wondering how to make bar graph from excel online free? ExcelInsight makes it incredibly simple. Simply drop your Excel file in your browser, and watch as it auto-generates stunning bar graphs in seconds without any complex setup.',
-    sections: [
-      {
-        heading: 'Generate bar graphs effortlessly',
-        body: 'You no longer need to spend hours configuring axis settings in Excel. ExcelInsight analyses your data automatically and structures the perfect bar graph for any categorical breakdown.',
-        bullets: [
-          'Instantly make a bar graph from Excel',
-          'Automatic column detection for categories and values',
-          'Export directly to PNG or a full PDF report'
-        ]
-      },
-      {
-        heading: '100% private and secure',
-        body: 'Your data privacy is guaranteed. Because ExcelInsight runs entirely in your browser, you can safely visualize sensitive spreadsheets without them ever being uploaded to a server.'
-      }
-    ],
-    faqs: [
-      {
-        q: 'How do I make a bar graph from an Excel file?',
-        a: 'Just upload your .xlsx or .csv file to ExcelInsight. It instantly detects your columns and generates beautiful bar graphs without any formulas or pivot tables.'
-      },
-      ...baseFaq
-    ],
-    related: ['bar-chart-maker', 'excel-chart-generator', 'excel-chart-maker', 'excel-dashboard-maker']
-  },
-  {
-    slug: 'excel-chart-maker',
-    category: 'chart',
-    title: 'Excel Chart Maker — Free Online Excel Chart Creator',
-    description: 'The ultimate Excel chart maker and creator. Transform your spreadsheets into stunning visual charts online for free without signing up.',
-    h1: 'Free Online Excel Chart Maker',
-    intro: 'ExcelInsight is a powerful excel chart maker and free online excel chart creator. Whether you need bar, line, pie, or scatter plots, you can create them instantly by uploading your spreadsheet to our secure browser-based tool.',
-    sections: [
-      {
-        heading: 'Create charts without the hassle',
-        body: 'Skip the steep learning curve of traditional spreadsheet software. Our excel chart maker automatically maps your data to the most appropriate visual formats, saving you time and effort.',
-        bullets: [
-          'Supports all major chart types: bar, line, pie, area, and scatter',
-          'No formulas, no pivot tables needed',
-          'Customizable themes and colors'
-        ]
-      },
-      {
-        heading: 'Perfect for presentations',
-        body: 'Need a chart for a slide deck or report? Use this excel chart creator to quickly generate professional-looking graphics and export them in high resolution in just one click.'
-      }
-    ],
-    faqs: [
-      {
-        q: 'What makes this the best Excel chart maker?',
-        a: 'It requires zero setup, runs entirely locally in your browser for privacy, and automatically picks the best chart types for your data.'
-      },
-      ...baseFaq
-    ],
-    related: ['excel-chart-generator', 'bar-chart-maker', 'line-chart-maker', 'make-bar-graph-from-excel']
+    related: ['excel-data-visualizer', 'excel-dashboard-maker', 'excel-data-insights', 'free-excel-data-analysis-tool'],
   },
   {
     slug: 'csv-dashboard',
@@ -915,38 +609,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq
     ],
-    related: ['csv-visualization-tool', 'excel-dashboard-maker', 'csv-to-line-graph', 'excel-data-insights']
-  },
-  {
-    slug: 'csv-to-line-graph',
-    category: 'chart',
-    title: 'CSV to Line Graph Online — Free CSV Line Chart Maker',
-    description: 'Convert CSV to line graph online instantly. Track trends over time with our free, private, and secure CSV line chart generator.',
-    h1: 'Convert CSV to Line Graph Online',
-    intro: 'Looking to turn a CSV to line graph online? ExcelInsight parses your comma-separated values and plots them as beautiful, multi-series line charts in your browser, completely free of charge.',
-    sections: [
-      {
-        heading: 'Plot time series data instantly',
-        body: 'If your CSV contains a date column and numeric values, ExcelInsight automatically detects them. It plots smooth line graphs so you can track trends, website traffic, or financial performance over time.',
-        bullets: [
-          'Auto-detection of date formats',
-          'Compare multiple numeric series on one graph',
-          'Interactive hover tooltips for exact values'
-        ]
-      },
-      {
-        heading: 'Export and share',
-        body: 'Once you convert your CSV to a line graph, you can easily export the visualization as a PNG image or incorporate it into a full PDF dashboard report.'
-      }
-    ],
-    faqs: [
-      {
-        q: 'How do I convert a CSV to a line graph?',
-        a: 'Simply drop your CSV file into ExcelInsight. The tool will identify date and numeric columns to automatically generate an interactive line graph.'
-      },
-      ...baseFaq
-    ],
-    related: ['line-chart-maker', 'csv-visualization-tool', 'csv-dashboard', 'line-graph-maker-excel']
+    related: ['csv-visualization-tool', 'excel-dashboard-maker', 'line-chart-maker', 'excel-data-insights'],
   },
   {
     slug: 'excel-data-insights',
@@ -977,38 +640,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq
     ],
-    related: ['analyse-excel-data', 'excel-data-visualizer', 'excel-dashboard-maker', 'free-excel-data-analysis-tool']
-  },
-  {
-    slug: 'free-dashboard-software-excel',
-    category: 'feature',
-    title: 'Free Dashboard Software for Excel — No Install Needed',
-    description: 'The best free dashboard software for Excel. Build interactive, professional dashboards directly in your browser without any installation.',
-    h1: 'Free Dashboard Software for Excel',
-    intro: 'If you are looking for free dashboard software for excel, ExcelInsight is the perfect solution. It runs entirely in your browser, requiring no installation, no signups, and no paid licenses.',
-    sections: [
-      {
-        heading: 'A lightweight BI alternative',
-        body: 'Enterprise BI tools are expensive and complex to set up. ExcelInsight provides the essential dashboarding features you need—drag-and-drop layout, multiple chart types, and filtering—all for free.',
-        bullets: [
-          'Zero installation required',
-          'Works on Windows, Mac, and Linux',
-          '100% free with no hidden paywalls'
-        ]
-      },
-      {
-        heading: 'Secure and private',
-        body: 'Unlike other cloud dashboard software, ExcelInsight processes everything client-side. Your Excel data remains strictly on your device, ensuring total privacy for sensitive business information.'
-      }
-    ],
-    faqs: [
-      {
-        q: 'Is this dashboard software really free?',
-        a: 'Yes, ExcelInsight is completely free to use. There are no premium tiers, subscriptions, or feature limitations.'
-      },
-      ...baseFaq
-    ],
-    related: ['excel-dashboard-maker', 'best-excel-dashboard-tool', 'csv-dashboard', 'excel-report-builder']
+    related: ['analyse-excel-data', 'excel-data-visualizer', 'excel-dashboard-maker', 'free-excel-data-analysis-tool'],
   },
   {
     slug: 'free-excel-data-analysis-tool',
@@ -1039,7 +671,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq
     ],
-    related: ['analyse-excel-data', 'excel-data-insights', 'excel-statistics-tool', 'excel-dashboard-maker']
+    related: ['analyse-excel-data', 'excel-data-insights', 'excel-statistics-tool', 'excel-dashboard-maker'],
   },
   {
     slug: 'excel-statistics-tool',
@@ -1070,100 +702,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq
     ],
-    related: ['analyse-excel-data', 'free-excel-data-analysis-tool', 'excel-data-insights', 'excel-dashboard-maker']
-  },
-  {
-    slug: 'learn-excel-data-analysis',
-    category: 'usecase',
-    title: 'Learn Excel Data Analysis Free — Interactive Analytics Tool',
-    description: 'Learning Excel: data analysis free online. Use our interactive tool to understand how to visualize and interpret spreadsheet data easily.',
-    h1: 'Learn Excel Data Analysis Free',
-    intro: 'If you are learning excel: data analysis free, ExcelInsight is the perfect sandbox environment. Upload a dataset and interactively learn how different data types translate into meaningful charts and insights.',
-    sections: [
-      {
-        heading: 'A hands-on learning experience',
-        body: 'The best way to learn data analysis is by doing. By dropping a spreadsheet into ExcelInsight, you immediately see how raw rows and columns are transformed into actionable business intelligence.',
-        bullets: [
-          'See how data structures affect visualization options',
-          'Learn to identify trends and outliers visually',
-          'Understand correlation through scatter plots'
-        ]
-      },
-      {
-        heading: 'No risk of breaking formulas',
-        body: 'Unlike working in a complex master spreadsheet, ExcelInsight provides a read-only visual layer over your data. You can experiment with different chart types and aggregations without altering your source file.'
-      }
-    ],
-    faqs: [
-      {
-        q: 'Is this tool good for students learning data analysis?',
-        a: 'Absolutely. It provides an intuitive, visual way to understand data distributions, relationships, and basic statistics without needing to learn complex software first.'
-      },
-      ...baseFaq
-    ],
-    related: ['analyse-excel-data', 'excel-data-insights', 'free-excel-data-analysis-tool', 'excel-statistics-tool']
-  },
-  {
-    slug: 'line-graph-maker-excel',
-    category: 'chart',
-    title: 'Line Graph Maker for Excel — Free Online Line Chart Tool',
-    description: 'Use our line graph maker excel tool to build beautiful time-series charts from spreadsheets online for free. Secure, fast, and easy to use.',
-    h1: 'Line Graph Maker for Excel',
-    intro: 'ExcelInsight is a dedicated line graph maker excel tool. It allows you to create precise, multi-series line charts directly from your spreadsheets in a matter of seconds, without any software downloads.',
-    sections: [
-      {
-        heading: 'Perfect for tracking trends',
-        body: 'Line graphs are the standard for visualizing changes over time. Our tool automatically parses date columns and plots your metrics seamlessly so you can focus on analyzing the trend rather than formatting the axis.',
-        bullets: [
-          'Handles multiple date formats automatically',
-          'Plots multiple numeric columns on a single chart',
-          'Clean, customizable themes'
-        ]
-      },
-      {
-        heading: 'Export with ease',
-        body: 'Once you have customized your line graph, you can download it as a high-quality PNG for your presentations or include it as part of a comprehensive PDF dashboard report.'
-      }
-    ],
-    faqs: [
-      {
-        q: 'How does the line graph maker handle different date formats?',
-        a: 'The tool has a robust parser that automatically recognizes and standardizes common date formats (like MM/DD/YYYY or ISO 8601) to create an accurate chronological axis.'
-      },
-      ...baseFaq
-    ],
-    related: ['line-chart-maker', 'csv-to-line-graph', 'excel-chart-maker', 'excel-chart-generator']
-  },
-  {
-    slug: 'hr-analytics-excel',
-    category: 'template',
-    title: 'HR Analytics Excel Template — Free People Analytics Dashboard',
-    description: 'Transform your workforce data with our free HR analytics excel template. Generate people analytics dashboards securely in your browser.',
-    h1: 'Free HR Analytics Excel Template',
-    intro: 'Visualize your workforce data instantly with our hr analytics excel template. ExcelInsight turns your standard HR exports into a comprehensive people analytics dashboard, all while keeping your data strictly private.',
-    sections: [
-      {
-        heading: 'Streamline your people analytics',
-        body: 'Upload your employee roster and instantly generate charts tracking headcount, department distribution, and retention rates. It acts as a dynamic HR analytics excel template without the fragile formulas.',
-        bullets: [
-          'Track headcount and departmental growth',
-          'Analyze tenure and attrition trends',
-          'Identify diversity metrics visually'
-        ]
-      },
-      {
-        heading: '100% secure for sensitive data',
-        body: 'HR data is highly confidential. Because ExcelInsight processes everything client-side in your browser, your employee information is never uploaded to any external server.'
-      }
-    ],
-    faqs: [
-      {
-        q: 'Do I need to format my HR data in a specific way?',
-        a: 'Just ensure your file has clear column headers like Department, Hire Date, or Status. The tool will automatically map them to the best visualizations.'
-      },
-      ...baseFaq
-    ],
-    related: ['hr-dashboard-template', 'excel-dashboard-maker', 'excel-data-insights', 'excel-report-builder']
+    related: ['analyse-excel-data', 'free-excel-data-analysis-tool', 'excel-data-insights', 'excel-dashboard-maker'],
   },
   {
     slug: 'excel-link-analysis',
@@ -1194,38 +733,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq
     ],
-    related: ['analyse-excel-data', 'scatter-plot-generator', 'excel-data-insights', 'excel-dashboard-maker']
-  },
-  {
-    slug: 'radar-chart-maker',
-    category: 'chart',
-    title: 'Radar Chart Maker — Free Online Spider Chart Generator',
-    description: 'Create radar charts online with our free spider chart generator. Compare multiple variables in Excel or CSV files instantly and securely.',
-    h1: 'Free Online Radar Chart Maker',
-    intro: 'ExcelInsight features a powerful radar chart maker for comparing multiple variables at once. Upload your data to generate detailed spider charts that highlight performance profiles and multidimensional metrics.',
-    sections: [
-      {
-        heading: 'Visualize multidimensional data',
-        body: 'Radar charts (or spider charts) are ideal for comparing an entity across several different categories simultaneously, such as evaluating employee skills, product features, or survey results.',
-        bullets: [
-          'Compare multiple profiles on a single chart',
-          'Auto-scales axes for balanced visualization',
-          'Customizable colors and themes'
-        ]
-      },
-      {
-        heading: 'Fast and private generation',
-        body: 'Create your radar charts securely in your browser. With no server uploads required, you can analyze proprietary business profiles safely and export the results to PDF or PNG.'
-      }
-    ],
-    faqs: [
-      {
-        q: 'When should I use a radar chart?',
-        a: 'Radar charts are best used when you need to display multivariate data in the form of a two-dimensional chart of three or more quantitative variables represented on axes starting from the same point.'
-      },
-      ...baseFaq
-    ],
-    related: ['excel-chart-generator', 'scatter-plot-generator', 'excel-chart-maker', 'bar-chart-maker']
+    related: ['analyse-excel-data', 'excel-data-visualizer', 'excel-data-insights', 'excel-dashboard-maker'],
   },
   {
     slug: 'excel-data-visualizer',
@@ -1256,7 +764,7 @@ export const seoPages: SeoPage[] = [
       },
       ...baseFaq
     ],
-    related: ['csv-visualization-tool', 'excel-chart-generator', 'excel-dashboard-maker', 'excel-data-insights']
+    related: ['csv-visualization-tool', 'excel-dashboard-maker', 'excel-data-insights'],
   }
 ];
 
