@@ -4,7 +4,7 @@ import { SiteHeader } from '@/components/SiteHeader';
 import { SeoPageContent } from '@/components/SeoPageContent';
 import { AdsenseScript } from '@/components/AdsenseScript';
 import { seoPageMap, seoPages } from '@/content/seo-pages';
-import { SITE_URL } from '@/lib/site';
+import { buildSeoJsonLd, seoPageUrl } from '@/content/seo-jsonld';
 
 const OG_IMAGE =
   'https://storage.googleapis.com/gpt-engineer-file-uploads/neEqO6MCG2bHfGf0v6pME35dIMA2/social-images/social-1774898677243-ExcelInsight.webp';
@@ -26,7 +26,7 @@ export async function generateMetadata({
   const page = seoPageMap[slug];
   if (!page) return {};
 
-  const url = `${SITE_URL}/${page.slug}/`;
+  const url = seoPageUrl(page.slug);
 
   return {
     title: page.title,
@@ -66,38 +66,7 @@ export default async function SeoLandingPage({ params }: { params: Promise<{ slu
     notFound();
   }
 
-  const url = `${SITE_URL}/${page.slug}`;
-
-  // JSON-LD structured data (English — for schema.org / crawlers)
-  const jsonLd = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: page.faqs.map((f) => ({
-        '@type': 'Question',
-        name: f.q,
-        acceptedAnswer: { '@type': 'Answer', text: f.a },
-      })),
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL + '/' },
-        { '@type': 'ListItem', position: 2, name: page.category, item: url },
-        { '@type': 'ListItem', position: 3, name: page.h1, item: url },
-      ],
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: 'ExcelInsight — ' + page.h1,
-      url,
-      applicationCategory: 'BusinessApplication',
-      operatingSystem: 'Any',
-      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    },
-  ];
+  const jsonLd = buildSeoJsonLd(page);
 
   return (
     <div className="min-h-screen bg-background">
