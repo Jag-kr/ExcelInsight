@@ -55,8 +55,8 @@ export const seoPages: SeoPage[] = [
       {
         slug: 'excel-dashboard-maker',
         category: 'feature',
-        title: 'Excel Dashboard Maker — Free Online Dashboard Builder',
-        description: 'Build interactive Excel dashboards online in seconds. Drag-and-drop charts, KPIs and tables from any .xlsx or CSV file. Free, private, no signup.',
+        title: 'Excel Dashboard Creator — Free Online Dashboard Maker',
+        description: 'Create a dashboard from Excel online, free. Upload any .xlsx or CSV and get interactive charts, KPIs and tables in seconds — no signup, 100% private.',
         h1: 'Free online Excel dashboard maker',
         intro:
           'ExcelInsight is a free Excel dashboard maker that lets you create dashboard from excel online free. Turn any spreadsheet into a live, interactive dashboard in seconds. Upload an .xlsx or .csv file, pick the charts you want, and arrange them on a drag-and-drop grid. It\'s the best way to make dashboard from excel online free — no formulas, no pivot tables, no Power Query, no signup.',
@@ -316,8 +316,8 @@ export const seoPages: SeoPage[] = [
   {
     slug: 'best-excel-dashboard-tool',
     category: 'comparison',
-    title: 'Best Excel Dashboard Tool — Free Online Dashboard Builder',
-    description: 'Looking for the best Excel dashboard tool? Compare the top options and see why ExcelInsight is the fastest free, private, browser-based pick.',
+    title: 'Free Dashboard Software for Excel — 2026 Comparison',
+    description: 'Looking for free dashboard software for Excel? Compare the top online Excel dashboard tools and see why ExcelInsight is the fastest browser-based pick.',
     h1: 'Best Excel dashboard tool in 2026',
     intro:
       `There are dozens of Excel dashboard tools — from native Excel pivot charts to Tableau, Power BI, Looker Studio, Datawrapper and Flourish. This page is a short, opinionated take on which one to pick depending on what you're actually trying to do.`,
@@ -614,8 +614,8 @@ export const seoPages: SeoPage[] = [
   {
     slug: 'excel-data-insights',
     category: 'feature',
-    title: 'Excel Data Insights — Free Spreadsheet Insights Tool',
-    description: 'Get automated Excel data insights and intelligence. Understand your spreadsheets instantly with smart profiling, trends, and summaries.',
+    title: 'Excel Data Insights — Free Online Spreadsheet Analyser',
+    description: 'Get automated Excel data insights online, free. Upload a spreadsheet and see trends, outliers and summaries instantly — no signup, nothing uploaded.',
     h1: 'Automated Excel Data Insights',
     intro: 'Unlock powerful excel data insights with ExcelInsight. This free tool automatically profiles your spreadsheets to provide deep insights excel users need, from detecting anomalies to summarizing key trends.',
     sections: [
