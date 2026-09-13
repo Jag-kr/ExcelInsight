@@ -55,8 +55,8 @@ export const seoPages: SeoPage[] = [
       {
         slug: 'excel-dashboard-maker',
         category: 'feature',
-        title: 'Excel Dashboard Maker — Free Online Dashboard Builder',
-        description: 'Build interactive Excel dashboards online in seconds. Drag-and-drop charts, KPIs and tables from any .xlsx or CSV file. Free, private, no signup.',
+        title: 'Excel Dashboard Creator — Free Online Dashboard Maker',
+        description: 'Create a dashboard from Excel online, free. Upload any .xlsx or CSV and get interactive charts, KPIs and tables in seconds — no signup, 100% private.',
         h1: 'Free online Excel dashboard maker',
         intro:
           'ExcelInsight is a free Excel dashboard maker that lets you create dashboard from excel online free. Turn any spreadsheet into a live, interactive dashboard in seconds. Upload an .xlsx or .csv file, pick the charts you want, and arrange them on a drag-and-drop grid. It\'s the best way to make dashboard from excel online free — no formulas, no pivot tables, no Power Query, no signup.',
