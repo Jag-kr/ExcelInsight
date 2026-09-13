@@ -26,8 +26,6 @@ export function seoPageUrl(slug: string): string {
  * because it has 22 landing pages, and the type needs a rating we do not honestly have.
  */
 export function buildSeoJsonLd(page: SeoPage) {
-  const url = seoPageUrl(page.slug);
-
   return [
     {
       '@context': 'https://schema.org',
