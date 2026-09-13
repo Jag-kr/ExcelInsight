@@ -316,8 +316,8 @@ export const seoPages: SeoPage[] = [
   {
     slug: 'best-excel-dashboard-tool',
     category: 'comparison',
-    title: 'Free Dashboard Software for Excel — 2026 Comparison',
-    description: 'Looking for free dashboard software for Excel? Compare the top online Excel dashboard tools and see why ExcelInsight is the fastest browser-based pick.',
+    title: 'Best Excel Dashboard Tool — Free Online Dashboard Builder',
+    description: 'Looking for the best Excel dashboard tool? Compare the top options and see why ExcelInsight is the fastest free, private, browser-based pick.',
     h1: 'Best Excel dashboard tool in 2026',
     intro:
       `There are dozens of Excel dashboard tools — from native Excel pivot charts to Tableau, Power BI, Looker Studio, Datawrapper and Flourish. This page is a short, opinionated take on which one to pick depending on what you're actually trying to do.`,
@@ -614,8 +614,8 @@ export const seoPages: SeoPage[] = [
   {
     slug: 'excel-data-insights',
     category: 'feature',
-    title: 'Excel Data Insights — Free Online Spreadsheet Analyser',
-    description: 'Get automated Excel data insights online, free. Upload a spreadsheet and see trends, outliers and summaries instantly — no signup, nothing uploaded.',
+    title: 'Excel Data Insights — Free Spreadsheet Insights Tool',
+    description: 'Get automated Excel data insights and intelligence. Understand your spreadsheets instantly with smart profiling, trends, and summaries.',
     h1: 'Automated Excel Data Insights',
     intro: 'Unlock powerful excel data insights with ExcelInsight. This free tool automatically profiles your spreadsheets to provide deep insights excel users need, from detecting anomalies to summarizing key trends.',
     sections: [
