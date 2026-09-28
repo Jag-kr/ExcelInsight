@@ -33,7 +33,11 @@ export const metadata: Metadata = {
   description: "Free online Excel insights and dashboard maker. Upload any Excel or CSV file and get charts, KPIs and trends instantly — no signup, 100% private.",
   metadataBase: new URL(SITE_URL),
   alternates: {
-    canonical: SITE_URL,
+    // Trailing slash is load-bearing: `trailingSlash: true` means the page is
+    // served at `/`, and the sitemap lists `${SITE_URL}/`. Pointing the canonical
+    // at the slashless form handed Google a third spelling of the home page,
+    // alongside the `?lang=` variants that were picking up impressions of their own.
+    canonical: `${SITE_URL}/`,
   },
   openGraph: {
     title: "Excel Insights — Free Online Dashboard & Chart Maker",

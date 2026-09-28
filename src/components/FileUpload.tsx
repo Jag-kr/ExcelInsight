@@ -75,8 +75,16 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
         const XLSX = await import('xlsx');
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const [sheetName, ...skipped] = workbook.SheetNames;
+        const firstSheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(firstSheet);
+        // Only the first sheet is parsed. Dropping the rest without a word read
+        // as data loss on multi-sheet workbooks, so name what was and wasn't read.
+        if (skipped.length > 0) {
+          toast.info(
+            `Loaded sheet "${sheetName}" — ${skipped.length} other sheet${skipped.length > 1 ? 's were' : ' was'} not imported.`,
+          );
+        }
         onDataLoaded(jsonData, file.name);
         setLoading(false);
       } catch (err: any) {

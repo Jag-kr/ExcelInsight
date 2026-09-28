@@ -7,7 +7,6 @@ import {
   Combine, Download, ArrowRight, CheckCircle2, AlertCircle, Clock, RefreshCw,
   BarChart3, TrendingUp, ShieldCheck, Zap, Github, Mail,
 } from 'lucide-react';
-import { AdSlot } from '@/components/AdSlot';
 import { FaqAccordion } from '@/components/FaqAccordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
@@ -324,9 +323,6 @@ export function LandingContent() {
         </div>
       </section>
 
-      {/* ── Ad slot ── */}
-      <AdSlot slot="" label={t('sponsored')} />
-
       {/* ── Section 3: Proof — stats count up on entry ── */}
       <section aria-labelledby="proof-heading" ref={statsRef}>
         <div className="text-center mb-12">
@@ -431,9 +427,6 @@ export function LandingContent() {
           </div>
         </div>
       </section>
-
-      {/* ── Ad slot ── */}
-      <AdSlot slot="" label={t('sponsored')} />
 
       {/* ── Tools hub ── */}
       <section aria-labelledby="tools-heading">
@@ -583,6 +576,15 @@ export function LandingContent() {
               {CONTACT_EMAIL}
             </a>
             <span className="text-border" aria-hidden="true">•</span>
+            <Link href="/example/" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              {t('exampleLink')}
+            </Link>
+            <Link href="/about/" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              {t('aboutLink')}
+            </Link>
+            <Link href="/contact/" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              {t('contactLink')}
+            </Link>
             <Link href="/privacy/" className="text-muted-foreground hover:text-primary transition-colors text-sm">
               {t('privacyPolicy')}
             </Link>

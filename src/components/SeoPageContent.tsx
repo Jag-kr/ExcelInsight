@@ -5,7 +5,7 @@ import { ArrowRight, Check, ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FaqAccordion } from '@/components/FaqAccordion';
 import { useI18n } from '@/lib/i18n';
-import { type SeoPage, seoPageMap, seoPagesByCategory } from '@/content/seo-pages';
+import { type SeoPage, seoPageMap, seoPagesByCategory, isIndexable } from '@/content/seo-pages';
 import { getSeoPageTranslated, getSeoUiStrings } from '@/content/seo-i18n';
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -62,7 +62,11 @@ function CategoryNav({ ui }: { ui: ReturnType<typeof getSeoUiStrings> }) {
   return (
     <nav aria-label="Explore" className="border-t border-border bg-muted/30">
       <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-5 gap-6 text-sm">
-        {(Object.keys(seoPagesByCategory) as Array<keyof typeof seoPagesByCategory>).map((cat) => (
+        {(Object.keys(seoPagesByCategory) as Array<keyof typeof seoPagesByCategory>)
+          // A category can empty out entirely once its pages are withheld;
+          // rendering a bare heading over nothing looks broken.
+          .filter((cat) => seoPagesByCategory[cat].length > 0)
+          .map((cat) => (
           <div key={cat}>
             <h3 className="font-semibold text-foreground mb-3">{categoryLabels[cat]}</h3>
             <ul className="space-y-2">
@@ -106,6 +110,10 @@ export function SeoPageContent({ basePage }: { basePage: SeoPage }) {
     template: ui.categoryTemplate,
     usecase: ui.categoryUsecase,
   };
+
+  // Filtered at render rather than in the data, so un-withholding a page
+  // restores its inbound links by deleting one line in NOINDEX_SLUGS.
+  const relatedSlugs = basePage.related.filter(isIndexable);
 
   const ctaLabel = page.primaryCta ?? ui.uploadSpreadsheetFree;
   const currentCategoryLabel = categoryLabel[page.category] ?? page.category;
@@ -205,11 +213,11 @@ export function SeoPageContent({ basePage }: { basePage: SeoPage }) {
         </section>
 
         {/* Related tools */}
-        {basePage.related.length > 0 && (
+        {relatedSlugs.length > 0 && (
           <section className="max-w-4xl mx-auto px-6 pb-20">
             <h2 className="text-xl font-bold text-foreground mb-5">{ui.relatedTools}</h2>
             <div className="grid sm:grid-cols-2 gap-3">
-              {basePage.related.map((s) => {
+              {relatedSlugs.map((s) => {
                 const rel = seoPageMap[s];
                 if (!rel) return null;
                 // Related link titles are always shown in English (they are slugs linking to other pages)
@@ -241,6 +249,18 @@ export function SeoPageContent({ basePage }: { basePage: SeoPage }) {
           <nav className="flex items-center justify-center gap-4">
             <Link href="/" className="hover:text-primary">
               Home
+            </Link>
+            <span className="text-border">•</span>
+            <Link href="/example/" className="hover:text-primary">
+              Example
+            </Link>
+            <span className="text-border">•</span>
+            <Link href="/about/" className="hover:text-primary">
+              About
+            </Link>
+            <span className="text-border">•</span>
+            <Link href="/contact/" className="hover:text-primary">
+              Contact
             </Link>
             <span className="text-border">•</span>
             <Link href="/privacy/" className="hover:text-primary">
