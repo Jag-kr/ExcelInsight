@@ -116,46 +116,6 @@ export const de: Record<
     ],
   },
 
-  'excel-chart-generator': {
-    h1: 'Online-Diagrammgenerator für Excel',
-    intro:
-      'ExcelInsight ist ein kostenloser Diagrammgenerator für Excel. Laden Sie eine .xlsx-, .xls- oder .csv-Datei hoch und erhalten Sie sofort Balken-, Linien-, Kreis-, Streu-, Flächen-, Radar- und horizontale Balkendiagramme. Anpassbar, thematisierbar und als PNG exportierbar.',
-    sections: [
-      {
-        heading: 'Sieben Diagrammtypen für 90 % aller Reporting-Anforderungen',
-        body: 'ExcelInsight unterstützt die wichtigsten Diagrammtypen, die in Berichten und Präsentationen benötigt werden.',
-        bullets: [
-          'Balkendiagramm und horizontales Balkendiagramm',
-          'Liniendiagramm und Flächendiagramm',
-          'Kreisdiagramm',
-          'Streudiagramm',
-          'Radardiagramm',
-        ],
-      },
-      {
-        heading: 'Thematisiert, exportierbar und einbettbar',
-        body: 'Integrierte Farbpaletten, Hover-Tooltips und direkter Export als PNG oder PDF machen ExcelInsight zur vollständigen Lösung für Diagrammerstellung und Präsentation.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Kann ich Farben anpassen?',
-        a: 'Ja – wählen Sie aus integrierten Farbpaletten.',
-      },
-      {
-        q: 'Ist der Diagrammgenerator kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alle Verarbeitung erfolgt lokal im Browser.',
-      },
-      {
-        q: 'Kann ich Diagramme aus bestimmten Spalten erstellen?',
-        a: 'Ja – wählen Sie im Tab „Erstellen" gezielt Spalten für X- und Y-Achse aus.',
-      },
-    ],
-  },
 
   'excel-report-builder': {
     h1: 'Online-Berichtsersteller für Excel',
@@ -169,7 +129,7 @@ export const de: Record<
           'Automatisch generierte Titelseite',
           'Ein Diagramm pro Seite für klare Übersichtlichkeit',
           'Einblicks-Kacheln mit automatisch berechneten Kennzahlen',
-          'Funktioniert auch offline – kein Server erforderlich',
+          'Der Export läuft in Ihrem Browser – die Tabelle verlässt Ihr Gerät nie',
         ],
       },
       {
@@ -359,41 +319,6 @@ export const de: Record<
     ],
   },
 
-  'bar-chart-maker': {
-    h1: 'Kostenloses Online-Balkendiagramm-Tool',
-    intro:
-      'ExcelInsight ist ein kostenloses Balkendiagramm-Tool. Laden Sie eine Excel- oder CSV-Datei hoch und ExcelInsight erstellt automatisch vertikale oder horizontale Balkendiagramme aus Ihren Daten.',
-    sections: [
-      {
-        heading: 'Wann ein Balkendiagramm die richtige Wahl ist',
-        body: 'Balkendiagramme eignen sich ideal, um einen numerischen Wert über Kategorien hinweg zu vergleichen – zum Beispiel Umsatz nach Region oder Anmeldungen nach Quelle.',
-      },
-      {
-        heading: 'So erstellt ExcelInsight Balkendiagramme',
-        body: 'ExcelInsight erkennt automatisch kategoriale Spalten und kombiniert sie mit numerischen Spalten zu aussagekräftigen Balkendiagrammen.',
-        bullets: [
-          'Vertikal und horizontal – je nach Datenmenge und Leserlichkeit',
-          'Multi-Series gruppiert für Vergleiche über mehrere Kategorien',
-          'Auswählbare Farbpaletten für professionelle Optik',
-          'Export als PNG oder PDF',
-        ],
-      },
-    ],
-    faqs: [
-      {
-        q: 'Kann ich gestapelte Balkendiagramme erstellen?',
-        a: 'Gruppierte Balkendiagramme sind bereits verfügbar; gestapelte Balken sind in Planung.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft im Browser.',
-      },
-    ],
-  },
 
   'line-chart-maker': {
     h1: 'Kostenloses Online-Liniendiagramm-Tool',
@@ -425,65 +350,7 @@ export const de: Record<
     ],
   },
 
-  'pie-chart-maker': {
-    h1: 'Kostenloses Online-Kreisdiagramm-Tool',
-    intro:
-      'ExcelInsight ist ein kostenloses Kreisdiagramm-Tool. Verwandeln Sie jede kategoriale Spalte in ein beschriftetes Kreisdiagramm, das den Anteil am Ganzen auf einen Blick zeigt.',
-    sections: [
-      {
-        heading: 'Wann ein Kreisdiagramm die richtige Wahl ist',
-        body: 'Kreisdiagramme funktionieren am besten mit fünf oder weniger Kategorien und wenn Sie den Anteil einzelner Segmente am Gesamtwert kommunizieren möchten.',
-      },
-      {
-        heading: 'Intelligente Standardwerte für sofortige Lesbarkeit',
-        body: 'Segmente werden automatisch nach Größe geordnet, hohe Kontrastfarben gewährleisten gute Lesbarkeit, und Prozentbeschriftungen werden automatisch gesetzt.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Kann ich zu einem Donut-Diagramm wechseln?',
-        a: 'Donut-Varianten sind in Planung. Heute können Sie das Kreisdiagramm mit einem Klick in ein Balken-, Linien- oder Flächendiagramm umwandeln.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft im Browser.',
-      },
-    ],
-  },
 
-  'scatter-plot-generator': {
-    h1: 'Kostenloses Online-Streudiagramm-Tool',
-    intro:
-      'ExcelInsight ist ein kostenloses Streudiagramm-Tool. Wählen Sie zwei numerische Spalten aus und ExcelInsight zeichnet sofort ein Streudiagramm, mit dem Sie Korrelationen, Ausreißer und Cluster erkennen können – ganz ohne Python oder R.',
-    sections: [
-      {
-        heading: 'Korrelationen in Sekunden finden',
-        body: 'Tausende Datenpunkte werden flüssig gerendert. Hover-Tooltips zeigen die genauen X/Y-Werte jedes Punktes für eine präzise Datenanalyse.',
-      },
-      {
-        heading: 'Ausreißer und Cluster auf einen Blick erkennen',
-        body: 'Anomalien und Muster in Ihren Daten springen visuell ins Auge – ohne aufwendige statistische Vorarbeit.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Wie viele Datenpunkte werden unterstützt?',
-        a: 'Mehrere Tausend Punkte laufen flüssig. Bei mehr als ~10.000 Punkten hängt die Performance vom verwendeten Gerät ab.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft im Browser.',
-      },
-    ],
-  },
 
   'area-chart-maker': {
     h1: 'Kostenloses Online-Flächendiagramm-Tool',
@@ -515,41 +382,6 @@ export const de: Record<
     ],
   },
 
-  'sales-dashboard-template': {
-    h1: 'Kostenlose Sales-Dashboard-Vorlage',
-    intro:
-      'ExcelInsight erstellt automatisch ein funktionierendes Sales-Dashboard, sobald Sie eine Sales-Tabelle hochladen – mit Pipeline nach Stufe, Umsatz über Zeit, Top-Accounts, Vertreter-Performance und Deal-Anzahl.',
-    sections: [
-      {
-        heading: 'Was das Dashboard enthält',
-        body: 'ExcelInsight sucht automatisch nach Spalten wie Stage, Amount, Owner, Account, Close Date und ARR und erstellt daraus ein vollständiges Sales-Dashboard.',
-        bullets: [
-          'Umsatz und ARR über Zeit als Liniendiagramm',
-          'Pipeline-Verteilung nach Stufe',
-          'Top-Accounts und leistungsstärkste Vertreter',
-          'Win Rate und Deal-Anzahl als KPI-Kacheln',
-        ],
-      },
-      {
-        heading: 'So verwenden Sie die Vorlage',
-        body: 'Exportieren Sie Ihre Daten aus Salesforce, HubSpot, Pipedrive oder Close als CSV, laden Sie die Datei in ExcelInsight, passen Sie das Layout an und exportieren Sie das PDF für Ihr nächstes Meeting.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Muss ich meine Sales-Daten vor dem Hochladen formatieren?',
-        a: 'Nein – ExcelInsight verarbeitet rohe CRM-Exporte direkt, ohne Vorformatierung.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft im Browser, Ihre Daten verlassen das Gerät nie.',
-      },
-    ],
-  },
 
   'inventory-dashboard-template': {
     h1: 'Kostenlose Inventar-Dashboard-Vorlage',
@@ -677,65 +509,7 @@ export const de: Record<
     ],
   },
 
-  'startup-kpi-dashboard': {
-    h1: 'Startup-KPI-Dashboard',
-    intro:
-      'ExcelInsight ist der schnellste Weg, eine Startup-Metriken-Tabelle in ein investorenreifes KPI-Dashboard zu verwandeln. MRR, ARR, Wachstumsrate, Retention, Burn und Runway – laden Sie Ihre wöchentliche Metriken-Datei hoch und das Dashboard erscheint sofort.',
-    sections: [
-      {
-        heading: 'Für wöchentliche Metriken-Reviews',
-        body: 'Gründer verfolgen Metriken in Tabellen – ExcelInsight liefert eine professionelle Ansicht für Board-Updates und Investor-Calls. Exportieren Sie in Sekunden ein PDF für Ihre nächste Präsentation.',
-      },
-      {
-        heading: 'Investorenreife Exports',
-        body: 'Saubere Titelseite, ein Diagramm pro Seite – ein professionell wirkendes Artefakt für monatliche Investor-Updates, das in Minuten erstellt ist.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Kann ich das Dashboard jede Woche aktualisieren?',
-        a: 'Ja – fügen Sie neue Zeilen in Ihre Tabelle ein, laden Sie die Datei erneut hoch und das Dashboard wird automatisch regeneriert.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft im Browser, Ihre Daten verlassen das Gerät nie.',
-      },
-    ],
-  },
 
-  'manufacturing-report-dashboard': {
-    h1: 'Fertigungs-Bericht-Dashboard',
-    intro:
-      'ExcelInsight verwandelt Produktionsliniendaten in saubere Fertigungs-Dashboards. Durchsatz, Ausfallzeit, Fehlerquote, OEE-Aufschlüsselungen und Schichtvergleiche – automatisch aus Ihrem täglichen oder wöchentlichen Produktions-Export generiert.',
-    sections: [
-      {
-        heading: 'Hallentauglich ohne IT-Unterstützung',
-        body: 'Fertigungsdaten liegen oft in Excel-Sheets aus MES- oder SCADA-Systemen vor. ExcelInsight liest diese Exports und gibt Werksleitern ein sofort nutzbares Dashboard – ohne IT-Ticket, ohne Wartezeit.',
-      },
-      {
-        heading: 'Fehler und Ausreißer schnell erkennen',
-        body: 'Streudiagramm für Zykluszeit vs. Fehlerquote, Balkendiagramm für Linienleistung und eine Datenqualitäts-Kachel helfen, Probleme auf einen Blick zu identifizieren.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Funktioniert ExcelInsight offline auf einem Hallenlaptop?',
-        a: 'Ja – nach dem ersten Laden läuft ExcelInsight vollständig clientseitig, auch ohne Internetverbindung.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft lokal im Browser.',
-      },
-    ],
-  },
 
   'marketing-analytics-dashboard': {
     h1: 'Marketing-Analyse-Dashboard',
@@ -802,110 +576,8 @@ export const de: Record<
     ],
   },
 
-  'plot-excel-data': {
-    h1: 'Excel-Daten online darstellen',
-    intro:
-      'ExcelInsight macht es unglaublich einfach, Excel-Daten online darzustellen. Laden Sie Ihre Datei hoch und ExcelInsight stellt automatisch Balkendiagramme, Liniendiagramme und Streudiagramme dar – keine Diagrammeinstellungen zu konfigurieren.',
-    sections: [
-      {
-        heading: 'Diagramme ohne Aufwand erstellen',
-        body: 'ExcelInsight analysiert Ihre Spalten und wählt sofort die passende Visualisierung aus. Probieren Sie verschiedene Diagrammtypen per Klick durch, ohne die Datei erneut hochladen zu müssen.',
-        bullets: [
-          'Liniendiagramme für Zeitreihen und Trendverläufe',
-          'Streudiagramme zur Korrelationsanalyse',
-          'Balken- und Kreisdiagramme für kategoriale Vergleiche',
-        ],
-      },
-      {
-        heading: 'Exportieren und teilen',
-        body: 'Exportieren Sie einzelne Diagramme als PNG oder das gesamte Dashboard als mehrseitiges PDF – für Präsentationen, Berichte oder schnelle Weitergabe.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Können auch CSV-Dateien dargestellt werden?',
-        a: 'Ja – ExcelInsight unterstützt sowohl Excel-Dateien (.xlsx, .xls) als auch CSV.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alle Verarbeitung findet lokal im Browser statt.',
-      },
-    ],
-  },
 
-  'make-bar-graph-from-excel': {
-    h1: 'Balkendiagramm aus Excel erstellen',
-    intro:
-      'Fragen Sie sich, wie Sie online kostenlos ein Balkendiagramm aus Excel erstellen können? ExcelInsight macht es unglaublich einfach. Ziehen Sie einfach Ihre Excel-Datei in Ihren Browser und sehen Sie zu, wie in Sekundenschnelle atemberaubende Balkendiagramme ohne komplexe Einrichtung automatisch generiert werden.',
-    sections: [
-      {
-        heading: 'Balkendiagramme mühelos erstellen',
-        body: 'Sie müssen keine Stunden mehr damit verbringen, Achseneinstellungen in Excel zu konfigurieren. ExcelInsight analysiert Ihre Daten automatisch und strukturiert das perfekte Balkendiagramm für jede kategoriale Aufschlüsselung.',
-        bullets: [
-          'Erstellen Sie sofort ein Balkendiagramm aus Excel',
-          'Automatische Spaltenerkennung für Kategorien und Werte',
-          'Exportieren Sie direkt nach PNG oder als vollständigen PDF-Bericht',
-        ],
-      },
-      {
-        heading: '100 % privat und sicher',
-        body: 'Ihre Datenprivatsphäre ist garantiert. Da ExcelInsight vollständig in Ihrem Browser läuft, können Sie sensible Tabellen sicher visualisieren, ohne dass sie jemals auf einen Server hochgeladen werden.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Wie erstelle ich ein Balkendiagramm aus einer Excel-Datei?',
-        a: 'Laden Sie einfach Ihre .xlsx- oder .csv-Datei in ExcelInsight hoch. Es erkennt sofort Ihre Spalten und generiert wunderschöne Balkendiagramme ohne Formeln oder Pivot-Tabellen.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft lokal in Ihrem Browser.',
-      },
-    ],
-  },
 
-  'excel-chart-maker': {
-    h1: 'Kostenloser Online-Excel-Diagrammersteller',
-    intro:
-      'ExcelInsight ist ein leistungsstarker Excel-Diagrammersteller. Egal, ob Sie Balken-, Linien-, Kreis- oder Streudiagramme benötigen, Sie können diese sofort erstellen, indem Sie Ihre Tabelle in unser sicheres, browserbasiertes Tool hochladen.',
-    sections: [
-      {
-        heading: 'Diagramme ohne Aufwand erstellen',
-        body: 'Überspringen Sie die steile Lernkurve herkömmlicher Tabellenkalkulationssoftware. Unser Excel-Diagrammersteller ordnet Ihre Daten automatisch den am besten geeigneten visuellen Formaten zu und spart Ihnen so Zeit und Mühe.',
-        bullets: [
-          'Unterstützt alle wichtigen Diagrammtypen: Balken, Linie, Kreis, Fläche und Streu',
-          'Keine Formeln, keine Pivot-Tabellen erforderlich',
-          'Anpassbare Designs und Farben',
-        ],
-      },
-      {
-        heading: 'Perfekt für Präsentationen',
-        body: 'Benötigen Sie ein Diagramm für ein Foliendeck oder einen Bericht? Nutzen Sie diesen Diagrammersteller, um schnell professionell aussehende Grafiken zu generieren und sie mit nur einem Klick in hoher Auflösung zu exportieren.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Was macht dies zum besten Excel-Diagrammersteller?',
-        a: 'Es erfordert keine Einrichtung, läuft aus Datenschutzgründen vollständig lokal in Ihrem Browser und wählt automatisch die besten Diagrammtypen für Ihre Daten aus.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft lokal in Ihrem Browser.',
-      },
-    ],
-  },
 
   'csv-dashboard': {
     h1: 'Kostenloser Online-CSV-Dashboard-Ersteller',
@@ -942,40 +614,6 @@ export const de: Record<
     ],
   },
 
-  'csv-to-line-graph': {
-    h1: 'CSV in Liniendiagramm online konvertieren',
-    intro:
-      'Möchten Sie eine CSV online in ein Liniendiagramm konvertieren? ExcelInsight parst Ihre kommagetrennten Werte und stellt sie als wunderschöne Multi-Series-Liniendiagramme in Ihrem Browser dar, und das völlig kostenlos.',
-    sections: [
-      {
-        heading: 'Zeitreihendaten sofort darstellen',
-        body: 'Wenn Ihre CSV eine Datumsspalte und numerische Werte enthält, erkennt ExcelInsight diese automatisch. Es zeichnet glatte Liniendiagramme, sodass Sie Trends, Website-Verkehr oder finanzielle Leistung im Zeitverlauf verfolgen können.',
-        bullets: [
-          'Automatische Erkennung von Datumsformaten',
-          'Mehrere numerische Reihen in einem Diagramm vergleichen',
-          'Interaktive Hover-Tooltips für genaue Werte',
-        ],
-      },
-      {
-        heading: 'Exportieren und teilen',
-        body: 'Sobald Sie Ihre CSV in ein Liniendiagramm konvertiert haben, können Sie die Visualisierung ganz einfach als PNG-Bild exportieren oder in einen vollständigen PDF-Dashboard-Bericht integrieren.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Wie konvertiere ich eine CSV in ein Liniendiagramm?',
-        a: 'Ziehen Sie einfach Ihre CSV-Datei in ExcelInsight. Das Tool identifiziert Datums- und numerische Spalten, um automatisch ein interaktives Liniendiagramm zu generieren.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft lokal in Ihrem Browser.',
-      },
-    ],
-  },
 
   'excel-data-insights': {
     h1: 'Automatisierte Excel-Daten-Erkenntnisse',
@@ -1012,40 +650,6 @@ export const de: Record<
     ],
   },
 
-  'free-dashboard-software-excel': {
-    h1: 'Kostenlose Dashboard-Software für Excel',
-    intro:
-      'Wenn Sie nach kostenloser Dashboard-Software für Excel suchen, ist ExcelInsight die perfekte Lösung. Es läuft vollständig in Ihrem Browser und erfordert keine Installation, keine Anmeldung und keine kostenpflichtigen Lizenzen.',
-    sections: [
-      {
-        heading: 'Eine leichtgewichtige BI-Alternative',
-        body: 'Enterprise-BI-Tools sind teuer und komplex einzurichten. ExcelInsight bietet die wesentlichen Dashboarding-Funktionen, die Sie benötigen – Drag-and-Drop-Layout, mehrere Diagrammtypen und Filterung – und das alles kostenlos.',
-        bullets: [
-          'Keine Installation erforderlich',
-          'Funktioniert unter Windows, Mac und Linux',
-          '100 % kostenlos ohne versteckte Paywalls',
-        ],
-      },
-      {
-        heading: 'Sicher und privat',
-        body: 'Im Gegensatz zu anderer Cloud-Dashboard-Software verarbeitet ExcelInsight alles clientseitig. Ihre Excel-Daten bleiben strikt auf Ihrem Gerät und gewährleisten absolute Privatsphäre für sensible Geschäftsinformationen.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Ist diese Dashboard-Software wirklich kostenlos?',
-        a: 'Ja, ExcelInsight kann völlig kostenlos genutzt werden. Es gibt keine Premium-Stufen, Abonnements oder Funktionseinschränkungen.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft lokal in Ihrem Browser.',
-      },
-    ],
-  },
 
   'free-excel-data-analysis-tool': {
     h1: 'Kostenloses Online-Tool zur Excel-Datenanalyse',
@@ -1117,110 +721,8 @@ export const de: Record<
     ],
   },
 
-  'learn-excel-data-analysis': {
-    h1: 'Excel-Datenanalyse kostenlos lernen',
-    intro:
-      'Wenn Sie Excel-Datenanalyse kostenlos lernen möchten, ist ExcelInsight die perfekte Sandbox-Umgebung. Laden Sie einen Datensatz hoch und lernen Sie interaktiv, wie verschiedene Datentypen in aussagekräftige Diagramme und Erkenntnisse übersetzt werden.',
-    sections: [
-      {
-        heading: 'Eine praxisnahe Lernerfahrung',
-        body: 'Der beste Weg, Datenanalyse zu lernen, ist durch Handeln. Wenn Sie eine Tabelle in ExcelInsight ablegen, sehen Sie sofort, wie rohe Zeilen und Spalten in umsetzbare Business Intelligence transformiert werden.',
-        bullets: [
-          'Sehen Sie, wie sich Datenstrukturen auf Visualisierungsoptionen auswirken',
-          'Lernen Sie, Trends und Ausreißer visuell zu identifizieren',
-          'Korrelation durch Streudiagramme verstehen',
-        ],
-      },
-      {
-        heading: 'Kein Risiko, Formeln zu zerstören',
-        body: 'Im Gegensatz zur Arbeit in einer komplexen Mastertabelle bietet ExcelInsight eine schreibgeschützte visuelle Ebene über Ihren Daten. Sie können mit verschiedenen Diagrammtypen und Aggregationen experimentieren, ohne Ihre Quelldatei zu verändern.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Eignet sich dieses Tool für Schüler, die Datenanalyse lernen?',
-        a: 'Absolut. Es bietet eine intuitive, visuelle Möglichkeit, Datenverteilungen, Beziehungen und grundlegende Statistiken zu verstehen, ohne vorher komplexe Software erlernen zu müssen.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft lokal in Ihrem Browser.',
-      },
-    ],
-  },
 
-  'line-graph-maker-excel': {
-    h1: 'Liniendiagramm-Ersteller für Excel',
-    intro:
-      'ExcelInsight ist ein dedizierter Liniendiagramm-Ersteller für Excel. Es ermöglicht Ihnen, präzise, mehrreihige Liniendiagramme direkt aus Ihren Tabellenkalkulationen in Sekundenschnelle zu erstellen, ohne dass Software-Downloads erforderlich sind.',
-    sections: [
-      {
-        heading: 'Perfekt für die Verfolgung von Trends',
-        body: 'Liniendiagramme sind der Standard für die Visualisierung von Veränderungen im Laufe der Zeit. Unser Tool analysiert Datumsspalten automatisch und zeichnet Ihre Metriken nahtlos, sodass Sie sich auf die Analyse des Trends anstatt auf die Formatierung der Achse konzentrieren können.',
-        bullets: [
-          'Verarbeitet mehrere Datumsformate automatisch',
-          'Zeichnet mehrere numerische Spalten in einem einzigen Diagramm',
-          'Saubere, anpassbare Designs',
-        ],
-      },
-      {
-        heading: 'Mit Leichtigkeit exportieren',
-        body: 'Sobald Sie Ihr Liniendiagramm angepasst haben, können Sie es als hochwertiges PNG für Ihre Präsentationen herunterladen oder als Teil eines umfassenden PDF-Dashboard-Berichts einfügen.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Wie geht der Liniendiagramm-Ersteller mit verschiedenen Datumsformaten um?',
-        a: 'Das Tool verfügt über einen robusten Parser, der gängige Datumsformate (wie TT.MM.JJJJ oder ISO 8601) automatisch erkennt und standardisiert, um eine genaue chronologische Achse zu erstellen.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft lokal in Ihrem Browser.',
-      },
-    ],
-  },
 
-  'hr-analytics-excel': {
-    h1: 'Kostenlose HR-Analytics-Excel-Vorlage',
-    intro:
-      'Visualisieren Sie Ihre Belegschaftsdaten sofort mit unserer Excel-Vorlage für HR-Analytics. ExcelInsight verwandelt Ihre standardmäßigen HR-Exporte in ein umfassendes People-Analytics-Dashboard und hält Ihre Daten dabei streng geheim.',
-    sections: [
-      {
-        heading: 'Optimieren Sie Ihre People Analytics',
-        body: 'Laden Sie Ihre Mitarbeiterliste hoch und generieren Sie sofort Diagramme, die die Personalstärke, die Abteilungsverteilung und die Bindungsraten verfolgen. Es fungiert als dynamische HR-Analytics-Excel-Vorlage ohne die anfälligen Formeln.',
-        bullets: [
-          'Personalstärke und Abteilungswachstum verfolgen',
-          'Verweildauer- und Fluktuationstrends analysieren',
-          'Diversitätskennzahlen visuell identifizieren',
-        ],
-      },
-      {
-        heading: '100 % sicher für sensible Daten',
-        body: 'HR-Daten sind streng vertraulich. Da ExcelInsight alles clientseitig in Ihrem Browser verarbeitet, werden Ihre Mitarbeiterinformationen niemals auf einen externen Server hochgeladen.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Muss ich meine HR-Daten auf eine bestimmte Weise formatieren?',
-        a: 'Stellen Sie einfach sicher, dass Ihre Datei eindeutige Spaltenüberschriften wie Abteilung, Einstellungsdatum oder Status hat. Das Tool ordnet sie automatisch den besten Visualisierungen zu.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft lokal in Ihrem Browser.',
-      },
-    ],
-  },
 
   'excel-link-analysis': {
     h1: 'Link-Analyse in Excel',
@@ -1257,40 +759,6 @@ export const de: Record<
     ],
   },
 
-  'radar-chart-maker': {
-    h1: 'Kostenloser Online-Radardiagramm-Ersteller',
-    intro:
-      'ExcelInsight verfügt über einen leistungsstarken Radardiagramm-Ersteller (oder Netzdiagramm) zum gleichzeitigen Vergleich mehrerer Variablen. Laden Sie Ihre Daten hoch, um detaillierte Radardiagramme zu generieren, die Leistungsprofile und mehrdimensionale Metriken hervorheben.',
-    sections: [
-      {
-        heading: 'Mehrdimensionale Daten visualisieren',
-        body: 'Radardiagramme (oder Netzdiagramme) eignen sich ideal, um eine Entität über mehrere verschiedene Kategorien hinweg gleichzeitig zu vergleichen, z. B. bei der Bewertung von Mitarbeiterfähigkeiten, Produktfunktionen oder Umfrageergebnissen.',
-        bullets: [
-          'Mehrere Profile in einem einzigen Diagramm vergleichen',
-          'Skaliert Achsen automatisch für eine ausgewogene Visualisierung',
-          'Anpassbare Farben und Designs',
-        ],
-      },
-      {
-        heading: 'Schnelle und private Generierung',
-        body: 'Erstellen Sie Ihre Radardiagramme sicher in Ihrem Browser. Da keine Server-Uploads erforderlich sind, können Sie proprietäre Geschäftsprofile sicher analysieren und die Ergebnisse als PDF oder PNG exportieren.',
-      },
-    ],
-    faqs: [
-      {
-        q: 'Wann sollte ich ein Radardiagramm verwenden?',
-        a: 'Radardiagramme werden am besten verwendet, wenn Sie multivariate Daten in Form eines zweidimensionalen Diagramms von drei oder mehr quantitativen Variablen darstellen müssen, die auf Achsen dargestellt werden, die vom selben Punkt ausgehen.',
-      },
-      {
-        q: 'Ist das Tool kostenlos?',
-        a: 'Ja, vollständig kostenlos.',
-      },
-      {
-        q: 'Sind meine Daten privat?',
-        a: 'Ja – alles läuft lokal in Ihrem Browser.',
-      },
-    ],
-  },
 
   'excel-data-visualizer': {
     h1: 'Kostenloser Excel-Daten-Visualisierer',

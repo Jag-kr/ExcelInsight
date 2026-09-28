@@ -8,6 +8,7 @@ import { LandingContent } from "@/components/LandingContent";
 import { AdsenseScript } from "@/components/AdsenseScript";
 import { useI18n } from "@/lib/i18n";
 import { hasStoredSession } from "@/lib/session-storage";
+import { trackEvent } from "@/lib/analytics";
 import { BarChart3, Database, LayoutDashboard, Sparkles } from "lucide-react";
 
 // Served from public/ so logo swaps don't need a rebuild (SiteHeader uses the same path).
@@ -69,6 +70,8 @@ export default function Index() {
   const [upload, setUpload] = useState<{
     data: Record<string, any>[];
     fileName: string;
+    /** Demo data — must not be written to storage. See loadSample. */
+    ephemeral?: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -96,6 +99,37 @@ export default function Index() {
     setUpload(null);
     setHasSession(false);
   }, []);
+
+  /**
+   * The demo path.
+   *
+   * Without this the tool is invisible to anyone who doesn't already have a
+   * spreadsheet to hand — the landing page is an upload box and copy, and the
+   * product only exists on the other side of a file the visitor may not have.
+   *
+   * The dataset is a separate chunk: it is ~156 rows of JSON that no one who
+   * arrives with their own file should have to download.
+   */
+  const loadSample = useCallback(async (source: "hero" | "query") => {
+    const { sampleDataset, SAMPLE_FILE_NAME } = await import(
+      "@/content/sample-dataset"
+    );
+    trackEvent("sample_data_loaded", { source });
+    setUpload({
+      data: sampleDataset as unknown as Record<string, any>[],
+      fileName: SAMPLE_FILE_NAME,
+      // Not the visitor's data. Persisting it would hijack the landing page on
+      // every later visit with a spreadsheet they never brought.
+      ephemeral: true,
+    });
+  }, []);
+
+  // `/?sample=1` is how /example/ hands this dataset to the live tool.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("sample") === "1") {
+      void loadSample("query");
+    }
+  }, [loadSample]);
 
   // `mounted` gates only the restore path: the server renders the landing page,
   // so the first client paint has to as well. A fresh upload can only happen
@@ -149,6 +183,18 @@ export default function Index() {
           <div className="mt-6 hero-appear-upload">
             <FileUpload onDataLoaded={handleDataLoaded} />
           </div>
+
+          {/* The escape hatch for a visitor with no file. Deliberately directly
+              under the dropzone and above the reassurance copy: someone who
+              can't act on the upload box needs the alternative before they
+              scroll, not after. */}
+          <button
+            type="button"
+            onClick={() => void loadSample("hero")}
+            className="mt-3 text-sm font-medium text-primary hover:underline hero-appear-sub"
+          >
+            {t("trySampleData")}
+          </button>
 
           {/* Subtext — reassurance/context, secondary to the action itself */}
           <p className="mt-4 text-sm text-muted-foreground leading-relaxed hero-appear-sub">

@@ -183,7 +183,7 @@ export const en = {
   featuresTitle: 'Everything you need to analyze Excel files',
   featuresIntro: 'ExcelInsight is a free online Excel analytics and dashboard builder. Upload a spreadsheet and get instant charts, statistics, and shareable dashboards — all without writing a single formula.',
   feat1Title: 'Excel & CSV Support',
-  feat1Desc: 'Upload .xlsx, .xls, or .csv files of any size and instantly turn rows into insights.',
+  feat1Desc: 'Upload .xlsx, .xls, or .csv files and instantly turn rows into insights. Comfortable up to ~100,000 rows on a modern laptop.',
   feat2Title: 'Auto-Generated Charts',
   feat2Desc: 'Smart detection picks the right chart type — bar, line, pie, area, scatter, radar — for every column.',
   feat3Title: 'Custom Dashboards',
@@ -277,8 +277,7 @@ export const en = {
   faq7Q: 'Can I merge columns or filter data?',
   faq7A: 'Yes. The Build tab lets you merge any two columns into a new one, and the Filter tab lets you drill into specific values across every chart.',
   faq8Q: 'Does ExcelInsight work offline?',
-  faq8A: 'After the first load, most functionality continues to work even without an internet connection because everything runs client-side.',
-
+  faq8A: 'No — you need a connection to load the page. Once it has loaded, your file is processed entirely in your browser: nothing is uploaded and no data leaves your device.',
   // SEO page UI chrome
   categoryFeature: 'Features',
   categoryComparison: 'Comparisons',
@@ -296,8 +295,11 @@ export const en = {
 
   privacyPolicy: 'Privacy Policy',
   termsOfService: 'Terms of Service',
+  aboutLink: 'About',
+  contactLink: 'Contact',
+  trySampleData: 'No spreadsheet handy? Try sample data →',
+  exampleLink: 'Example',
   footerCopy: 'Free Excel analytics & dashboard builder. Made for analysts, students, and small businesses.',
-  sponsored: 'Sponsored',
   clearFile: 'Clear file',
   clearFileConfirmTitle: 'Clear uploaded file?',
   clearFileConfirmDesc: 'This will remove the current file and reset all charts, filters, and dashboards. This cannot be undone.',

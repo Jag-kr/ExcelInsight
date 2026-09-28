@@ -152,7 +152,7 @@ export const seoPages: SeoPage[] = [
           'Auto-generated title page with file name, row count and column count',
           'One chart per page at high resolution',
           'Insight tiles (stats, repeating values, data quality) included in the PDF',
-          'Works offline once the page is loaded',
+          'Export runs in your browser — the spreadsheet never leaves your device',
         ],
       },
       {
@@ -772,12 +772,47 @@ export const seoPageMap: Record<string, SeoPage> = Object.fromEntries(
   seoPages.map((p) => [p.slug, p]),
 );
 
+/**
+ * Pages withheld from the index (28 Sep 2026, AdSense "low-value content").
+ *
+ * Every slug here earned zero clicks in the 28 days to 25 Sep, on 26 combined
+ * impressions. They stay live and keep their URLs, but they leave the sitemap,
+ * the category nav and every `related` list, so nothing on the site walks a
+ * crawler into them.
+ *
+ * `noindex` rather than deletion or a 301, deliberately: `free-excel-data-
+ * analysis-tool` went from zero clicks to eleven in a single month, so pages
+ * here are not proven dead — only unproven. This is reversible by deleting a
+ * line; a 301 is not. Revisit once the AdSense review is settled: a slug that
+ * is still at zero months from now can be retired properly.
+ */
+export const NOINDEX_SLUGS: ReadonlySet<string> = new Set([
+  'csv-visualization-tool',
+  'excel-link-analysis',
+  'line-chart-maker',
+  'excelinsight-vs-powerbi',
+  'excelinsight-vs-tableau',
+  'area-chart-maker',
+  'ecommerce-analytics-dashboard',
+  'finance-reporting-dashboard',
+  'csv-dashboard',
+  'excel-to-pdf-dashboard',
+  'inventory-dashboard-template',
+  'marketing-analytics-dashboard',
+  'tableau-alternative',
+]);
+
+export const isIndexable = (slug: string) => !NOINDEX_SLUGS.has(slug);
+
+/** Pages that are still in the index — what the sitemap and internal links use. */
+export const indexableSeoPages: SeoPage[] = seoPages.filter((p) => isIndexable(p.slug));
+
 export const seoPagesByCategory: Record<SeoCategory, SeoPage[]> = {
-  feature: seoPages.filter((p) => p.category === 'feature'),
-  comparison: seoPages.filter((p) => p.category === 'comparison'),
-  chart: seoPages.filter((p) => p.category === 'chart'),
-  template: seoPages.filter((p) => p.category === 'template'),
-  usecase: seoPages.filter((p) => p.category === 'usecase'),
+  feature: indexableSeoPages.filter((p) => p.category === 'feature'),
+  comparison: indexableSeoPages.filter((p) => p.category === 'comparison'),
+  chart: indexableSeoPages.filter((p) => p.category === 'chart'),
+  template: indexableSeoPages.filter((p) => p.category === 'template'),
+  usecase: indexableSeoPages.filter((p) => p.category === 'usecase'),
 };
 
 export const categoryLabel: Record<SeoCategory, string> = {
