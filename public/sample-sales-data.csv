@@ -1,0 +1,157 @@
+order_date,region,product,category,channel,sales_rep,units,unit_price,revenue
+2026-01-08,Europe,Keyboard,Accessories,Direct,T. Bergmann,39,59.92,2336.88
+2026-01-10,Europe,Keyboard,Accessories,Direct,A. Okafor,17,106.31,1807.27
+2026-01-11,Europe,Mouse,Accessories,Direct,T. Bergmann,8,85.53,684.24
+2026-01-13,Asia Pacific,Mouse,Accessories,Online,K. Yamamoto,13,85.61,1112.93
+2026-01-14,North America,Mouse,Accessories,Direct,R. Venkatesan,29,63.22,1833.38
+2026-01-16,North America,Monitors,Hardware,Online,T. Bergmann,8,302.62,2420.96
+2026-01-17,North America,Monitors,Hardware,Direct,M. Lindqvist,11,397.25,4369.75
+2026-01-23,North America,Mouse,Accessories,Online,T. Bergmann,12,36.12,433.44
+2026-01-23,Europe,Office Suite,Software,Reseller,M. Lindqvist,11,141.05,1551.55
+2026-01-23,Europe,Headset,Accessories,Reseller,R. Venkatesan,12,57.42,689.04
+2026-01-26,Europe,Security Suite,Software,Online,A. Okafor,10,49.57,495.7
+2026-01-27,Europe,Office Suite,Software,Reseller,R. Venkatesan,10,101.84,1018.4
+2026-01-27,North America,Monitors,Hardware,Direct,A. Okafor,7,281.79,1972.53
+2026-01-28,North America,Headset,Accessories,Direct,K. Yamamoto,34,136.69,4647.46
+2026-01-30,Asia Pacific,Keyboard,Accessories,Reseller,S. Duarte,39,115.82,4516.98
+2026-02-02,Europe,Keyboard,Accessories,Direct,R. Venkatesan,13,39.8,517.4
+2026-02-05,Latin America,Monitors,Hardware,Direct,S. Duarte,2,544.47,1088.94
+2026-02-05,Asia Pacific,Security Suite,Software,Reseller,R. Venkatesan,6,110.64,663.84
+2026-02-08,Europe,Docking Station,Hardware,Online,T. Bergmann,1,273.67,273.67
+2026-02-10,Europe,Laptops,Hardware,Online,S. Duarte,8,905.16,7241.28
+2026-02-10,Europe,Headset,Accessories,Reseller,S. Duarte,1,100.14,100.14
+2026-02-12,Europe,Monitors,Hardware,Direct,S. Duarte,7,294.75,2063.25
+2026-02-13,North America,Security Suite,Software,Reseller,M. Lindqvist,2,118.0,236.0
+2026-02-16,Europe,Monitors,Hardware,Online,M. Lindqvist,9,337.37,3036.33
+2026-02-19,Asia Pacific,Docking Station,Hardware,Online,A. Okafor,10,248.73,2487.3
+2026-02-20,Asia Pacific,Headset,Accessories,Online,A. Okafor,5,138.38,691.9
+2026-02-24,Europe,Laptops,Hardware,Direct,T. Bergmann,2,1290.04,2580.08
+2026-02-25,North America,Mouse,Accessories,Reseller,R. Venkatesan,8,67.01,536.08
+2026-02-26,Europe,Keyboard,Accessories,Direct,M. Lindqvist,33,77.96,2572.68
+2026-02-26,Europe,Keyboard,Accessories,Online,R. Venkatesan,21,108.71,2282.91
+2026-02-26,Asia Pacific,Monitors,Hardware,Online,R. Venkatesan,9,366.24,3296.16
+2026-02-27,North America,Headset,Accessories,Reseller,S. Duarte,12,190.08,2280.96
+2026-02-28,Latin America,Mouse,Accessories,Direct,T. Bergmann,6,32.97,197.82
+2026-03-02,North America,Docking Station,Hardware,Direct,A. Okafor,6,229.77,1378.62
+2026-03-06,North America,Keyboard,Accessories,Reseller,A. Okafor,2,70.17,140.34
+2026-03-07,North America,Office Suite,Software,Online,R. Venkatesan,2,131.14,262.28
+2026-03-09,Latin America,Mouse,Accessories,Online,M. Lindqvist,40,30.92,1236.8
+2026-03-10,Europe,Keyboard,Accessories,Direct,A. Okafor,23,78.39,1802.97
+2026-03-10,North America,Docking Station,Hardware,Direct,R. Venkatesan,8,194.03,1552.24
+2026-03-11,Europe,Monitors,Hardware,Reseller,,1,222.32,222.32
+2026-03-11,North America,Office Suite,Software,Direct,A. Okafor,3,99.46,298.38
+2026-03-13,North America,Mouse,Accessories,Reseller,A. Okafor,7,47.12,329.84
+2026-03-18,North America,Monitors,Hardware,Reseller,S. Duarte,3,395.11,1185.33
+2026-03-19,Europe,Office Suite,Software,Reseller,A. Okafor,7,119.21,834.47
+2026-03-19,Asia Pacific,Headset,Accessories,Online,R. Venkatesan,21,145.84,3062.64
+2026-03-19,Europe,Mouse,Accessories,Online,R. Venkatesan,20,34.46,689.2
+2026-03-19,North America,Mouse,Accessories,Direct,M. Lindqvist,40,29.94,1197.6
+2026-03-21,North America,Headset,Accessories,Reseller,K. Yamamoto,18,96.57,1738.26
+2026-03-21,Asia Pacific,Docking Station,Hardware,Online,T. Bergmann,10,111.57,1115.7
+2026-03-25,Europe,Keyboard,Accessories,Online,A. Okafor,35,32.92,1152.2
+2026-03-27,North America,Monitors,Hardware,Online,R. Venkatesan,4,509.03,2036.12
+2026-03-31,Latin America,Keyboard,Accessories,Online,R. Venkatesan,10,29.02,290.2
+2026-04-01,Asia Pacific,Headset,Accessories,Online,T. Bergmann,12,191.69,2300.28
+2026-04-02,Asia Pacific,Headset,Accessories,Online,M. Lindqvist,7,115.67,809.69
+2026-04-04,North America,Laptops,Hardware,Direct,A. Okafor,11,901.86,9920.46
+2026-04-07,Europe,Mouse,Accessories,Direct,M. Lindqvist,38,48.11,1828.18
+2026-04-08,North America,Security Suite,Software,Direct,T. Bergmann,6,114.15,684.9
+2026-04-10,North America,Keyboard,Accessories,Online,S. Duarte,20,117.25,2345.0
+2026-04-10,Asia Pacific,Keyboard,Accessories,Direct,M. Lindqvist,27,86.72,2341.44
+2026-04-11,Europe,Security Suite,Software,Reseller,R. Venkatesan,6,111.7,670.2
+2026-04-11,Europe,Headset,Accessories,Direct,T. Bergmann,6,104.31,625.86
+2026-04-12,Latin America,Office Suite,Software,Direct,R. Venkatesan,12,147.55,1770.6
+2026-04-13,North America,Headset,Accessories,Online,S. Duarte,9,81.05,729.45
+2026-04-13,North America,Mouse,Accessories,Direct,R. Venkatesan,17,49.86,847.62
+2026-04-15,Asia Pacific,Headset,Accessories,Online,T. Bergmann,13,142.03,1846.39
+2026-04-16,North America,Docking Station,Hardware,Online,A. Okafor,4,157.87,631.48
+2026-04-17,North America,Mouse,Accessories,Online,M. Lindqvist,38,71.23,2706.74
+2026-04-18,North America,Monitors,Hardware,Online,A. Okafor,2,354.11,708.22
+2026-04-19,Latin America,Mouse,Accessories,Reseller,T. Bergmann,4,46.33,185.32
+2026-04-19,Europe,Laptops,Hardware,Online,A. Okafor,4,1753.63,7014.52
+2026-04-20,Latin America,Headset,Accessories,Online,R. Venkatesan,10,189.73,1897.3
+2026-04-21,Europe,Headset,Accessories,Online,S. Duarte,24,171.23,4109.52
+2026-04-22,Asia Pacific,Office Suite,Software,Online,,8,79.38,635.04
+2026-04-23,Europe,Monitors,Hardware,Online,A. Okafor,8,291.5,2332.0
+2026-04-26,North America,Office Suite,Software,Online,T. Bergmann,3,105.56,316.68
+2026-04-28,Asia Pacific,Headset,Accessories,Online,R. Venkatesan,18,81.65,1469.7
+2026-04-30,North America,Monitors,Hardware,Direct,A. Okafor,1,485.68,485.68
+2026-05-01,North America,Office Suite,Software,Online,A. Okafor,7,147.28,1030.96
+2026-05-07,Europe,Docking Station,Hardware,Online,T. Bergmann,2,209.93,419.86
+2026-05-09,Europe,Monitors,Hardware,Online,R. Venkatesan,2,205.69,411.38
+2026-05-10,Asia Pacific,Keyboard,Accessories,Reseller,K. Yamamoto,19,101.78,1933.82
+2026-05-11,North America,Office Suite,Software,Online,M. Lindqvist,6,110.3,661.8
+2026-05-13,North America,Security Suite,Software,Online,S. Duarte,5,115.08,575.4
+2026-05-16,Asia Pacific,Keyboard,Accessories,Reseller,A. Okafor,18,95.01,1710.18
+2026-05-19,Europe,Mouse,Accessories,Reseller,S. Duarte,14,66.16,926.24
+2026-05-19,Latin America,Mouse,Accessories,Direct,T. Bergmann,3,76.38,229.14
+2026-05-21,Europe,Laptops,Hardware,Online,K. Yamamoto,12,1682.92,20195.04
+2026-05-22,North America,Keyboard,Accessories,Reseller,A. Okafor,1,93.13,93.13
+2026-05-24,Asia Pacific,Security Suite,Software,Reseller,R. Venkatesan,1,101.4,101.4
+2026-06-06,North America,Office Suite,Software,Reseller,A. Okafor,7,84.28,589.96
+2026-06-09,Asia Pacific,Headset,Accessories,Online,S. Duarte,7,197.7,1383.9
+2026-06-09,Latin America,Mouse,Accessories,Direct,A. Okafor,33,80.35,2651.55
+2026-06-10,North America,Monitors,Hardware,Reseller,T. Bergmann,3,302.61,907.83
+2026-06-11,North America,Keyboard,Accessories,Online,A. Okafor,37,128.76,4764.12
+2026-06-13,Europe,Monitors,Hardware,Reseller,K. Yamamoto,9,252.24,2270.16
+2026-06-14,Latin America,Mouse,Accessories,Online,S. Duarte,33,73.04,2410.32
+2026-06-16,Europe,Keyboard,Accessories,Reseller,M. Lindqvist,32,55.36,1771.52
+2026-06-17,North America,Security Suite,Software,Direct,M. Lindqvist,8,58.25,466.0
+2026-06-18,Europe,Laptops,Hardware,Online,M. Lindqvist,1,963.28,963.28
+2026-06-22,Europe,Monitors,Hardware,Direct,,12,511.5,6138.0
+2026-06-22,Asia Pacific,Security Suite,Software,Reseller,S. Duarte,2,86.53,173.06
+2026-06-23,Europe,Laptops,Hardware,Online,T. Bergmann,7,1871.7,13101.9
+2026-06-25,North America,Headset,Accessories,Direct,K. Yamamoto,17,71.31,1212.27
+2026-06-25,Europe,Headset,Accessories,Direct,M. Lindqvist,3,129.84,389.52
+2026-06-28,Asia Pacific,Headset,Accessories,Direct,M. Lindqvist,34,116.04,3945.36
+2026-07-05,Asia Pacific,Monitors,Hardware,Online,M. Lindqvist,4,516.17,2064.68
+2026-07-10,Asia Pacific,Headset,Accessories,Online,A. Okafor,34,138.02,4692.68
+2026-07-11,North America,Keyboard,Accessories,Reseller,M. Lindqvist,21,60.04,1260.84
+2026-07-12,Asia Pacific,Headset,Accessories,Reseller,S. Duarte,34,182.09,6191.06
+2026-07-14,North America,Headset,Accessories,Online,K. Yamamoto,36,56.82,2045.52
+2026-07-14,Europe,Security Suite,Software,Online,T. Bergmann,8,73.87,590.96
+2026-07-14,Europe,Docking Station,Hardware,Online,M. Lindqvist,4,103.51,414.04
+2026-07-22,Asia Pacific,Monitors,Hardware,Direct,S. Duarte,4,284.87,1139.48
+2026-07-22,Europe,Mouse,Accessories,Reseller,S. Duarte,10,66.98,669.8
+2026-07-24,North America,Office Suite,Software,Reseller,R. Venkatesan,6,124.9,749.4
+2026-07-26,North America,Keyboard,Accessories,Direct,R. Venkatesan,3,125.85,377.55
+2026-07-29,Asia Pacific,Office Suite,Software,Online,A. Okafor,7,85.06,595.42
+2026-07-29,Latin America,Headset,Accessories,Direct,T. Bergmann,2,141.7,283.4
+2026-07-30,Asia Pacific,Docking Station,Hardware,Online,A. Okafor,7,174.27,1219.89
+2026-07-30,Europe,Laptops,Hardware,Reseller,M. Lindqvist,9,1463.89,13175.01
+2026-08-01,Europe,Keyboard,Accessories,Reseller,M. Lindqvist,39,77.2,3010.8
+2026-08-01,Asia Pacific,Monitors,Hardware,Direct,A. Okafor,12,430.28,5163.36
+2026-08-03,North America,Headset,Accessories,Reseller,T. Bergmann,5,176.45,882.25
+2026-08-05,North America,Mouse,Accessories,Direct,R. Venkatesan,9,76.65,689.85
+2026-08-08,Asia Pacific,Office Suite,Software,Online,T. Bergmann,12,84.42,1013.04
+2026-08-09,North America,Docking Station,Hardware,Direct,,1,207.4,207.4
+2026-08-11,North America,Security Suite,Software,Online,A. Okafor,5,71.6,358.0
+2026-08-14,North America,Docking Station,Hardware,Direct,S. Duarte,5,208.7,1043.5
+2026-08-16,Europe,Monitors,Hardware,Direct,A. Okafor,11,281.42,3095.62
+2026-08-16,North America,Keyboard,Accessories,Reseller,T. Bergmann,23,88.3,2030.9
+2026-08-17,Europe,Headset,Accessories,Online,A. Okafor,20,58.65,1173.0
+2026-08-17,North America,Mouse,Accessories,Online,S. Duarte,26,75.12,1953.12
+2026-08-17,Asia Pacific,Docking Station,Hardware,Direct,M. Lindqvist,11,216.33,2379.63
+2026-08-18,Europe,Keyboard,Accessories,Online,A. Okafor,26,100.2,2605.2
+2026-08-18,Europe,Security Suite,Software,Direct,R. Venkatesan,6,112.06,672.36
+2026-08-18,North America,Headset,Accessories,Reseller,M. Lindqvist,4,82.06,328.24
+2026-08-19,North America,Docking Station,Hardware,Online,S. Duarte,6,160.6,963.6
+2026-08-23,Europe,Monitors,Hardware,Online,,4,285.44,1141.76
+2026-08-23,Europe,Office Suite,Software,Online,K. Yamamoto,2,99.67,199.34
+2026-08-24,Latin America,Monitors,Hardware,Direct,S. Duarte,7,471.74,3302.18
+2026-08-25,Asia Pacific,Headset,Accessories,Direct,A. Okafor,15,194.92,2923.8
+2026-08-25,North America,Docking Station,Hardware,Online,T. Bergmann,6,204.26,1225.56
+2026-08-28,North America,Security Suite,Software,Direct,K. Yamamoto,6,105.93,635.58
+2026-08-28,Europe,Docking Station,Hardware,Direct,R. Venkatesan,6,150.79,904.74
+2026-08-29,North America,Docking Station,Hardware,Online,A. Okafor,7,142.98,1000.86
+2026-09-01,North America,Mouse,Accessories,Online,M. Lindqvist,30,51.6,1548.0
+2026-09-01,North America,Keyboard,Accessories,Direct,S. Duarte,39,83.65,3262.35
+2026-09-03,North America,Headset,Accessories,Online,T. Bergmann,22,197.72,4349.84
+2026-09-04,Latin America,Docking Station,Hardware,Direct,S. Duarte,4,140.67,562.68
+2026-09-05,Asia Pacific,Laptops,Hardware,Reseller,A. Okafor,5,1757.14,8785.7
+2026-09-05,North America,Security Suite,Software,Direct,T. Bergmann,10,88.34,883.4
+2026-09-11,Asia Pacific,Monitors,Hardware,Reseller,S. Duarte,8,395.32,3162.56
+2026-09-13,Asia Pacific,Keyboard,Accessories,Direct,A. Okafor,40,69.38,2775.2
+2026-09-16,Asia Pacific,Mouse,Accessories,Online,K. Yamamoto,23,32.32,743.36
+2026-09-17,Asia Pacific,Office Suite,Software,Direct,M. Lindqvist,3,129.6,388.8
+2026-09-21,North America,Security Suite,Software,Online,T. Bergmann,9,96.16,865.44

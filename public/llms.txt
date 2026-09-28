@@ -22,7 +22,7 @@ Files with up to ~100,000 rows typically run smoothly on a modern laptop. Perfor
 No. There is no login, no registration, and no email required.
 
 **Does it work offline?**
-After the initial page load, most functionality continues to work without an internet connection because everything runs client-side.
+No. Loading the page requires an internet connection. Once loaded, your file is processed entirely client-side — nothing is uploaded and no data leaves your device.
 
 ## Capabilities
 

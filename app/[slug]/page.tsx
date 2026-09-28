@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SeoPageContent } from '@/components/SeoPageContent';
 import { AdsenseScript } from '@/components/AdsenseScript';
-import { seoPageMap, seoPages } from '@/content/seo-pages';
+import { seoPageMap, seoPages, isIndexable } from '@/content/seo-pages';
 import { buildSeoJsonLd, seoPageUrl } from '@/content/seo-jsonld';
 
 const OG_IMAGE =
@@ -31,6 +31,9 @@ export async function generateMetadata({
   return {
     title: page.title,
     description: page.description,
+    // Withheld pages stay crawlable and keep their links working — they just
+    // leave the index. See NOINDEX_SLUGS in content/seo-pages.ts.
+    ...(isIndexable(page.slug) ? {} : { robots: { index: false, follow: true } }),
     alternates: {
       canonical: url,
     },

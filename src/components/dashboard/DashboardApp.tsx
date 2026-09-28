@@ -129,7 +129,12 @@ export interface DashboardAppProps {
    * "restore whatever is in storage" — the landing page mounts this component
    * on a saved session too.
    */
-  initialUpload: { data: Record<string, any>[]; fileName: string } | null;
+  initialUpload: {
+    data: Record<string, any>[];
+    fileName: string;
+    /** Demo data: render it, never persist it. */
+    ephemeral?: boolean;
+  } | null;
   /** Tears down this tree and returns the user to the landing page. */
   onClearFile: () => void;
 }
@@ -203,6 +208,9 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     // write rather than persisting a torn snapshot — and rather than paying to
     // stringify a multi-megabyte dataset twice for one upload.
     if (analyzing) return;
+    // The sample dataset is a demo, not the visitor's file. Writing it would
+    // make every subsequent visit restore a spreadsheet they never uploaded.
+    if (initialUpload?.ephemeral) { localStorage.removeItem(STORAGE_KEY); return; }
     if (!data.length) { localStorage.removeItem(STORAGE_KEY); return; }
     try {
       const payload: PersistedSession = {
@@ -215,7 +223,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     } catch (e) {
       console.warn('Could not persist session', e);
     }
-  }, [analyzing, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed]);
+  }, [analyzing, initialUpload, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed]);
 
   const handleResetLayout = useCallback(() => {
     const { items, usedChartIds } = buildDefaultDashboard(data, columns, suggestions, t);
