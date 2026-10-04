@@ -439,7 +439,9 @@ export function LandingContent() {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {(Object.keys(seoPagesByCategory) as SeoCategory[]).map((cat, i) => (
+          {(Object.keys(seoPagesByCategory) as SeoCategory[])
+            .filter((cat) => seoPagesByCategory[cat].length > 0)
+            .map((cat, i) => (
             <div
               key={cat}
               className={`narrative-reveal elevated-card p-5 narrative-stagger-${(i % 4) + 1}`}
