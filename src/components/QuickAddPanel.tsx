@@ -47,7 +47,7 @@ interface QuickAddPanelProps {
   addedInsightIds: Set<string>;
   columns: ColumnMeta[];
   data: Record<string, any>[];
-  onAddSuggestion: (s: ChartSuggestion) => void;
+  onAddSuggestion: (s: ChartSuggestion, type: ChartType) => void;
   onAddCustomChart: (chart: DashboardItem) => void;
   onAddInsight: (card: { id: string; title: string; content: any; type: 'insight' }) => void;
   onAddKpi: (spec: KpiSpec, title: string) => void;
@@ -61,7 +61,7 @@ function SuggestionCard({
 }: {
   suggestion: ChartSuggestion;
   isAdded: boolean;
-  onAdd: () => void;
+  onAdd: (type: ChartType) => void;
 }) {
   const { t } = useI18n();
   const [chartType, setChartType] = useState<ChartType>(suggestion.type);
@@ -98,7 +98,7 @@ function SuggestionCard({
         ) : (
           <Button
             size="sm"
-            onClick={onAdd}
+            onClick={() => onAdd(chartType)}
             className="h-7 text-xs gap-1 shadow-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
           >
             <Plus className="h-3 w-3" /> {t('add')}
@@ -407,7 +407,7 @@ export function QuickAddPanel({
                     key={s.id}
                     suggestion={s}
                     isAdded={addedChartIds.has(s.key)}
-                    onAdd={() => onAddSuggestion(s)}
+                    onAdd={type => onAddSuggestion(s, type)}
                   />
                 ))}
               </div>

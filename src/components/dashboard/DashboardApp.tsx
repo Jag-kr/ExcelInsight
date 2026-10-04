@@ -41,7 +41,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 // landing page use the same path).
 const LOGO_SRC = '/logo-64.png';
 
-function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: () => void; addLabel: string }) {
+function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: (type: ChartType) => void; addLabel: string }) {
   const [type, setType] = useState<ChartType>(s.type);
   return (
     <div className="relative group min-h-[300px]">
@@ -57,7 +57,7 @@ function ExploreChartCard({ s, onAdd, addLabel }: { s: ChartSuggestion; onAdd: (
         />
       </Suspense>
       <button
-        onClick={onAdd}
+        onClick={() => onAdd(type)}
         className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:bg-primary/90 shadow-lg font-medium"
       >
         {addLabel}
@@ -329,10 +329,10 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     trackEvent('chart_added', { source: 'manual' });
   }, []);
 
-  const addSuggestionToDashboard = useCallback((s: ChartSuggestion) => {
+  const addSuggestionToDashboard = useCallback((s: ChartSuggestion, type: ChartType = s.type) => {
     setDashboardItems(prev => [...prev, {
       id: `${s.id}-${Date.now()}`, title: s.title, description: s.description,
-      type: s.type, data: s.data, dataKeys: s.dataKeys, xKey: s.xKey,
+      type, data: s.data, dataKeys: s.dataKeys, xKey: s.xKey,
       sourceKey: s.key,
     }]);
     setAddedChartIds(prev => new Set(prev).add(s.key));
@@ -381,7 +381,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     const index = dashboardItems.findIndex(i => i.id === id);
     if (index === -1) return;
     const item = dashboardItems[index];
-    const chartKey = item.sourceKey && addedChartIds.has(item.sourceKey) ? item.sourceKey : null;
+    const stillShown = dashboardItems.some(i => i.id !== id && i.sourceKey === item.sourceKey);
+    const chartKey = item.sourceKey && !stillShown && addedChartIds.has(item.sourceKey) ? item.sourceKey : null;
     const insightId = addedInsightIds.has(id) ? id : null;
 
     setDashboardItems(prev => prev.filter(i => i.id !== id));
@@ -715,7 +716,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     <ExploreChartCard
                       key={s.id}
                       s={s}
-                      onAdd={() => addSuggestionToDashboard(s)}
+                      onAdd={type => addSuggestionToDashboard(s, type)}
                       addLabel={t('addToDashboard')}
                     />
                   ))}

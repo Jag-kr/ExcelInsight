@@ -123,6 +123,17 @@ describe('dashboard cards follow the active filters', () => {
     expect(live[0].data.every((r: any) => r['count'] === 1)).toBe(true);
   });
 
+  it('rebuilds a duplicated insight table like its original', () => {
+    const narrowed = applyFilter({ Region: 'South' });
+    const table = { title: '', type: 'bar' as const, data: [], dataKeys: [], xKey: '', displayAs: 'table' as const };
+    const [repeat, stats] = deriveDashboardItems([
+      { ...table, id: 'insight-repeat-table-Rep-copy-1700000000000' },
+      { ...table, id: 'insight-stats-table-copy-1700000000000-copy-1700000000001' },
+    ], narrowed.suggestions, narrowed.columns, narrowed.data, t);
+    expect(repeat.data.map((r: any) => r['topValues']).sort()).toEqual(['Ann', 'Cy']);
+    expect(stats.data.length).toBeGreaterThan(0);
+  });
+
 });
 
 describe('computeKpiValue', () => {
@@ -143,6 +154,13 @@ describe('computeKpiValue', () => {
     expect(computeKpiValue(rows, { column: 'v', agg: 'max' })).toBe('40');
     // even count -> mean of the two middle values
     expect(computeKpiValue(rows, { column: 'v', agg: 'median' })).toBe('25');
+  });
+
+  it('handles min/max over columns too large to spread into Math.min', () => {
+    const big = Array.from({ length: 300_000 }, (_, i) => ({ v: i }));
+    expect(computeKpiValue(big, { column: 'v', agg: 'min' })).toBe('0');
+    expect(computeKpiValue(big, { column: 'v', agg: 'max' })).toBe(computeKpiValue([{ v: 299_999 }], { column: 'v', agg: 'max' }));
+    expect(() => analyzeColumns(big)).not.toThrow();
   });
 
   it('counts distinct values', () => {

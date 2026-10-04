@@ -236,8 +236,8 @@ export function DynamicChart({
         return (
           <ScatterChart accessibilityLayer>
             <CartesianGrid />
-            <XAxis dataKey={dataKeys[0] || xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={xKey} />
-            <YAxis dataKey={dataKeys[0]} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+            <XAxis dataKey={xKey} type={typeof data[0]?.[xKey] === 'number' ? 'number' : 'category'} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={xKey} />
+            <YAxis dataKey={dataKeys[0]} type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={dataKeys[0]} />
             <ChartTooltip content={<ChartTooltipContent />} />
             <Scatter data={data} fill={getChartColor(0)}>
               {data.map((_, i) => (
