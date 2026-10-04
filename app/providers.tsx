@@ -1,15 +1,11 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeContext, ThemeMode } from '@/lib/theme';
 import { I18nContext, Language, translations, TranslationKey } from '@/lib/i18n';
 import { ChartPaletteContext, ChartPaletteId, CHART_PALETTES } from '@/lib/chart-themes';
-
-const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Always start from the same value on server and client so the first client
@@ -66,13 +62,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ThemeContext.Provider value={themeCtx}>
       <I18nContext.Provider value={i18nCtx}>
         <ChartPaletteContext.Provider value={chartPaletteCtx}>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              {children}
-              <Toaster />
-              <Sonner />
-            </TooltipProvider>
-          </QueryClientProvider>
+          <TooltipProvider>
+            {children}
+            <Sonner />
+          </TooltipProvider>
         </ChartPaletteContext.Provider>
       </I18nContext.Provider>
     </ThemeContext.Provider>
