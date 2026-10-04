@@ -158,8 +158,10 @@ export function repeatTable(col: RepeatingColumn, t: TFn) {
   };
 }
 
-/** Insight tables carry stable ids assigned in SmartInsights. */
-function rebuildTable(id: string, columns: ColumnMeta[], data: Record<string, any>[], t: TFn) {
+/** Insight tables carry stable ids assigned in SmartInsights; a duplicate
+    appends `-copy-<ts>`, which is stripped so it rebuilds like the original. */
+function rebuildTable(cardId: string, columns: ColumnMeta[], data: Record<string, any>[], t: TFn) {
+  const id = cardId.replace(/(-copy-\d+)+$/, '');
   if (id === 'insight-stats-table') return statsTable(columns, t);
   if (id === 'insight-quality-table') return qualityTable(columns, t);
   if (id.startsWith('insight-repeat-table-')) {
@@ -268,8 +270,9 @@ export function computeKpiValue(data: Record<string, any>[], spec?: KpiSpec): st
   switch (agg) {
     case 'sum': return compactNumber.format(nums.reduce((a, b) => a + b, 0));
     case 'average': return compactNumber.format(nums.reduce((a, b) => a + b, 0) / nums.length);
-    case 'min': return compactNumber.format(Math.min(...nums));
-    case 'max': return compactNumber.format(Math.max(...nums));
+    /* reduce, not Math.min(...nums): spreading 100k+ values overflows the stack. */
+    case 'min': return compactNumber.format(nums.reduce((a, b) => (b < a ? b : a)));
+    case 'max': return compactNumber.format(nums.reduce((a, b) => (b > a ? b : a)));
     case 'median': {
       const sorted = [...nums].sort((a, b) => a - b);
       const mid = sorted.length >> 1;

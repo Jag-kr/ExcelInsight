@@ -46,7 +46,7 @@ function detectColumnType(values: any[], colName: string): ColumnType {
   if (numericRatio > 0.85) {
     const nums = nonNull.map(Number).filter(n => !isNaN(n));
     const uniqueNums = new Set(nums);
-    const range = Math.max(...nums) - Math.min(...nums);
+    const range = nums.reduce((a, b) => (b > a ? b : a)) - nums.reduce((a, b) => (b < a ? b : a));
     const lowerName = colName.toLowerCase();
 
     // Detect ID columns
