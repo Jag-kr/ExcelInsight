@@ -15,7 +15,7 @@ import {
 import type { ChartSuggestion, ColumnMeta } from '@/lib/data-analyzer';
 import type { DashboardItem } from './DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
-import { computeRepeatingColumns, computeDataQuality, kpiCardId, NUMERIC_KPI_AGGS, type KpiSpec, type KpiAgg } from '@/lib/derive-dashboard-item';
+import { computeRepeatingColumns, computeDataQuality, kpiCardId, NUMERIC_KPI_AGGS, aggKey, type KpiSpec, type KpiAgg } from '@/lib/derive-dashboard-item';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const DynamicChart = dynamic(() => import('./DynamicChart').then(m => m.DynamicChart), {
@@ -47,7 +47,7 @@ interface QuickAddPanelProps {
   addedInsightIds: Set<string>;
   columns: ColumnMeta[];
   data: Record<string, any>[];
-  onAddSuggestion: (s: ChartSuggestion) => void;
+  onAddSuggestion: (s: ChartSuggestion, type: ChartType) => void;
   onAddCustomChart: (chart: DashboardItem) => void;
   onAddInsight: (card: { id: string; title: string; content: any; type: 'insight' }) => void;
   onAddKpi: (spec: KpiSpec, title: string) => void;
@@ -61,7 +61,7 @@ function SuggestionCard({
 }: {
   suggestion: ChartSuggestion;
   isAdded: boolean;
-  onAdd: () => void;
+  onAdd: (type: ChartType) => void;
 }) {
   const { t } = useI18n();
   const [chartType, setChartType] = useState<ChartType>(suggestion.type);
@@ -98,7 +98,7 @@ function SuggestionCard({
         ) : (
           <Button
             size="sm"
-            onClick={onAdd}
+            onClick={() => onAdd(chartType)}
             className="h-7 text-xs gap-1 shadow-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
           >
             <Plus className="h-3 w-3" /> {t('add')}
@@ -155,8 +155,6 @@ function CollapsibleSection({
 }
 
 /** Every KpiAgg has an i18n key of the same name except `distinct`. */
-const aggKey = (a: KpiAgg) => (a === 'distinct' ? 'distinctCount' : a) as Exclude<KpiAgg, 'distinct'> | 'distinctCount';
-
 /** Pick a column + aggregation and drop the result on the board as a KPI tile. */
 function MetricBuilder({ columns, onAdd }: { columns: ColumnMeta[]; onAdd: (spec: KpiSpec, title: string) => void }) {
   const { t } = useI18n();
@@ -407,7 +405,7 @@ export function QuickAddPanel({
                     key={s.id}
                     suggestion={s}
                     isAdded={addedChartIds.has(s.key)}
-                    onAdd={() => onAddSuggestion(s)}
+                    onAdd={type => onAddSuggestion(s, type)}
                   />
                 ))}
               </div>

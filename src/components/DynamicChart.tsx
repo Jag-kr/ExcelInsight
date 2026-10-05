@@ -29,6 +29,8 @@ interface DynamicChartProps {
   onRenameTitle?: (title: string) => void;
   showControls?: boolean;
   size?: 'xs' | 'sm' | 'md' | 'lg';
+  /** Stack series on one bar/area instead of grouping them side by side. */
+  stacked?: boolean;
 }
 
 const SIZE_CLASSES: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
@@ -50,12 +52,16 @@ const CHART_TYPE_ICONS: Record<ChartType, React.ElementType> = {
   radar: RadarIcon,
 };
 
+/* Series keys can be any column value ("Sales (sum)", "North / East"), which
+   breaks an unescaped url(#id) reference — same sanitising as getChartVarColor. */
+const gradientId = (key: string) => `grad-${key.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
 const PRIMARY_CHART_TYPES: ChartType[] = ['bar', 'line', 'area', 'donut'];
 const OVERFLOW_CHART_TYPES: ChartType[] = ['horizontalBar', 'pie', 'scatter', 'radar'];
 
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
-  onChangeType, onRenameTitle, showControls = true, size = 'md',
+  onChangeType, onRenameTitle, showControls = true, size = 'md', stacked = false,
 }: DynamicChartProps) {
   const { t } = useI18n();
   const chartRef = useRef<HTMLDivElement>(null);
@@ -148,7 +154,7 @@ export function DynamicChart({
                 showing a swatch that matches nothing on screen. */}
             {!colorByCategory && <ChartLegend content={<ChartLegendContent />} />}
             {dataKeys.map((key) => (
-              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={[4, 4, 0, 0]}>
+              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={stacked ? 0 : [4, 4, 0, 0]} stackId={stacked ? 'stack' : undefined}>
                 {colorByCategory && barData.map((_, i) => (
                   <Cell key={i} fill={getChartColor(i)} />
                 ))}
@@ -166,7 +172,7 @@ export function DynamicChart({
             <ChartTooltip content={<ChartTooltipContent />} />
             {!colorByCategory && <ChartLegend content={<ChartLegendContent />} />}
             {dataKeys.map((key) => (
-              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={[0, 4, 4, 0]}>
+              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={stacked ? 0 : [0, 4, 4, 0]} stackId={stacked ? 'stack' : undefined}>
                 {colorByCategory && barData.map((_, i) => (
                   <Cell key={i} fill={getChartColor(i)} />
                 ))}
@@ -193,7 +199,7 @@ export function DynamicChart({
           <AreaChart data={data} accessibilityLayer>
             <defs>
               {dataKeys.map((key) => (
-                <linearGradient key={key} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
+                <linearGradient key={key} id={gradientId(key)} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={getChartVarColor(key)} stopOpacity={0.4} />
                   <stop offset="95%" stopColor={getChartVarColor(key)} stopOpacity={0} />
                 </linearGradient>
@@ -205,7 +211,7 @@ export function DynamicChart({
             <ChartTooltip content={<ChartTooltipContent />} />
             <ChartLegend content={<ChartLegendContent />} />
             {dataKeys.map((key) => (
-              <Area key={key} type="monotone" dataKey={key} stroke={getChartVarColor(key)} fill={`url(#grad-${key})`} strokeWidth={2} />
+              <Area key={key} type="monotone" dataKey={key} stroke={getChartVarColor(key)} fill={`url(#${gradientId(key)})`} strokeWidth={2} stackId={stacked ? 'stack' : undefined} />
             ))}
           </AreaChart>
         );
@@ -236,8 +242,8 @@ export function DynamicChart({
         return (
           <ScatterChart accessibilityLayer>
             <CartesianGrid />
-            <XAxis dataKey={dataKeys[0] || xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={xKey} />
-            <YAxis dataKey={dataKeys[0]} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+            <XAxis dataKey={xKey} type={typeof data[0]?.[xKey] === 'number' ? 'number' : 'category'} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={xKey} />
+            <YAxis dataKey={dataKeys[0]} type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={dataKeys[0]} />
             <ChartTooltip content={<ChartTooltipContent />} />
             <Scatter data={data} fill={getChartColor(0)}>
               {data.map((_, i) => (

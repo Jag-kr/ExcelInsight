@@ -1,3 +1,5 @@
+import type { WorkSheet, CellObject, SSF } from 'xlsx';
+
 export type ColumnType = 'numeric' | 'categorical' | 'date' | 'text' | 'range' | 'id';
 
 export interface ColumnMeta {
@@ -36,6 +38,92 @@ export interface ChartSuggestion {
   description: string;
 }
 
+export type DateGrain = 'day' | 'week' | 'month' | 'quarter' | 'year';
+
+/**
+ * Calendar parts of a date cell. ISO-style strings are read directly rather
+ * than through `new Date()`, which parses "2025-01-15" as UTC midnight and so
+ * lands on the previous day anywhere west of Greenwich.
+ */
+function dateParts(v: unknown): [number, number, number] | null {
+  if (v == null || v === '') return null;
+  const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(String(v));
+  if (iso) return [+iso[1], +iso[2], +iso[3]];
+  const d = v instanceof Date ? v : new Date(v as string | number);
+  return isNaN(d.getTime()) ? null : [d.getFullYear(), d.getMonth() + 1, d.getDate()];
+}
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+/** Sortable bucket label for a date cell, or null when it isn't a date. */
+export function bucketDate(v: unknown, grain: DateGrain): string | null {
+  const p = dateParts(v);
+  if (!p) return null;
+  const [y, m, d] = p;
+  switch (grain) {
+    case 'year': return String(y);
+    case 'quarter': return `${y}-Q${Math.ceil(m / 3)}`;
+    case 'month': return `${y}-${pad(m)}`;
+    case 'day': return `${y}-${pad(m)}-${pad(d)}`;
+    case 'week': {
+      // Weeks are labelled by their Monday. UTC arithmetic: no DST gaps.
+      const date = new Date(Date.UTC(y, m - 1, d));
+      date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
+      return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+    }
+  }
+}
+
+/**
+ * Excel stores dates as serial numbers, so without this a date column reaches
+ * the analyser as plain numbers ("45672") and is classed numeric. Rewrites
+ * every date-formatted numeric cell in a SheetJS sheet (read with
+ * `cellNF: true`, or the formats are dropped) to text, in place, before
+ * sheet_to_json:
+ *
+ *  - Workbooks: the serial is decoded with SSF.parse_date_code to
+ *    "yyyy-mm-dd" (+ " HH:MM" when there is a time). Not `cellDates`: that
+ *    builds local-time Dates that drift by seconds and can tip a midnight
+ *    onto the previous day.
+ *  - Text files (CSV): pass `rawSheet`, the same file read with `raw: true`,
+ *    and the cell keeps the text the user wrote. SheetJS 0.18 converts CSV
+ *    dates through the local timezone, so "2025-01-15" read in New York
+ *    became 14 Jan 19:00; the original text has no such problem.
+ *
+ * Takes SSF as a parameter so xlsx stays out of this module.
+ */
+function normalizeDateCells(sheet: WorkSheet, ssf: typeof SSF, rawSheet?: WorkSheet): void {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  for (const ref in sheet) {
+    const cell = sheet[ref] as CellObject;
+    if (ref[0] === '!' || cell?.t !== 'n' || !cell.z || !ssf.is_date(String(cell.z))) continue;
+    const raw = (rawSheet?.[ref] as CellObject | undefined)?.v;
+    if (raw != null && raw !== '') {
+      sheet[ref] = { t: 's', v: String(raw).trim() };
+      continue;
+    }
+    const p = ssf.parse_date_code(cell.v as number);
+    if (!p) continue;
+    const time = p.H || p.M ? ` ${pad(p.H)}:${pad(p.M)}` : '';
+    sheet[ref] = { t: 's', v: `${p.y}-${pad(p.m)}-${pad(p.d)}${time}` };
+  }
+}
+
+/**
+ * Parse the first sheet of an uploaded file into rows, with date cells fixed up
+ * by normalizeDateCells. `isText` = CSV-like input, whose dates keep their
+ * original text. Takes the xlsx module as a parameter so it stays lazy-loaded.
+ */
+export function readFirstSheet(XLSX: typeof import('xlsx'), data: Uint8Array, isText: boolean) {
+  // cellNF keeps each cell's number format, which is how dates are told apart from numbers.
+  const workbook = XLSX.read(data, { type: 'array', cellNF: true });
+  const [sheetName, ...skipped] = workbook.SheetNames;
+  const sheet = workbook.Sheets[sheetName];
+  const rawSheet = isText ? XLSX.read(data, { type: 'array', raw: true }).Sheets[sheetName] : undefined;
+  normalizeDateCells(sheet, XLSX.SSF, rawSheet);
+  return { rows: XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet), sheetName, skipped };
+}
+
 function detectColumnType(values: any[], colName: string): ColumnType {
   const nonNull = values.filter(v => v !== null && v !== undefined && v !== '');
   if (nonNull.length === 0) return 'text';
@@ -46,7 +134,7 @@ function detectColumnType(values: any[], colName: string): ColumnType {
   if (numericRatio > 0.85) {
     const nums = nonNull.map(Number).filter(n => !isNaN(n));
     const uniqueNums = new Set(nums);
-    const range = Math.max(...nums) - Math.min(...nums);
+    const range = nums.reduce((a, b) => (b > a ? b : a)) - nums.reduce((a, b) => (b < a ? b : a));
     const lowerName = colName.toLowerCase();
 
     // Detect ID columns
@@ -153,11 +241,10 @@ export function generateChartSuggestions(data: Record<string, any>[], columns: C
     numericCols.slice(0, 2).forEach(num => {
       const buckets = new Map<string, { sum: number; count: number }>();
       data.forEach(row => {
-        const d = new Date(row[dateCol.name]);
-        if (isNaN(d.getTime())) return;
+        const key = bucketDate(row[dateCol.name], 'month');
+        if (key === null) return;
         const val = Number(row[num.name]);
         if (isNaN(val)) return;
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const b = buckets.get(key) ?? { sum: 0, count: 0 };
         b.sum += val;
         b.count++;
