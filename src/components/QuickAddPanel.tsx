@@ -15,7 +15,7 @@ import {
 import type { ChartSuggestion, ColumnMeta } from '@/lib/data-analyzer';
 import type { DashboardItem } from './DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
-import { computeRepeatingColumns, computeDataQuality, kpiCardId, NUMERIC_KPI_AGGS, type KpiSpec, type KpiAgg } from '@/lib/derive-dashboard-item';
+import { computeRepeatingColumns, computeDataQuality, kpiCardId, NUMERIC_KPI_AGGS, aggKey, type KpiSpec, type KpiAgg } from '@/lib/derive-dashboard-item';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const DynamicChart = dynamic(() => import('./DynamicChart').then(m => m.DynamicChart), {
@@ -155,8 +155,6 @@ function CollapsibleSection({
 }
 
 /** Every KpiAgg has an i18n key of the same name except `distinct`. */
-const aggKey = (a: KpiAgg) => (a === 'distinct' ? 'distinctCount' : a) as Exclude<KpiAgg, 'distinct'> | 'distinctCount';
-
 /** Pick a column + aggregation and drop the result on the board as a KPI tile. */
 function MetricBuilder({ columns, onAdd }: { columns: ColumnMeta[]; onAdd: (spec: KpiSpec, title: string) => void }) {
   const { t } = useI18n();

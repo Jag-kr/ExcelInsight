@@ -11,17 +11,18 @@ import { ChartType, chartTypeOptions, getChartColor, getChartColorVar } from '@/
 import { TopValueBar } from './TopValueBar';
 import {
   Trash2, Maximize2, Minimize2, Square, Repeat2, BarChart3, AlertTriangle,
-  Copy, MoreHorizontal, RectangleHorizontal, Rows3, LineChart as LineChartIcon,
+  Copy, MoreHorizontal, RectangleHorizontal, Rows3, LineChart as LineChartIcon, Pencil,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n';
+import { useDashboardT } from '@/lib/i18n/dashboard';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
-import type { ManualChartSpec, KpiSpec } from '@/lib/derive-dashboard-item';
+import type { ManualChartSpec, ChartSpec, KpiSpec } from '@/lib/derive-dashboard-item';
 
 export interface DashboardItem {
   id: string;
@@ -31,14 +32,11 @@ export interface DashboardItem {
   data: any[];
   dataKeys: string[];
   xKey?: string;
-  /* Recipe: how to rebuild `data` when filters move. Optional — sessions saved
-     before recipes existed keep their stored snapshot. */
   sourceKey?: string;
-  spec?: ManualChartSpec;
+  spec?: ManualChartSpec | ChartSpec;
   displayAs?: 'chart' | 'table' | 'insight' | 'kpi';
   tableColumns?: string[];
   size?: 'xs' | 'sm' | 'md' | 'lg';
-  /* KPI recipe + the number derived from it. Only `kpiSpec` is persisted. */
   kpiSpec?: KpiSpec;
   kpiValue?: string;
   insightType?: 'repeating' | 'stats' | 'quality';
@@ -51,6 +49,7 @@ interface DashboardGridProps {
   onRemove: (id: string) => void;
   onUpdateItem: (id: string, updates: Partial<DashboardItem>) => void;
   onDuplicate?: (id: string) => void;
+  onEdit?: (id: string) => void;
   emptyAction?: React.ReactNode;
 }
 
@@ -274,14 +273,21 @@ const sizeIcons = {
   lg: Maximize2,
 };
 
-function SortableCard({ item, index, onRemove, onUpdateItem, onDuplicate }: {
+/* Scatter suggestions plot raw points, so there is no field-well recipe to edit. */
+const isEditableChart = (item: DashboardItem) =>
+  (!item.displayAs || item.displayAs === 'chart') &&
+  (!!item.spec || (!!item.sourceKey && !item.sourceKey.startsWith('scatter:')));
+
+function SortableCard({ item, index, onRemove, onUpdateItem, onDuplicate, onEdit }: {
   item: DashboardItem;
   index: number;
   onRemove: () => void;
   onUpdateItem: (updates: Partial<DashboardItem>) => void;
   onDuplicate?: () => void;
+  onEdit?: () => void;
 }) {
   const { t } = useI18n();
+  const d = useDashboardT();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
   const size = (item.size || (item.displayAs === 'kpi' ? 'xs' : 'md')) as 'xs' | 'sm' | 'md' | 'lg';
 
@@ -394,6 +400,13 @@ function SortableCard({ item, index, onRemove, onUpdateItem, onDuplicate }: {
               </DropdownMenuSub>
             )}
 
+            {onEdit && isEditableChart(item) && (
+              <DropdownMenuItem onClick={onEdit} className="text-xs rounded-lg">
+                <Pencil className="h-3.5 w-3.5 mr-2" />
+                {d('editChart')}
+              </DropdownMenuItem>
+            )}
+
             {onDuplicate && (
               <DropdownMenuItem onClick={onDuplicate} className="text-xs rounded-lg">
                 <Copy className="h-3.5 w-3.5 mr-2" />
@@ -438,6 +451,7 @@ function SortableCard({ item, index, onRemove, onUpdateItem, onDuplicate }: {
             onRenameTitle={renameTitle}
             showControls={false}
             size={size}
+            stacked={!!item.spec && 'v' in item.spec && !!item.spec.stacked}
           />
         </ChartErrorBoundary>
       )}
@@ -445,7 +459,7 @@ function SortableCard({ item, index, onRemove, onUpdateItem, onDuplicate }: {
   );
 }
 
-export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, emptyAction }: DashboardGridProps) {
+export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, onEdit, emptyAction }: DashboardGridProps) {
   const { t } = useI18n();
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -516,6 +530,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
               onRemove={() => onRemove(item.id)}
               onUpdateItem={(updates) => onUpdateItem(item.id, updates)}
               onDuplicate={onDuplicate ? () => onDuplicate(item.id) : undefined}
+              onEdit={onEdit ? () => onEdit(item.id) : undefined}
             />
           ))}
         </div>
