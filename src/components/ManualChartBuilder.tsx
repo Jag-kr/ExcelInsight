@@ -53,7 +53,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
   const isDate = byName.get(dimension)?.type === 'date';
   const legendCols = columns.filter(c => c.name !== dimension && (c.type === 'categorical' || c.type === 'range'));
 
-  const spec: ChartSpec = {
+  const spec = useMemo<ChartSpec>(() => ({
     v: 2,
     dimension,
     measures,
@@ -62,8 +62,8 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
     ...(sort ? { sort } : {}),
     ...(limit !== '' && !isNaN(Number(limit)) ? { limit: Math.max(0, Math.floor(Number(limit))) } : {}),
     ...(stacked && STACKABLE.includes(chartType) ? { stacked: true } : {}),
-  };
-  const { data: chartData, dataKeys } = useMemo(() => aggregateChart(data, spec), [data, JSON.stringify(spec)]);
+  }), [dimension, measures, isDate, grain, series, sort, limit, stacked, chartType]);
+  const { data: chartData, dataKeys } = useMemo(() => aggregateChart(data, spec), [data, spec]);
 
   const measureLabel = (m: ChartMeasure) => (m.column ? `${t(aggKey(m.agg))} ${m.column}` : t('rowCount'));
   const titleFor = (s: Pick<ChartSpec, 'measures' | 'dimension'>) => `${s.measures.map(measureLabel).join(', ')} ${t('by')} ${s.dimension}`;

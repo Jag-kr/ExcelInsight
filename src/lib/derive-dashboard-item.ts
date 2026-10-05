@@ -111,9 +111,13 @@ export function measureKey(m: ChartMeasure, measures: ChartMeasure[]): string {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+type Row = Record<string, unknown>;
+/** One recharts row: the axis label plus a number (or a gap) per data key. */
+export type ChartRow = { name: string; [dataKey: string]: string | number | null };
+
 /** Group rows under the chart's axis labels, preserving nothing but membership. */
-function groupRows(rows: Record<string, any>[], dimension: string, grain?: DateGrain) {
-  const groups = new Map<string, Record<string, any>[]>();
+function groupRows(rows: Row[], dimension: string, grain?: DateGrain) {
+  const groups = new Map<string, Row[]>();
   for (const row of rows) {
     const label = grain ? bucketDate(row[dimension], grain) : String(row[dimension] ?? 'Unknown');
     if (label === null) continue;
@@ -125,21 +129,21 @@ function groupRows(rows: Record<string, any>[], dimension: string, grain?: DateG
 }
 
 /** null (no numeric cells) renders as a gap rather than a misleading zero. */
-function measureValue(rows: Record<string, any>[], m: ChartMeasure): number | null {
+function measureValue(rows: Row[], m: ChartMeasure): number | null {
   const n = aggregateValues(m.column ? rows.map(r => r[m.column!]) : rows, m.column ? m.agg : 'count');
   return n === null ? null : round2(n);
 }
 
 /** Aggregate a chart recipe into recharts rows: [{ name, [dataKey]: number }]. */
 export function aggregateChart(
-  rows: Record<string, any>[],
+  rows: Row[],
   spec: ChartSpec,
-): { data: Record<string, any>[]; dataKeys: string[] } {
+): { data: ChartRow[]; dataKeys: string[] } {
   const measures = spec.measures.slice(0, MAX_MEASURES);
   if (!spec.dimension || !measures.length) return { data: [], dataKeys: [] };
 
   const groups = groupRows(rows, spec.dimension, spec.grain);
-  let data: Record<string, any>[];
+  let data: ChartRow[];
   let dataKeys: string[];
 
   if (spec.series && measures.length === 1) {
@@ -152,14 +156,14 @@ export function aggregateChart(
     dataKeys = totals.slice(0, MAX_SERIES).map(([key]) => key);
     data = [...groups].map(([name, rs]) => {
       const bySeries = groupRows(rs, spec.series!);
-      const row: Record<string, any> = { name };
+      const row: ChartRow = { name };
       for (const key of dataKeys) row[key] = bySeries.has(key) ? measureValue(bySeries.get(key)!, m) : null;
       return row;
     });
   } else {
     dataKeys = measures.map(m => measureKey(m, measures));
     data = [...groups].map(([name, rs]) => {
-      const row: Record<string, any> = { name };
+      const row: ChartRow = { name };
       measures.forEach((m, i) => { row[dataKeys[i]] = measureValue(rs, m); });
       return row;
     });
@@ -167,7 +171,7 @@ export function aggregateChart(
 
   // Time reads left to right; everything else defaults to biggest first.
   const sort = spec.sort ?? (spec.grain ? 'label' : 'value-desc');
-  const total = (r: Record<string, any>) => dataKeys.reduce((n, k) => n + (r[k] ?? 0), 0);
+  const total = (r: ChartRow) => dataKeys.reduce((n, k) => n + (Number(r[k]) || 0), 0);
   if (sort === 'label') {
     data.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
   } else {
@@ -364,7 +368,7 @@ export const NUMERIC_KPI_AGGS: KpiAgg[] = ['sum', 'average', 'min', 'max', 'medi
  * One aggregate over a column's raw cells. Blank cells are ignored; numeric
  * aggregations skip anything that isn't a number. null = nothing to aggregate.
  */
-export function aggregateValues(values: any[], agg: KpiAgg): number | null {
+export function aggregateValues(values: unknown[], agg: KpiAgg): number | null {
   const present = values.filter(v => v != null && v !== '');
   if (agg === 'count') return present.length;
   if (agg === 'distinct') return new Set(present.map(String)).size;
