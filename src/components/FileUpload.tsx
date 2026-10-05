@@ -72,12 +72,9 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
     reader.onload = async (e) => {
       setPhase('parsing');
       try {
-        const XLSX = await import('xlsx');
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const [sheetName, ...skipped] = workbook.SheetNames;
-        const firstSheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(firstSheet);
+        const [XLSX, { readFirstSheet }] = await Promise.all([import('xlsx'), import('@/lib/data-analyzer')]);
+        const isText = !['.xlsx', '.xls'].includes(getFileExt(file.name));
+        const { rows: jsonData, sheetName, skipped } = readFirstSheet(XLSX, new Uint8Array(e.target?.result as ArrayBuffer), isText);
         // Only the first sheet is parsed. Dropping the rest without a word read
         // as data loss on multi-sheet workbooks, so name what was and wasn't read.
         if (skipped.length > 0) {

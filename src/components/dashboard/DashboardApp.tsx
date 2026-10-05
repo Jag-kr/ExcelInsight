@@ -8,9 +8,11 @@ import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } fro
 import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
-import { deriveDashboardItems, kpiCardId, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { deriveDashboardItems, kpiCardId, toChartSpec, specFromSourceKey, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
+import { useDashboardT } from '@/lib/i18n/dashboard';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -141,6 +143,7 @@ export interface DashboardAppProps {
 
 export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) {
   const { t } = useI18n();
+  const d = useDashboardT();
   const { paletteId } = useChartPalette();
 
   /**
@@ -167,6 +170,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   // A fresh upload arrives underived, so the overlay is up from the first paint.
   const [analyzing, setAnalyzing] = useState(() => Boolean(initialUpload));
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [mobileClearConfirmOpen, setMobileClearConfirmOpen] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -375,6 +379,28 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     setAddedInsightIds(prev => new Set(prev).add(card.id));
     trackEvent('chart_added', { source: 'table' });
   }, []);
+
+  /* The card being edited, with its recipe in ChartSpec form. Suggestion cards
+     are converted from their sourceKey, so any chart on the board opens. */
+  const editing = useMemo(() => {
+    const item = dashboardItems.find(i => i.id === editingId);
+    if (!item) return null;
+    const spec = item.spec ? toChartSpec(item.spec, item.type) : item.sourceKey ? specFromSourceKey(item.sourceKey, columns) : null;
+    return spec && { item, spec };
+  }, [editingId, dashboardItems, columns]);
+
+  const handleSaveEdit = useCallback((updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => {
+    if (!editing) return;
+    const { item } = editing;
+    // An edited suggestion is now a custom chart: drop the suggestion link,
+    // and free the suggestion in Quick Add unless another card still shows it.
+    setDashboardItems(prev => prev.map(i => (i.id === item.id ? { ...i, ...updates, sourceKey: undefined } : i)));
+    const key = item.sourceKey;
+    if (key && !dashboardItems.some(i => i.id !== item.id && i.sourceKey === key)) {
+      setAddedChartIds(prev => { const next = new Set(prev); next.delete(key); return next; });
+    }
+    setEditingId(null);
+  }, [editing, dashboardItems]);
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
     /* Read up front, not inside an updater: un-marking needs item.sourceKey. */
@@ -682,6 +708,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     onRemove={handleRemoveFromDashboard}
                     onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
                     onDuplicate={handleDuplicate}
+                    onEdit={setEditingId}
                     emptyAction={
                       <div className="flex flex-wrap items-center justify-center gap-2">
                         <Button size="sm" onClick={() => setQuickAddOpen(true)} className="gap-1.5 text-sm h-9">
@@ -827,6 +854,25 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
           </Tabs>
         </main>
       </div>
+
+      {/* ─── Chart editor ─── */}
+      <Sheet open={!!editing} onOpenChange={open => { if (!open) setEditingId(null); }}>
+        <SheetContent side="right" className="w-full sm:max-w-md lg:max-w-lg overflow-y-auto">
+          <SheetHeader className="mb-4">
+            <SheetTitle className="text-base">{d('editChart')}</SheetTitle>
+            <SheetDescription className="text-xs">{d('editChartDesc')}</SheetDescription>
+          </SheetHeader>
+          {editing && (
+            <ManualChartBuilder
+              key={editing.item.id}
+              data={filteredData}
+              columns={filteredColumns}
+              initial={{ type: editing.item.type, spec: editing.spec, title: editing.item.title }}
+              onSave={handleSaveEdit}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* ─── Quick Add Panel ─── */}
       <Suspense fallback={null}>

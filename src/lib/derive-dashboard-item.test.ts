@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { analyzeColumns, generateChartSuggestions } from './data-analyzer';
+import { analyzeColumns, generateChartSuggestions, bucketDate } from './data-analyzer';
 import { buildDefaultDashboard } from './build-default-dashboard';
-import { deriveDashboardItems, computeKpiValue } from './derive-dashboard-item';
+import {
+  deriveDashboardItems, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES,
+  type ChartSpec, type DateGrain, type KpiAgg,
+} from './derive-dashboard-item';
 
 const t = ((k: string) => k) as any;
 
@@ -202,5 +205,105 @@ describe('time trends', () => {
     expect(trend).toBeDefined();
     expect(trend!.data).toHaveLength(12);
     expect(trend!.data[0]).toEqual({ name: '2025-01', value: 100 });
+  });
+});
+
+describe('aggregateChart', () => {
+  const rows = [
+    { Region: 'North', Rep: 'Ann', Sales: 100, Date: '2025-01-15' },
+    { Region: 'North', Rep: 'Bob', Sales: 80, Date: '2025-01-31' },
+    { Region: 'South', Rep: 'Ann', Sales: 250, Date: '2025-02-01' },
+    { Region: 'South', Rep: 'Cy', Sales: 300, Date: '2025-04-10' },
+    { Region: 'East', Rep: 'Bob', Sales: 50, Date: '2026-01-05' },
+    { Region: 'East', Rep: 'Cy', Sales: null, Date: 'not a date' },
+  ];
+  const spec = (s: Partial<ChartSpec>): ChartSpec => ({ v: 2, dimension: 'Region', measures: [{ column: 'Sales', agg: 'sum' }], ...s });
+
+  it('aggregates several measures side by side', () => {
+    const { data, dataKeys } = aggregateChart(rows, spec({
+      measures: [{ column: 'Sales', agg: 'sum' }, { column: 'Sales', agg: 'max' }, { column: null, agg: 'count' }],
+    }));
+    expect(dataKeys).toEqual(['Sales (sum)', 'Sales (max)', 'Rows (count)']);
+    expect(data[0]).toEqual({ name: 'South', 'Sales (sum)': 550, 'Sales (max)': 300, 'Rows (count)': 2 });
+  });
+
+  it('pivots a legend column into one series per value', () => {
+    const { data, dataKeys } = aggregateChart(rows, spec({ series: 'Rep' }));
+    expect(dataKeys.sort()).toEqual(['Ann', 'Bob', 'Cy']);
+    expect(data.find(r => r.name === 'North')).toEqual({ name: 'North', Ann: 100, Bob: 80, Cy: null });
+  });
+
+  it('caps the legend at the biggest series', () => {
+    const many = Array.from({ length: 12 }, (_, i) => ({ Region: 'X', Rep: `R${i}`, Sales: i }));
+    const { dataKeys } = aggregateChart(many, spec({ series: 'Rep' }));
+    expect(dataKeys).toHaveLength(MAX_SERIES);
+    expect(dataKeys[0]).toBe('R11');
+  });
+
+  it('buckets dates by grain, in time order, skipping non-dates', () => {
+    const names = (grain: DateGrain) => aggregateChart(rows, spec({ dimension: 'Date', grain })).data.map(r => r.name);
+    expect(names('month')).toEqual(['2025-01', '2025-02', '2025-04', '2026-01']);
+    expect(names('quarter')).toEqual(['2025-Q1', '2025-Q2', '2026-Q1']);
+    expect(names('year')).toEqual(['2025', '2026']);
+    expect(names('day')).toHaveLength(5);
+    // 2025-01-31 is a Friday → its week starts Monday 27 Jan.
+    expect(names('week')).toContain('2025-01-27');
+  });
+
+  it('sorts and limits', () => {
+    const names = (s: Partial<ChartSpec>) => aggregateChart(rows, spec(s)).data.map(r => r.name);
+    expect(names({})).toEqual(['South', 'North', 'East']);
+    expect(names({ sort: 'value-asc' })).toEqual(['East', 'North', 'South']);
+    expect(names({ sort: 'label' })).toEqual(['East', 'North', 'South']);
+    expect(names({ limit: 2 })).toEqual(['South', 'North']);
+  });
+
+  it('supports min, max, median and distinct', () => {
+    const one = (agg: KpiAgg, column = 'Sales') => aggregateChart(rows, spec({ measures: [{ column, agg }], sort: 'label' })).data;
+    expect(one('min').map(r => r.value)).toEqual([50, 80, 250]);
+    expect(one('median').map(r => r.value)).toEqual([50, 90, 275]);
+    expect(one('distinct', 'Rep').map(r => r.value)).toEqual([2, 2, 2]);
+  });
+
+  it('reads a legacy {xCol, yCol, aggregation} spec unchanged', () => {
+    expect(toChartSpec({ xCol: 'Region', yCol: 'Sales', aggregation: 'average' }, 'bar'))
+      .toEqual({ v: 2, dimension: 'Region', measures: [{ column: 'Sales', agg: 'average' }] });
+    // The old builder always counted for pies.
+    expect(toChartSpec({ xCol: 'Region', yCol: 'Sales', aggregation: 'sum' }, 'pie').measures)
+      .toEqual([{ column: null, agg: 'count' }]);
+  });
+});
+
+describe('bucketDate', () => {
+  it('reads ISO dates without a timezone shift', () => {
+    expect(bucketDate('2025-01-01', 'day')).toBe('2025-01-01');
+    expect(bucketDate('2025-03-31 23:30', 'quarter')).toBe('2025-Q1');
+    expect(bucketDate('', 'month')).toBeNull();
+    expect(bucketDate('nope', 'month')).toBeNull();
+  });
+});
+
+describe('specFromSourceKey', () => {
+  it('rebuilds every aggregate suggestion with the same numbers', async () => {
+    const { sampleDataset } = await import('@/content/sample-dataset');
+    const data = sampleDataset as unknown as Record<string, any>[];
+    const columns = analyzeColumns(data);
+    const suggestions = generateChartSuggestions(data, columns);
+    const checked = suggestions.filter(s => !s.key.startsWith('scatter:'));
+    expect(checked.length).toBeGreaterThan(5);
+
+    for (const s of checked) {
+      const spec = specFromSourceKey(s.key, columns);
+      expect(spec, s.key).not.toBeNull();
+      const rebuilt = aggregateChart(data, spec!);
+      const values = (rows: any[], key: string) => rows.map(r => [r.name, r[key]]);
+      // Suggestions name their value column variously (count/total/average/value).
+      expect(values(rebuilt.data, rebuilt.dataKeys[0]), s.key)
+        .toEqual(expect.arrayContaining(values(s.data, s.dataKeys[0])));
+    }
+  });
+
+  it('has no recipe for scatter plots', () => {
+    expect(specFromSourceKey('scatter:a:b', [])).toBeNull();
   });
 });
