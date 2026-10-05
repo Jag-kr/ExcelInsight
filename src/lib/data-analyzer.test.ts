@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import { analyzeColumns, readFirstSheet } from './data-analyzer';
 
 /** A real .xlsx file as bytes, built the way Excel would store it. */
-function xlsxBytes(rows: any[][]) {
+function xlsxBytes(rows: unknown[][]) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Sheet1');
   return new Uint8Array(XLSX.write(wb, { type: 'array', bookType: 'xlsx' }));
