@@ -4,11 +4,14 @@ import type { ColumnMeta, ColumnType } from '@/lib/data-analyzer';
 import { addFieldToSpec, aggKey, aggsForColumn, normalizeAgg, repeatColumnOf, specForField, specTitle, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { ChartFormat } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { ManualChartBuilder } from '../ManualChartBuilder';
 import type { DashboardItem } from '../DashboardGrid';
+import { FormatTab } from './FormatTab';
 
 const FIELD_ICONS: Record<ColumnType, LucideIcon> = {
   date: Calendar, numeric: Hash, range: Hash, categorical: Tag, text: Type, id: KeyRound,
@@ -33,15 +36,18 @@ export interface EditorPaneProps {
   onChangeKpi?: (spec: KpiSpec) => void;
   /** Live edits for a selected repeating-values card: the column to tally. */
   onChangeRepeatColumn?: (column: string) => void;
+  /** Live edits to the selected chart or KPI card's formatting; undefined clears it. */
+  onChangeFormat?: (format: ChartFormat | undefined) => void;
   onDeselect: () => void;
   /** Opens the column merger; the button is hidden when omitted. */
   onMergeColumns?: () => void;
 }
 
-export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onDeselect, onMergeColumns }: EditorPaneProps) {
+export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onDeselect, onMergeColumns }: EditorPaneProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [query, setQuery] = useState('');
+  const [tab, setTab] = useState<'data' | 'format'>('data');
 
   const item = selected?.item;
   const spec = selected?.spec ?? null;
@@ -50,6 +56,9 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
 
   const kpi = item?.displayAs === 'kpi' ? item.kpiSpec : undefined;
   const repeatCol = item ? repeatColumnOf(item) : null;
+  // Only chart recipes and KPI cards have formatting; any other selection falls back to Data.
+  const canFormat = !!item && !!onChangeFormat && (!!spec || !!kpi);
+  const showFormat = canFormat && tab === 'format';
 
   const onField = (col: ColumnMeta) => {
     if (!item) return onAddField(col);
@@ -73,7 +82,17 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
         )}
       </div>
 
-      {item && spec && (
+      {canFormat && (
+        <Tabs value={tab} onValueChange={v => setTab(v as typeof tab)}>
+          <TabsList className="grid h-8 w-full grid-cols-2">
+            <TabsTrigger value="data" className="py-1 text-xs">{t('data')}</TabsTrigger>
+            <TabsTrigger value="format" className="py-1 text-xs">{d('format')}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
+
+      {showFormat && item && onChangeFormat && <FormatTab item={item} onChange={onChangeFormat} />}
+      {!showFormat && item && spec && (
         <ManualChartBuilder
           key={item.id}
           data={data}
@@ -82,7 +101,7 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
           onChange={onChange}
         />
       )}
-      {kpi && onChangeKpi && (
+      {!showFormat && kpi && onChangeKpi && (
         <div className="space-y-3">
           <div>
             <label className={LABEL}>{d('column')}</label>
@@ -108,7 +127,7 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
           </div>
         </div>
       )}
-      {repeatCol && onChangeRepeatColumn && (
+      {!showFormat && repeatCol && onChangeRepeatColumn && (
         <div>
           <label className={LABEL}>{d('column')}</label>
           <Select value={repeatCol} onValueChange={onChangeRepeatColumn}>
