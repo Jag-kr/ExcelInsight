@@ -39,6 +39,7 @@ const en = {
   column: 'Column',
   closeEditor: 'Close editor',
   fieldsPanel: 'Fields panel',
+  redo: 'Redo',
 } as const;
 
 export type DashboardKey = keyof typeof en;
@@ -75,6 +76,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     column: 'कॉलम',
     closeEditor: 'संपादक बंद करें',
     fieldsPanel: 'फ़ील्ड पैनल',
+    redo: 'फिर से करें',
   },
   es: {
     values: 'Valores',
@@ -106,6 +108,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     column: 'Columna',
     closeEditor: 'Cerrar editor',
     fieldsPanel: 'Panel de campos',
+    redo: 'Rehacer',
   },
   zh: {
     values: '数值',
@@ -137,6 +140,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     column: '列',
     closeEditor: '关闭编辑器',
     fieldsPanel: '字段面板',
+    redo: '重做',
   },
   fr: {
     values: 'Valeurs',
@@ -168,6 +172,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     column: 'Colonne',
     closeEditor: 'Fermer l’éditeur',
     fieldsPanel: 'Panneau des champs',
+    redo: 'Rétablir',
   },
   de: {
     values: 'Werte',
@@ -199,6 +204,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     column: 'Spalte',
     closeEditor: 'Editor schließen',
     fieldsPanel: 'Feldbereich',
+    redo: 'Wiederholen',
   },
 };
 

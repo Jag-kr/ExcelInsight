@@ -13,13 +13,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
+import { useUndoableState } from '@/hooks/use-undoable-state';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
   Sparkles, RotateCcw, Trash2, X, MoreHorizontal, ChevronRight,
-  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen,
+  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Undo2, Redo2,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -161,7 +162,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const [fileName, setFileName] = useState(() => initialUpload?.fileName ?? initial?.fileName ?? '');
   const [columns, setColumns] = useState<ColumnMeta[]>(() => initial?.columns ?? []);
   const [suggestions, setSuggestions] = useState<ChartSuggestion[]>(() => initial?.suggestions ?? []);
-  const [dashboardItems, setDashboardItems] = useState<DashboardItem[]>(() => initial?.dashboardItems ?? []);
+  const [dashboardItems, setDashboardItems, { undo, redo, canUndo, canRedo }] = useUndoableState<DashboardItem[]>(() => initial?.dashboardItems ?? []);
   const [filters, setFilters] = useState<Record<string, string>>(() => initial?.filters ?? {});
   const [activeTab, setActiveTab] = useState<string>(() => initial?.activeTab ?? 'dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => initial?.sidebarCollapsed ?? false);
@@ -205,7 +206,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       const charts = generateChartSuggestions(newData, cols);
       setSuggestions(charts);
       const { items } = buildDefaultDashboard(newData, cols, charts, t);
-      setDashboardItems(items);
+      setDashboardItems(items, { record: false }); // starter board is not undoable
       setAnalyzing(false);
 
       const fileExt = getFileExt(name);
@@ -248,16 +249,20 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   }, [analyzing, initialUpload, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed, paneCollapsed]);
 
   const handleResetLayout = useCallback(() => {
+    // Toast Undo restores this snapshot rather than calling global undo(): the toast can outlive other edits.
+    const before = dashboardItems;
     setDashboardItems(buildDefaultDashboard(data, columns, suggestions, t).items);
     // Reset reuses card ids; a surviving selection would write its stale spec back.
     setSelectedId(null);
-    toast.success(t('resetLayout'));
-  }, [data, columns, suggestions, t]);
+    toast.success(t('resetLayout'), { action: { label: t('undo'), onClick: () => setDashboardItems(() => before) } });
+  }, [dashboardItems, data, columns, suggestions, t, setDashboardItems]);
 
   const handleClearAll = useCallback(() => {
+    const before = dashboardItems;
     setSelectedId(null);
     setDashboardItems([]);
-  }, []);
+    toast.success(t('clearAll'), { action: { label: t('undo'), onClick: () => setDashboardItems(() => before) } });
+  }, [dashboardItems, t, setDashboardItems]);
 
   const handleClearFile = useCallback(() => {
     // No local resets needed: onClearFile unmounts this whole tree. Storage is
@@ -278,7 +283,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       next.splice(idx + 1, 0, copy);
       return next;
     });
-  }, []);
+  }, [setDashboardItems]);
 
   // ── Derived filtered data (declared before any callbacks that use it) ──
   const filteredData = useMemo(() => {
@@ -347,7 +352,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const addToDashboard = useCallback((chart: DashboardItem) => {
     setDashboardItems(prev => [...prev, chart]);
     trackEvent('chart_added', { source: 'manual' });
-  }, []);
+  }, [setDashboardItems]);
 
   const addSuggestionToDashboard = useCallback((s: ChartSuggestion, type: ChartType = s.type) => {
     setDashboardItems(prev => [...prev, {
@@ -356,7 +361,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       sourceKey: s.key,
     }]);
     trackEvent('chart_added', { source: 'suggestion' });
-  }, []);
+  }, [setDashboardItems]);
 
   const addInsightToDashboard = useCallback((card: { id: string; title: string; content: any; type: 'insight' }) => {
     const content = card.content;
@@ -371,7 +376,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       displayAs: 'insight', insightType, insightContent: content,
     }]);
     trackEvent('chart_added', { source: 'insight' });
-  }, []);
+  }, [setDashboardItems]);
 
   const addKpiToDashboard = useCallback((spec: KpiSpec, title: string) => {
     const id = kpiCardId(spec);
@@ -382,7 +387,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       }]
     ));
     trackEvent('chart_added', { source: 'kpi' });
-  }, []);
+  }, [setDashboardItems]);
 
   const addTableToDashboard = useCallback((card: { id: string; title: string; data: any[]; columns: string[] }) => {
     setDashboardItems(prev => [...prev, {
@@ -390,7 +395,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       dataKeys: [], xKey: '', displayAs: 'table', tableColumns: card.columns,
     }]);
     trackEvent('chart_added', { source: 'table' });
-  }, []);
+  }, [setDashboardItems]);
 
   /* The selected card, with its recipe in ChartSpec form when it is a chart.
      Suggestion cards are converted from their sourceKey, so any chart on the
@@ -420,15 +425,17 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     // (unless the user renamed it) and drop the description.
     const generated = item.sourceKey && item.title === suggestions.find(s => s.key === item.sourceKey)?.title;
     const patch = item.sourceKey ? { ...updates, title: generated ? specTitle(toChartSpec(updates.spec, updates.type), t) : updates.title, description: undefined } : updates;
+    // ponytail: one history entry per pane edit; coalesce by card id+time if it feels noisy
     setDashboardItems(prev => prev.map(i => (i.id === item.id ? { ...i, ...patch, sourceKey: undefined } : i)));
-  }, [selected, suggestions, t]);
+  }, [selected, suggestions, t, setDashboardItems]);
 
   /* Apply a recipe edit that may rename the card. The id doubles as the
      "already placed" key (derived), so only the selection needs to follow it. */
   const retargetCard = useCallback((oldId: string, patch: Partial<DashboardItem>, newId?: string) => {
+    // ponytail: one history entry per pane edit; coalesce by card id+time if it feels noisy
     setDashboardItems(prev => prev.map(i => (i.id === oldId ? { ...i, ...patch, id: newId ?? i.id } : i)));
     if (newId) selectCard(newId);
-  }, [selectCard]);
+  }, [selectCard, setDashboardItems]);
 
   const handleChangeKpi = useCallback((spec: KpiSpec) => {
     if (!selected) return;
@@ -456,7 +463,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     setDashboardItems(prev => [...prev, { id, title: specTitle(r.spec, t), type: r.type, spec: r.spec, data: [], dataKeys: [] }]);
     trackEvent('chart_added', { source: 'field' });
     selectCard(id);
-  }, [addKpiToDashboard, selectCard, t]);
+  }, [addKpiToDashboard, selectCard, t, setDashboardItems]);
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
     /* Read up front, not inside an updater: Undo needs the item and its index. */
@@ -481,7 +488,23 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
         },
       },
     });
-  }, [dashboardItems, t]);
+  }, [dashboardItems, t, setDashboardItems]);
+
+  useEffect(() => {
+    if (activeTab !== 'dashboard') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      // Leave native text undo and Radix widgets alone.
+      if ((e.target as Element | null)?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="dialog"], [role="menu"], [role="listbox"]')) return;
+      const k = e.key.toLowerCase();
+      const isRedo = (k === 'z' && e.shiftKey) || (k === 'y' && e.ctrlKey && !e.shiftKey);
+      const isUndo = k === 'z' && !e.shiftKey;
+      if (isUndo && canUndo) { e.preventDefault(); undo(); }
+      else if (isRedo && canRedo) { e.preventDefault(); redo(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeTab, canUndo, canRedo, undo, redo]);
 
   /* ─── DASHBOARD APP SHELL ─── */
   const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
@@ -757,6 +780,18 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                         {Object.keys(filters).length} {t('activeFilters')}
                       </Badge>
                     )}
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7" disabled={!canUndo} onClick={undo}
+                      aria-label={t('undo')} title={`${t('undo')} (Ctrl+Z)`}
+                    >
+                      <Undo2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7" disabled={!canRedo} onClick={redo}
+                      aria-label={d('redo')} title={`${d('redo')} (Ctrl+Shift+Z)`}
+                    >
+                      <Redo2 className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost" size="icon" className="hidden lg:inline-flex h-7 w-7"
                       aria-label={d('fieldsPanel')} title={d('fieldsPanel')} aria-expanded={!paneCollapsed}
