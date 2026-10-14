@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
 import {
-  aggregateChart, aggKey, specTitle, MAX_MEASURES, NUMERIC_KPI_AGGS,
+  aggregateChart, aggKey, specTitle, aggsForColumn, normalizeAgg, MAX_MEASURES,
   type ChartSpec, type ChartMeasure, type DateGrain, type KpiAgg,
 } from '@/lib/derive-dashboard-item';
 import { ChartType, chartTypeOptions } from '@/lib/chart-themes';
@@ -55,7 +55,6 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
   const [stacked, setStacked] = useState(initial?.spec.stacked ?? false);
 
   const byName = useMemo(() => new Map(columns.map(c => [c.name, c])), [columns]);
-  const isNumeric = (name: string | null) => !!name && ['numeric', 'range'].includes(byName.get(name)?.type ?? '');
   const isDate = byName.get(dimension)?.type === 'date';
   const legendCols = columns.filter(c => c.name !== dimension && (c.type === 'categorical' || c.type === 'range'));
 
@@ -99,14 +98,9 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
       if (j !== i) return m;
       const next = { ...m, ...patch };
       // Rows can only be counted; a text column can't be summed.
-      if (!next.column) next.agg = 'count';
-      else if (!isNumeric(next.column) && NUMERIC_KPI_AGGS.includes(next.agg)) next.agg = 'count';
-      else if (patch.column && isNumeric(patch.column) && m.agg === 'count') next.agg = 'sum';
+      next.agg = normalizeAgg(columns, next.column, next.agg, !!patch.column);
       return next;
     }));
-
-  const aggsFor = (column: string | null): KpiAgg[] =>
-    !column ? ['count'] : isNumeric(column) ? [...NUMERIC_KPI_AGGS, 'count', 'distinct'] : ['count', 'distinct'];
 
   const handleAdd = () => {
     if (!chartData.length) return;
@@ -179,7 +173,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
               <Select value={m.agg} onValueChange={v => updateMeasure(i, { agg: v as KpiAgg })} disabled={!m.column}>
                 <SelectTrigger className={`${trigger} w-32 shrink-0`}><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {aggsFor(m.column).map(a => <SelectItem key={a} value={a}>{t(aggKey(a))}</SelectItem>)}
+                  {aggsForColumn(columns, m.column).map(a => <SelectItem key={a} value={a}>{t(aggKey(a))}</SelectItem>)}
                 </SelectContent>
               </Select>
               {measures.length > 1 && (

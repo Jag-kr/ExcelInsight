@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Calendar, Hash, KeyRound, Tag, Type, X, type LucideIcon } from 'lucide-react';
 import type { ColumnMeta, ColumnType } from '@/lib/data-analyzer';
-import { addFieldToSpec, specForField, specTitle, type ChartSpec } from '@/lib/derive-dashboard-item';
+import { addFieldToSpec, aggKey, aggsForColumn, normalizeAgg, repeatColumnOf, specForField, specTitle, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { ManualChartBuilder } from '../ManualChartBuilder';
@@ -12,6 +13,10 @@ import type { DashboardItem } from '../DashboardGrid';
 const FIELD_ICONS: Record<ColumnType, LucideIcon> = {
   date: Calendar, numeric: Hash, range: Hash, categorical: Tag, text: Type, id: KeyRound,
 };
+
+const ROWS = '__rows';
+const LABEL = 'mb-1 block text-xs text-muted-foreground';
+const TRIGGER = 'bg-secondary border-border';
 
 export interface EditorPaneProps {
   /** Filtered columns, for the builder and the field list. */
@@ -24,10 +29,14 @@ export interface EditorPaneProps {
   onChange: (updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => void;
   /** Nothing selected: the parent creates a card from specForField(col). */
   onAddField: (col: ColumnMeta) => void;
+  /** Live edits for a selected KPI card. */
+  onChangeKpi?: (spec: KpiSpec) => void;
+  /** Live edits for a selected repeating-values card: the column to tally. */
+  onChangeRepeatColumn?: (column: string) => void;
   onDeselect: () => void;
 }
 
-export function EditorPane({ columns, data, selected, onChange, onAddField, onDeselect }: EditorPaneProps) {
+export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onDeselect }: EditorPaneProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [query, setQuery] = useState('');
@@ -39,8 +48,12 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onDe
   const q = query.trim().toLowerCase();
   const fields = q ? columns.filter(c => c.name.toLowerCase().includes(q)) : columns;
 
+  const kpi = item?.displayAs === 'kpi' ? item.kpiSpec : undefined;
+  const repeatCol = item ? repeatColumnOf(item) : null;
+
   const onField = (col: ColumnMeta) => {
     if (!item) return onAddField(col);
+    if (kpi) return onChangeKpi?.({ column: col.name, agg: normalizeAgg(columns, col.name, kpi.agg, true) });
     if (!spec) return;
     const next = addFieldToSpec(spec, col);
     if (next === spec) return;
@@ -70,7 +83,46 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onDe
           onChange={onChange}
         />
       )}
-      {item && !spec && <p className="text-xs text-muted-foreground">{d('noEditableSettings')}</p>}
+      {kpi && onChangeKpi && (
+        <div className="space-y-3">
+          <div>
+            <label className={LABEL}>{d('column')}</label>
+            <Select value={kpi.column ?? ROWS} onValueChange={v => {
+              const column = v === ROWS ? null : v;
+              onChangeKpi({ column, agg: normalizeAgg(columns, column, kpi.agg, true) });
+            }}>
+              <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ROWS}>{t('rowCount')}</SelectItem>
+                {columns.map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className={LABEL}>{t('aggregation')}</label>
+            <Select value={kpi.agg} disabled={!kpi.column} onValueChange={v => onChangeKpi({ ...kpi, agg: v as KpiSpec['agg'] })}>
+              <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {aggsForColumn(columns, kpi.column).map(a => <SelectItem key={a} value={a}>{t(aggKey(a))}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+      {repeatCol && onChangeRepeatColumn && (
+        <div>
+          <label className={LABEL}>{d('column')}</label>
+          <Select value={repeatCol} onValueChange={onChangeRepeatColumn}>
+            <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {columns.filter(c => c.type !== 'id').map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      {item && !spec && !(kpi && onChangeKpi) && !(repeatCol && onChangeRepeatColumn) && (
+        <p className="text-xs text-muted-foreground">{d('noEditableSettings')}</p>
+      )}
       {!item && <p className="text-xs text-muted-foreground">{d('clickFieldToAdd')}</p>}
 
       <section className="space-y-2">

@@ -8,7 +8,7 @@ import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } fro
 import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
-import { deriveDashboardItems, aggKey, kpiCardId, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { deriveDashboardItems, kpiCardId, kpiTitle, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
@@ -415,12 +415,33 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     }
   }, [selected, dashboardItems]);
 
+  /* Apply a recipe edit that may rename the card. The id doubles as the
+     "already placed" key, so addedInsightIds and the selection follow it. */
+  const retargetCard = useCallback((oldId: string, patch: Partial<DashboardItem>, newId?: string) => {
+    setDashboardItems(prev => prev.map(i => (i.id === oldId ? { ...i, ...patch, id: newId ?? i.id } : i)));
+    if (!newId) return;
+    setAddedInsightIds(prev => { const next = new Set(prev); next.delete(oldId); return next.add(newId); });
+    selectCard(newId);
+  }, [selectCard]);
+
+  const handleChangeKpi = useCallback((spec: KpiSpec) => {
+    if (!selected) return;
+    const r = retargetKpi(selected.item, spec, dashboardItems.map(i => i.id), t);
+    retargetCard(selected.item.id, r.patch, r.newId);
+  }, [selected, dashboardItems, retargetCard, t]);
+
+  const handleChangeRepeat = useCallback((column: string) => {
+    if (!selected) return;
+    const r = retargetRepeat(selected.item, column, dashboardItems.map(i => i.id), t);
+    if (r) retargetCard(selected.item.id, r.patch, r.newId);
+  }, [selected, dashboardItems, retargetCard, t]);
+
   const handleAddField = useCallback((col: ColumnMeta) => {
     const r = specForField(col);
     if (!r) return;
     if (r.displayAs === 'kpi') {
       const spec = r.kpiSpec;
-      addKpiToDashboard(spec, `${t(aggKey(spec.agg))} · ${col.name}`);
+      addKpiToDashboard(spec, kpiTitle(spec, t));
       selectCard(kpiCardId(spec));
       return;
     }
@@ -473,6 +494,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       selected={selected}
       onChange={handleChangeSelected}
       onAddField={handleAddField}
+      onChangeKpi={handleChangeKpi}
+      onChangeRepeatColumn={handleChangeRepeat}
       onDeselect={() => selectCard(null)}
     />
   );

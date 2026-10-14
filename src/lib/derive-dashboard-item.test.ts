@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { analyzeColumns, generateChartSuggestions, bucketDate, type ColumnMeta } from './data-analyzer';
 import { buildDefaultDashboard } from './build-default-dashboard';
+import type { DashboardItem } from '@/components/DashboardGrid';
 import {
   deriveDashboardItems, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
-  specForField, addFieldToSpec, specTitle, type ChartSpec, type DateGrain, type KpiAgg,
+  specForField, addFieldToSpec, specTitle, kpiTitle, kpiCardId, aggsForColumn, normalizeAgg,
+  retargetKpi, retargetRepeat, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg,
 } from './derive-dashboard-item';
 
 const t = ((k: string) => k) as any;
@@ -373,5 +375,55 @@ describe('click-a-field helpers', () => {
   it('specTitle: joins measures and names the dimension', () => {
     expect(specTitle({ dimension: 'Region', measures: [{ column: null, agg: 'count' }, { column: 'Sales', agg: 'sum' }] }, t))
       .toBe('rowCount, sum Sales by Region');
+  });
+});
+
+describe('KPI and repeating-value card editing', () => {
+  const cols = analyzeColumns(DATA);
+  const rep = (id: string, extra: Partial<DashboardItem> = {}): DashboardItem => ({ id, title: '', type: 'bar', data: [], dataKeys: [], xKey: '', ...extra });
+
+  it('aggsForColumn / normalizeAgg follow the builder rules', () => {
+    expect(aggsForColumn(cols, null)).toEqual(['count']);
+    expect(aggsForColumn(cols, 'Rep')).toEqual(['count', 'distinct']);
+    expect(aggsForColumn(cols, 'Sales')).toContain('median');
+    expect(normalizeAgg(cols, null, 'sum')).toBe('count');
+    expect(normalizeAgg(cols, 'Rep', 'sum', true)).toBe('count');
+    expect(normalizeAgg(cols, 'Sales', 'count', true)).toBe('sum');
+    expect(normalizeAgg(cols, 'Sales', 'count')).toBe('count');
+    expect(normalizeAgg(cols, 'Sales', 'max', true)).toBe('max');
+  });
+
+  it('retargetKpi renames a generated title and canonical id, but keeps renamed titles, copies and taken ids', () => {
+    const old = { column: 'Sales', agg: 'sum' as KpiAgg };
+    const next = { column: null, agg: 'count' as KpiAgg };
+    const card = rep(kpiCardId(old), { title: kpiTitle(old, t), kpiSpec: old });
+    expect(retargetKpi(card, next, [card.id], t)).toEqual({
+      patch: { kpiSpec: next, title: 'rowCount' }, newId: kpiCardId(next),
+    });
+    expect(retargetKpi({ ...card, title: 'Mine' }, next, [card.id], t).patch.title).toBe('Mine');
+    expect(retargetKpi({ ...card, id: `${card.id}-copy-1` }, next, [], t).newId).toBeUndefined();
+    expect(retargetKpi(card, next, [card.id, kpiCardId(next)], t).newId).toBeUndefined();
+  });
+
+  it('retargetRepeat handles chart insights and id-encoded tables', () => {
+    const chart = rep('insight-repeat-chart-Region', {
+      displayAs: 'insight', insightType: 'repeating', insightContent: { name: 'Region', topValues: [] },
+      title: 'Region — repeatingValues',
+    });
+    expect(repeatColumnOf(chart)).toBe('Region');
+    expect(retargetRepeat(chart, 'Rep', [chart.id], t)).toEqual({
+      patch: { title: 'Rep — repeatingValues', insightContent: { name: 'Rep', topValues: [] } },
+      newId: 'insight-repeat-chart-Rep',
+    });
+    // Taken target / duplicate / renamed: chart keeps its id (and a user title).
+    expect(retargetRepeat(chart, 'Rep', [chart.id, 'insight-repeat-chart-Rep'], t)!.newId).toBeUndefined();
+    expect(retargetRepeat({ ...chart, id: `${chart.id}-copy-5`, title: 'Mine' }, 'Rep', [], t)).toMatchObject({ patch: { insightContent: { name: 'Rep' } } });
+    expect(retargetRepeat({ ...chart, title: 'Mine' }, 'Rep', [], t)!.patch.title).toBeUndefined();
+
+    const table = rep('insight-repeat-table-Region-copy-9', { displayAs: 'table', title: 'RegionrepeatingValuesSuffix' });
+    expect(repeatColumnOf(table)).toBe('Region');
+    expect(retargetRepeat(table, 'Rep', [], t)).toEqual({ patch: { title: 'ReprepeatingValuesSuffix' }, newId: 'insight-repeat-table-Rep-copy-9' });
+    expect(retargetRepeat(table, 'Rep', ['insight-repeat-table-Rep-copy-9'], t)).toBeNull();
+    expect(repeatColumnOf(rep('insight-stats-table', { displayAs: 'table' }))).toBeNull();
   });
 });
