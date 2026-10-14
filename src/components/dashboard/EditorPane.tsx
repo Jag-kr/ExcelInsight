@@ -40,8 +40,6 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
   const { t } = useI18n();
   const d = useDashboardT();
   const [query, setQuery] = useState('');
-  // Bumped on field click so the builder remounts and reads the updated spec.
-  const [rev, setRev] = useState(0);
 
   const item = selected?.item;
   const spec = selected?.spec ?? null;
@@ -60,7 +58,6 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
     // Follow the recipe while the title is still the generated one; keep a user-written title.
     const title = item.title === specTitle(spec, t) ? specTitle(next, t) : item.title;
     onChange({ type: item.type, spec: next, title });
-    setRev(r => r + 1);
   };
 
   return (
@@ -76,7 +73,7 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
 
       {item && spec && (
         <ManualChartBuilder
-          key={`${item.id}:${rev}`}
+          key={item.id}
           data={data}
           columns={columns}
           initial={{ type: item.type, spec, title: item.title }}
