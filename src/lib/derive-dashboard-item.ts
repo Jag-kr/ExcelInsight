@@ -2,6 +2,7 @@ import { bucketDate, type ColumnMeta, type ChartSuggestion, type DateGrain } fro
 
 export type { DateGrain };
 import type { DashboardItem } from '@/components/DashboardGrid';
+import type { ChartType } from '@/lib/chart-themes';
 
 /**
  * Card data is derived from a recipe + the currently filtered dataset, never
@@ -100,6 +101,46 @@ export function specFromSourceKey(key: string, columns: ColumnMeta[]): ChartSpec
     }
     default: return null;
   }
+}
+
+const totalOrMeanOf = (col: ColumnMeta): KpiAgg => (col.stats?.isSummable ? 'sum' : 'average');
+
+/** What clicking a field in the field list should create (null = nothing useful, e.g. ids). */
+export function specForField(col: ColumnMeta):
+  | { displayAs: 'chart'; type: ChartType; spec: ChartSpec }
+  | { displayAs: 'kpi'; kpiSpec: KpiSpec }
+  | null {
+  const count: ChartMeasure[] = [{ column: null, agg: 'count' }];
+  switch (col.type) {
+    case 'date':
+      return { displayAs: 'chart', type: 'line', spec: { v: 2, dimension: col.name, grain: 'month', measures: count } };
+    case 'categorical':
+    case 'range':
+    case 'text':
+      return { displayAs: 'chart', type: 'bar', spec: { v: 2, dimension: col.name, measures: count, limit: 20 } };
+    case 'numeric':
+      return { displayAs: 'kpi', kpiSpec: { column: col.name, agg: totalOrMeanOf(col) } };
+    default:
+      return null;
+  }
+}
+
+/** Fold another field into an existing chart recipe; returns `spec` itself when nothing applies. */
+export function addFieldToSpec(spec: ChartSpec, col: ColumnMeta): ChartSpec {
+  if ((col.type === 'numeric' || col.type === 'range') && col.stats) {
+    if (spec.measures.some(m => m.column === col.name)) return spec;
+    const measure: ChartMeasure = { column: col.name, agg: totalOrMeanOf(col) };
+    const onlyCount = spec.measures.length === 1 && spec.measures[0].column === null;
+    if (!onlyCount && spec.measures.length >= MAX_MEASURES) return spec;
+    // A legend only works with one measure; a lone count is replaced, not kept beside the new one.
+    return onlyCount
+      ? { ...spec, measures: [measure] }
+      : { ...spec, measures: [...spec.measures, measure], series: undefined };
+  }
+  if ((col.type === 'categorical' || col.type === 'text') && col.name !== spec.dimension && spec.measures.length === 1) {
+    return { ...spec, series: col.name };
+  }
+  return spec;
 }
 
 /** Legend/tooltip key for a measure. A lone measure keeps the legacy keys so
