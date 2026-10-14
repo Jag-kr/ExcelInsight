@@ -46,3 +46,10 @@ export function numberFormatter(format?: ChartFormat, locale?: string): (n: numb
   }
   return n => (typeof n === 'number' && Number.isFinite(n) ? nf.format(n) : '—');
 }
+
+/** Merge `patch` into `format`, dropping keys set back to undefined/'' so nothing but real choices is stored; undefined when empty. */
+export function patchFormat(format: ChartFormat | undefined, patch: Partial<ChartFormat>): ChartFormat | undefined {
+  const next: Record<string, unknown> = { ...format, ...patch };
+  for (const k of Object.keys(next)) if (next[k] === undefined || next[k] === '') delete next[k];
+  return isDefaultFormat(next as ChartFormat) ? undefined : (next as ChartFormat);
+}

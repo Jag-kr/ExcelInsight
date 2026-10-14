@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { numberFormatter, isDefaultFormat } from './format';
+import { numberFormatter, isDefaultFormat, patchFormat } from './format';
 
 const fmt = (f?: Parameters<typeof numberFormatter>[0]) => numberFormatter(f, 'en-US');
 
@@ -60,5 +60,23 @@ describe('isDefaultFormat', () => {
     expect(isDefaultFormat({ number: 'auto' })).toBe(false);
     expect(isDefaultFormat({ gridlines: false })).toBe(false);
     expect(isDefaultFormat({ xTitle: '' })).toBe(false);
+  });
+});
+
+describe('patchFormat', () => {
+  it('sets and merges without touching other keys', () => {
+    expect(patchFormat(undefined, { number: 'percent' })).toEqual({ number: 'percent' });
+    expect(patchFormat({ number: 'percent' }, { decimals: 1 })).toEqual({ number: 'percent', decimals: 1 });
+  });
+  it('removes keys that return to default, and empty strings', () => {
+    const r = patchFormat({ number: 'percent', xTitle: 'X' }, { number: undefined, xTitle: '' });
+    expect(r).toBeUndefined();
+    expect(patchFormat({ number: 'percent', decimals: 2 }, { decimals: undefined })).toEqual({ number: 'percent' });
+    expect(Object.keys(patchFormat({ legend: 'top', gridlines: false }, { legend: undefined })!)).toEqual(['gridlines']);
+  });
+  it('does not mutate the input and keeps false', () => {
+    const f = { dataLabels: true };
+    expect(patchFormat(f, { dataLabels: false })).toEqual({ dataLabels: false });
+    expect(f).toEqual({ dataLabels: true });
   });
 });
