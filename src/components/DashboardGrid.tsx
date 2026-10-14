@@ -466,6 +466,7 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
             showControls={false}
             size={size}
             stacked={!!item.spec && 'v' in item.spec && !!item.spec.stacked}
+            format={item.format}
           />
         </ChartErrorBoundary>
       )}
@@ -594,6 +595,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
                 xKey={activeItem.xKey}
                 showControls={false}
                 size={(activeItem.size || 'md') as 'xs' | 'sm' | 'md' | 'lg'}
+                format={activeItem.format}
               />
             )}
           </div>
