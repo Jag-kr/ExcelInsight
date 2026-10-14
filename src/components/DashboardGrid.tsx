@@ -22,7 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
-import type { ManualChartSpec, ChartSpec, KpiSpec } from '@/lib/derive-dashboard-item';
+import { repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 
 export interface DashboardItem {
   id: string;
@@ -280,6 +280,9 @@ const isEditableChart = (item: DashboardItem) =>
   (!item.displayAs || item.displayAs === 'chart') &&
   (!!item.spec || (!!item.sourceKey && !item.sourceKey.startsWith('scatter:')));
 
+/* The pane also edits KPI and repeating-value cards. */
+const isEditable = (item: DashboardItem) => isEditableChart(item) || item.displayAs === 'kpi' || repeatColumnOf(item) !== null;
+
 function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem, onDuplicate, onEdit }: {
   item: DashboardItem;
   index: number;
@@ -408,10 +411,10 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
               </DropdownMenuSub>
             )}
 
-            {onEdit && isEditableChart(item) && (
+            {onEdit && isEditable(item) && (
               <DropdownMenuItem onClick={onEdit} className="text-xs rounded-lg">
                 <Pencil className="h-3.5 w-3.5 mr-2" />
-                {d('editChart')}
+                {isEditableChart(item) ? d('editChart') : d('editCard')}
               </DropdownMenuItem>
             )}
 
