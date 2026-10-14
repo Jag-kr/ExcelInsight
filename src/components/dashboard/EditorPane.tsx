@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Hash, KeyRound, Tag, Type, X, type LucideIcon } from 'lucide-react';
+import { Calendar, Hash, KeyRound, Merge, Tag, Type, X, type LucideIcon } from 'lucide-react';
 import type { ColumnMeta, ColumnType } from '@/lib/data-analyzer';
 import { addFieldToSpec, aggKey, aggsForColumn, normalizeAgg, repeatColumnOf, specForField, specTitle, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Button } from '@/components/ui/button';
@@ -34,9 +34,11 @@ export interface EditorPaneProps {
   /** Live edits for a selected repeating-values card: the column to tally. */
   onChangeRepeatColumn?: (column: string) => void;
   onDeselect: () => void;
+  /** Opens the column merger; the button is hidden when omitted. */
+  onMergeColumns?: () => void;
 }
 
-export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onDeselect }: EditorPaneProps) {
+export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onDeselect, onMergeColumns }: EditorPaneProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [query, setQuery] = useState('');
@@ -123,7 +125,14 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
       {!item && <p className="text-xs text-muted-foreground">{d('clickFieldToAdd')}</p>}
 
       <section className="space-y-2">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{d('fields')}</h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{d('fields')}</h3>
+          {onMergeColumns && (
+            <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" aria-label={t('mergeColumns')} onClick={onMergeColumns}>
+              <Merge className="h-3.5 w-3.5" /> {t('mergeColumns')}
+            </Button>
+          )}
+        </div>
         <Input
           type="search"
           value={query}

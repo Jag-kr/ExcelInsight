@@ -18,7 +18,7 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
+  BarChart3, Merge, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
   Sparkles, RotateCcw, Trash2, X, MoreHorizontal, ChevronRight,
   PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Undo2, Redo2,
 } from 'lucide-react';
@@ -90,7 +90,7 @@ const PanelFallback = () => (
  * The heavy leaves — recharts (via DynamicChart), html2canvas (via
  * DynamicChart's PNG export) and @dnd-kit (via DashboardGrid) — stay behind
  * their own boundaries so that mounting the shell doesn't drag in every panel
- * at once; a user who never opens the Build tab never pays for ColumnMerger.
+ * at once; a user who never opens the merge dialog never pays for ColumnMerger.
  *
  * Every call site below was already wrapped in <Suspense> with a skeleton, so
  * no `loading` option is passed here: the existing boundaries do the work.
@@ -101,7 +101,6 @@ const PanelFallback = () => (
  */
 const DataSummary = dynamic(() => import('@/components/DataSummary').then(m => m.DataSummary), { ssr: false });
 const DynamicChart = dynamic(() => import('@/components/DynamicChart').then(m => m.DynamicChart), { ssr: false });
-const ManualChartBuilder = dynamic(() => import('@/components/ManualChartBuilder').then(m => m.ManualChartBuilder), { ssr: false });
 const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m => m.ColumnMerger), { ssr: false });
 const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false });
 const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
@@ -114,7 +113,6 @@ const SIDEBAR_ITEMS = [
   { value: 'dashboard', icon: LayoutDashboard, labelKey: 'dashboard' },
   { value: 'explore',   icon: BarChart3,       labelKey: 'explore' },
   { value: 'insights',  icon: Lightbulb,       labelKey: 'insights' },
-  { value: 'build',     icon: Wrench,          labelKey: 'build' },
   { value: 'filter',    icon: Filter,          labelKey: 'filter' },
   { value: 'data',      icon: Database,        labelKey: 'data' },
 ] as const;
@@ -164,7 +162,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const [suggestions, setSuggestions] = useState<ChartSuggestion[]>(() => initial?.suggestions ?? []);
   const [dashboardItems, setDashboardItems, { undo, redo, canUndo, canRedo }] = useUndoableState<DashboardItem[]>(() => initial?.dashboardItems ?? []);
   const [filters, setFilters] = useState<Record<string, string>>(() => initial?.filters ?? {});
-  const [activeTab, setActiveTab] = useState<string>(() => initial?.activeTab ?? 'dashboard');
+  const [activeTab, setActiveTab] = useState<string>(() => (SIDEBAR_ITEMS.find(i => i.value === initial?.activeTab)?.value ?? 'dashboard'));
+  const [mergeOpen, setMergeOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => initial?.sidebarCollapsed ?? false);
   const [exporting, setExporting] = useState(false);
   // A fresh upload arrives underived, so the overlay is up from the first paint.
@@ -521,6 +520,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       onChangeKpi={handleChangeKpi}
       onChangeRepeatColumn={handleChangeRepeat}
       onDeselect={() => selectCard(null)}
+      onMergeColumns={() => setMergeOpen(true)}
     />
   );
 
@@ -722,8 +722,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     <DropdownMenuItem onClick={handleResetLayout} className="text-xs">
                       <RotateCcw className="h-3.5 w-3.5 mr-2" /> {t('resetLayout')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setActiveTab('build')} className="text-xs">
-                      <Wrench className="h-3.5 w-3.5 mr-2" /> {t('build')}
+                    <DropdownMenuItem onClick={() => setMergeOpen(true)} className="text-xs">
+                      <Merge className="h-3.5 w-3.5 mr-2" /> {t('mergeColumns')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setActiveTab('insights')} className="text-xs">
                       <Lightbulb className="h-3.5 w-3.5 mr-2" /> {t('insights')}
@@ -881,26 +881,6 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
               </Card>
             </TabsContent>
 
-            {/* ═══════════════ BUILD TAB ═══════════════ */}
-            <TabsContent value="build" className="space-y-4 mt-0">
-              <div className="dashboard-surface p-4">
-                <h2 className="text-base font-bold text-foreground">{t('build')}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">{t('buildTabDesc')}</p>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <Card className="elevated-card p-5 min-h-[300px]">
-                  <Suspense fallback={<PanelFallback />}>
-                    <ManualChartBuilder data={filteredData} columns={filteredColumns} onAddToDashboard={addToDashboard} />
-                  </Suspense>
-                </Card>
-                <Card className="elevated-card p-5 min-h-[300px]">
-                  <Suspense fallback={<PanelFallback />}>
-                    <ColumnMerger columns={columns} onMerge={handleMerge} />
-                  </Suspense>
-                </Card>
-              </div>
-            </TabsContent>
-
             {/* ═══════════════ FILTER TAB ═══════════════ */}
             <TabsContent value="filter" className="space-y-4 mt-0">
               <div className="dashboard-surface p-4">
@@ -983,6 +963,18 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
         </SheetContent>
       </Sheet>
 
+      <Sheet open={mergeOpen} onOpenChange={setMergeOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader className="sr-only">
+            <SheetTitle>{t('mergeColumns')}</SheetTitle>
+            <SheetDescription>{t('mergeColumns')}</SheetDescription>
+          </SheetHeader>
+          <Suspense fallback={<PanelFallback />}>
+            <ColumnMerger columns={columns} onMerge={handleMerge} />
+          </Suspense>
+        </SheetContent>
+      </Sheet>
+
       {/* ─── Quick Add Panel ─── */}
       <Suspense fallback={null}>
         <QuickAddPanel
@@ -1024,26 +1016,25 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
               </button>
             ))}
 
-            {/* More: Build + Filter + Clear file */}
+            {/* More: Merge columns + Filter + Clear file */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
                   aria-label={t('moreTabs')}
                   className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
-                    (activeTab === 'build' || activeTab === 'filter') ? 'text-primary' : 'text-muted-foreground'
+                    activeTab === 'filter' ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 >
                   <MoreHorizontal className="h-5 w-5" />
                   <span className="text-[10px] font-medium">
-                    {activeTab === 'build' ? t('build') : activeTab === 'filter' ? t('filter') : t('more')}
+                    {activeTab === 'filter' ? t('filter') : t('more')}
                   </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="end" className="w-44 mb-1">
-                <DropdownMenuItem onClick={() => setActiveTab('build')} className="text-xs gap-2">
-                  <Wrench className="h-3.5 w-3.5" /> {t('build')}
-                  {activeTab === 'build' && <span className="ml-auto text-primary">✓</span>}
+                <DropdownMenuItem onClick={() => setMergeOpen(true)} className="text-xs gap-2">
+                  <Merge className="h-3.5 w-3.5" /> {t('mergeColumns')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setActiveTab('filter')} className="text-xs gap-2">
                   <Filter className="h-3.5 w-3.5" /> {t('filter')}
