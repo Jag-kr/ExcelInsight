@@ -23,6 +23,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
 import { repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import type { ChartFormat } from '@/lib/format';
 
 export interface DashboardItem {
   id: string;
@@ -34,6 +35,8 @@ export interface DashboardItem {
   xKey?: string;
   sourceKey?: string;
   spec?: ManualChartSpec | ChartSpec;
+  /** Per-card display options; absent = render exactly as before. */
+  format?: ChartFormat;
   displayAs?: 'chart' | 'table' | 'insight' | 'kpi';
   tableColumns?: string[];
   size?: 'xs' | 'sm' | 'md' | 'lg';
