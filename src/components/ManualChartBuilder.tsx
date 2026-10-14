@@ -5,6 +5,7 @@ import {
   type ChartSpec, type ChartMeasure, type DateGrain, type KpiAgg,
 } from '@/lib/derive-dashboard-item';
 import { ChartType, chartTypeOptions } from '@/lib/chart-themes';
+import { canonSig, decideSync, normalizeSpec, STACKABLE } from '@/lib/canon';
 import { DynamicChart } from './DynamicChart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +20,6 @@ const NONE = '__none';
 const AUTO = '__auto';
 const GRAINS: DateGrain[] = ['day', 'week', 'month', 'quarter', 'year'];
 const GRAIN_KEYS = { day: 'grainDay', week: 'grainWeek', month: 'grainMonth', quarter: 'grainQuarter', year: 'grainYear' } as const;
-const STACKABLE: ChartType[] = ['bar', 'horizontalBar', 'area'];
 const TYPE_ICONS: Record<ChartType, LucideIcon> = {
   bar: BarChart3, horizontalBar: BarChartHorizontal, line: LineChart, area: AreaChart,
   donut: Donut, pie: PieChart, scatter: ScatterChart, radar: Radar,
@@ -46,9 +46,6 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
   const { t } = useI18n();
   const d = useDashboardT();
   const [chartType, setChartType] = useState<ChartType>(initial?.type ?? 'bar');
-  // The card menu can change the type behind the pane's back; follow it so a later edit doesn't revert it.
-  const initialType = initial?.type;
-  useEffect(() => { if (initialType) setChartType(initialType); }, [initialType]);
   const limitId = useId();
   const [dimension, setDimension] = useState(initial?.spec.dimension ?? '');
   const [grain, setGrain] = useState<DateGrain | ''>(initial?.spec.grain ?? '');
@@ -62,16 +59,16 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
   const isDate = byName.get(dimension)?.type === 'date';
   const legendCols = columns.filter(c => c.name !== dimension && (c.type === 'categorical' || c.type === 'range'));
 
-  const spec = useMemo<ChartSpec>(() => ({
+  const spec = useMemo<ChartSpec>(() => normalizeSpec({
     v: 2,
     dimension,
     measures,
-    ...(isDate && grain ? { grain } : {}),
-    ...(series && measures.length === 1 ? { series } : {}),
-    ...(sort ? { sort } : {}),
-    ...(limit !== '' && !isNaN(Number(limit)) ? { limit: Math.max(0, Math.floor(Number(limit))) } : {}),
-    ...(stacked && STACKABLE.includes(chartType) ? { stacked: true } : {}),
-  }), [dimension, measures, isDate, grain, series, sort, limit, stacked, chartType]);
+    grain: grain || undefined,
+    series: series || undefined,
+    sort: sort || undefined,
+    limit: limit !== '' && !isNaN(Number(limit)) ? Number(limit) : undefined,
+    stacked,
+  }, chartType, isDate), [dimension, measures, isDate, grain, series, sort, limit, stacked, chartType]);
   const { data: chartData, dataKeys } = useMemo(() => aggregateChart(data, spec), [data, spec]);
 
   const titleFor = (s: Pick<ChartSpec, 'measures' | 'dimension'>) => specTitle(s, t);
@@ -81,15 +78,34 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
   // Parent's onChange may change identity every render, so effects read it via a ref.
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
-  const sig = JSON.stringify([chartType, spec, title]);
-  const lastSig = useRef(sig); // seeded with the first render, so mount never fires
   const hasRows = chartData.length > 0;
+
+  // Live mode keeps `initial` in step with the card. Compared canonically against the parent's
+  // value, so we never emit what it already has (mount, our own echo, a hydrated external change).
+  const current = canonSig([chartType, spec, title]);
+  const initialSig = canonSig([initial?.type, initial?.spec]);
+  const syncedWith = useRef(initialSig);
   useEffect(() => {
-    if (sig === lastSig.current || !spec.dimension || !hasRows) return;
-    lastSig.current = sig;
-    onChangeRef.current?.({ type: chartType, spec, title });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- sig covers chartType/spec/title
-  }, [sig, hasRows]);
+    if (!initial || !onChangeRef.current) return;
+    const parentChanged = syncedWith.current !== initialSig;
+    syncedWith.current = initialSig;
+    // The parent's value as this builder can express it, so e.g. a stale `stacked` on a line card isn't an edit.
+    const fromParent = canonSig([initial.type, normalizeSpec(initial.spec, initial.type, byName.get(initial.spec.dimension)?.type === 'date'), initial.title]);
+    const action = decideSync({ parentChanged, current, fromParent, canEmit: !!spec.dimension && hasRows });
+    if (action === 'emit') onChangeRef.current?.({ type: chartType, spec, title });
+    if (action === 'hydrate') {
+      // Undo, a field click or the card menu changed the card from outside: adopt it.
+      setChartType(initial.type);
+      setDimension(initial.spec.dimension);
+      setGrain(initial.spec.grain ?? '');
+      setMeasures(initial.spec.measures);
+      setSeries(initial.spec.series ?? '');
+      setSort(initial.spec.sort ?? '');
+      setLimit(initial.spec.limit != null ? String(initial.spec.limit) : '');
+      setStacked(initial.spec.stacked ?? false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- current covers chartType/spec/title; initialSig covers initial
+  }, [current, initialSig, hasRows]);
 
   const setDimensionAndGrain = (name: string) => {
     setDimension(name);
