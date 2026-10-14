@@ -220,17 +220,23 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     // make every subsequent visit restore a spreadsheet they never uploaded.
     if (initialUpload?.ephemeral) { localStorage.removeItem(STORAGE_KEY); return; }
     if (!data.length) { localStorage.removeItem(STORAGE_KEY); return; }
-    try {
-      const payload: PersistedSession = {
-        data, fileName, columns, suggestions, dashboardItems, filters,
-        addedChartIds: Array.from(addedChartIds),
-        addedInsightIds: Array.from(addedInsightIds),
-        activeTab, sidebarCollapsed, paneCollapsed,
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    } catch (e) {
-      console.warn('Could not persist session', e);
-    }
+    // Live pane edits fire per keystroke; debounce so a large dataset isn't
+    // re-stringified each time. Unmount cancels the pending write, so clearing
+    // the file can't resurrect it.
+    const timer = setTimeout(() => {
+      try {
+        const payload: PersistedSession = {
+          data, fileName, columns, suggestions, dashboardItems, filters,
+          addedChartIds: Array.from(addedChartIds),
+          addedInsightIds: Array.from(addedInsightIds),
+          activeTab, sidebarCollapsed, paneCollapsed,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {
+        console.warn('Could not persist session', e);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
   }, [analyzing, initialUpload, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed, paneCollapsed]);
 
   const handleResetLayout = useCallback(() => {
@@ -238,10 +244,13 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     setDashboardItems(items);
     setAddedChartIds(usedChartIds);
     setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi').map(i => i.id)));
+    // Reset reuses card ids; a surviving selection would write its stale spec back.
+    setSelectedId(null);
     toast.success(t('resetLayout'));
   }, [data, columns, suggestions, t]);
 
   const handleClearAll = useCallback(() => {
+    setSelectedId(null);
     setDashboardItems([]);
     setAddedChartIds(new Set());
     setAddedInsightIds(new Set());
@@ -408,12 +417,16 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     // An edited suggestion is now a custom chart: drop the suggestion link,
     // and free the suggestion in Quick Add unless another card still shows it.
     // Idempotent: after the first call the item's sourceKey is already gone.
-    setDashboardItems(prev => prev.map(i => (i.id === item.id ? { ...i, ...updates, sourceKey: undefined } : i)));
+    // A suggestion's own title and description describe the old recipe: regenerate the title
+    // (unless the user renamed it) and drop the description.
+    const generated = item.sourceKey && item.title === suggestions.find(s => s.key === item.sourceKey)?.title;
+    const patch = item.sourceKey ? { ...updates, title: generated ? specTitle(toChartSpec(updates.spec, updates.type), t) : updates.title, description: undefined } : updates;
+    setDashboardItems(prev => prev.map(i => (i.id === item.id ? { ...i, ...patch, sourceKey: undefined } : i)));
     const key = item.sourceKey;
     if (key && !dashboardItems.some(i => i.id !== item.id && i.sourceKey === key)) {
       setAddedChartIds(prev => { const next = new Set(prev); next.delete(key); return next; });
     }
-  }, [selected, dashboardItems]);
+  }, [selected, dashboardItems, suggestions, t]);
 
   /* Apply a recipe edit that may rename the card. The id doubles as the
      "already placed" key, so addedInsightIds and the selection follow it. */
@@ -461,6 +474,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     const chartKey = item.sourceKey && !stillShown && addedChartIds.has(item.sourceKey) ? item.sourceKey : null;
     const insightId = addedInsightIds.has(id) ? id : null;
 
+    // Otherwise Undo would re-select the card (and re-open the sheet on phones).
+    setSelectedId(cur => (cur === id ? null : cur));
     setDashboardItems(prev => prev.filter(i => i.id !== id));
     if (chartKey) setAddedChartIds(prev => { const next = new Set(prev); next.delete(chartKey); return next; });
     if (insightId) setAddedInsightIds(prev => { const next = new Set(prev); next.delete(insightId); return next; });

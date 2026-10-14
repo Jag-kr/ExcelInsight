@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
 import {
   aggregateChart, aggKey, specTitle, aggsForColumn, normalizeAgg, MAX_MEASURES,
@@ -46,6 +46,10 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
   const { t } = useI18n();
   const d = useDashboardT();
   const [chartType, setChartType] = useState<ChartType>(initial?.type ?? 'bar');
+  // The card menu can change the type behind the pane's back; follow it so a later edit doesn't revert it.
+  const initialType = initial?.type;
+  useEffect(() => { if (initialType) setChartType(initialType); }, [initialType]);
+  const limitId = useId();
   const [dimension, setDimension] = useState(initial?.spec.dimension ?? '');
   const [grain, setGrain] = useState<DateGrain | ''>(initial?.spec.grain ?? '');
   const [measures, setMeasures] = useState<ChartMeasure[]>(initial?.spec.measures ?? [{ column: null, agg: 'count' }]);
@@ -221,8 +225,8 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
         </div>
 
         <div>
-          <label className={label} htmlFor="chart-limit">{d('maxCategories')}</label>
-          <Input id="chart-limit" type="number" min={0} inputMode="numeric" className={trigger}
+          <label className={label} htmlFor={limitId}>{d('maxCategories')}</label>
+          <Input id={limitId} type="number" min={0} inputMode="numeric" className={trigger}
             placeholder={isDate && grain ? '0' : '20'} value={limit} onChange={e => setLimit(e.target.value)} />
         </div>
 
