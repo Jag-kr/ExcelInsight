@@ -247,7 +247,8 @@ function DashboardKpiCard({ item, index, onRename }: { item: DashboardItem; inde
       <div className="text-[11px] font-medium" style={{ color: getChartColor(index) }}>
         <EditableTitle value={item.title} onChange={onRename} />
       </div>
-      <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none">
+      {/* Ellipsis, not a silent clip: a cut-off "$136,6" reads as a different number. */}
+      <p className="truncate text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none" title={item.kpiValue}>
         {item.kpiValue ?? '—'}
       </p>
     </Card>

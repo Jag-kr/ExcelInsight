@@ -114,10 +114,26 @@ export function DynamicChart({
   const labelFmt = fmt && ((v: unknown) => fmt(Number(v)));
   const tooltip = <ChartTooltip content={<ChartTooltipContent valueFormatter={fmt} />} />;
   const legend = format?.legend === 'none' ? null : (
-    <ChartLegend verticalAlign={format?.legend === 'top' ? 'top' : undefined} content={<ChartLegendContent />} />
+    <ChartLegend {...(format?.legend === 'top' ? { verticalAlign: 'top' as const } : {})} content={<ChartLegendContent />} />
   );
   const xLabel = axisTitle(format?.xTitle);
   const yLabel = axisTitle(format?.yTitle, true);
+  /* Props are spread only when set: recharts merges axis props over its defaults, so an
+     explicit `undefined` (width, height, verticalAlign) would override them and blank the chart. */
+  const xTitleProps = (height: number) => (format?.xTitle ? { height, label: xLabel } : {});
+  const yTitleProps = (width: number) => (format?.yTitle ? { width, label: yLabel } : {});
+  /* A formatted value axis ("$13,500.00") is wider than recharts' default 60px; size it from
+     the longest tick we can expect (the data max, nudged up for the nice-number round-up). */
+  const tickWidth = useMemo(() => {
+    if (!fmt) return 0;
+    let max = 0;
+    for (const row of data) for (const k of dataKeys) { const v = Math.abs(Number(row[k])); if (Number.isFinite(v) && v > max) max = v; }
+    return fmt(max * 1.2).length * 7 + 16;
+  }, [fmt, data, dataKeys]);
+  const valueAxisProps = () => ({
+    ...(fmt ? { tickFormatter: fmt, width: Math.max(60, tickWidth) + (format?.yTitle ? 20 : 0) } : {}),
+    ...(format?.yTitle ? { label: yLabel, ...(fmt ? {} : { width: 80 }) } : {}),
+  });
   const grid = format?.gridlines !== false;
 
   /**
@@ -168,8 +184,8 @@ export function DynamicChart({
         return (
           <BarChart data={barData} accessibilityLayer>
             {grid && <CartesianGrid vertical={false} />}
-            <XAxis dataKey={xKey} tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 11 }} angle={-25} textAnchor="end" height={format?.xTitle ? 80 : 60} label={xLabel} />
-            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} tickFormatter={fmt} width={format?.yTitle ? 80 : undefined} label={yLabel} />
+            <XAxis dataKey={xKey} tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 11 }} angle={-25} textAnchor="end" height={60} {...xTitleProps(80)} />
+            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...valueAxisProps()} />
             {tooltip}
             {/* One series means one legend entry — which, once the bars are
                 coloured per category, describes none of them. The axis already
@@ -190,8 +206,8 @@ export function DynamicChart({
         return (
           <BarChart data={barData} layout="vertical" accessibilityLayer>
             {grid && <CartesianGrid horizontal={false} />}
-            <XAxis type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} tickFormatter={fmt} height={format?.xTitle ? 50 : undefined} label={xLabel} />
-            <YAxis dataKey={xKey} type="category" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} width={format?.yTitle ? 100 : 80} label={yLabel} />
+            <XAxis type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...(fmt ? { tickFormatter: fmt } : {})} {...xTitleProps(50)} />
+            <YAxis dataKey={xKey} type="category" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} width={80} {...yTitleProps(100)} />
             {tooltip}
             {!colorByCategory && legend}
             {dataKeys.map((key) => (
@@ -208,8 +224,8 @@ export function DynamicChart({
         return (
           <LineChart data={data} accessibilityLayer>
             {grid && <CartesianGrid vertical={false} />}
-            <XAxis dataKey={xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} height={format?.xTitle ? 50 : undefined} label={xLabel} />
-            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} tickFormatter={fmt} width={format?.yTitle ? 80 : undefined} label={yLabel} />
+            <XAxis dataKey={xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...xTitleProps(50)} />
+            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...valueAxisProps()} />
             {tooltip}
             {legend}
             {dataKeys.map((key) => (
@@ -231,8 +247,8 @@ export function DynamicChart({
               ))}
             </defs>
             {grid && <CartesianGrid vertical={false} />}
-            <XAxis dataKey={xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} height={format?.xTitle ? 50 : undefined} label={xLabel} />
-            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} tickFormatter={fmt} width={format?.yTitle ? 80 : undefined} label={yLabel} />
+            <XAxis dataKey={xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...xTitleProps(50)} />
+            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...valueAxisProps()} />
             {tooltip}
             {legend}
             {dataKeys.map((key) => (
@@ -269,8 +285,8 @@ export function DynamicChart({
         return (
           <ScatterChart accessibilityLayer>
             {grid && <CartesianGrid />}
-            <XAxis dataKey={xKey} type={typeof data[0]?.[xKey] === 'number' ? 'number' : 'category'} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={xKey} height={format?.xTitle ? 50 : undefined} label={xLabel} />
-            <YAxis dataKey={dataKeys[0]} type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={dataKeys[0]} tickFormatter={fmt} width={format?.yTitle ? 80 : undefined} label={yLabel} />
+            <XAxis dataKey={xKey} type={typeof data[0]?.[xKey] === 'number' ? 'number' : 'category'} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={xKey} {...xTitleProps(50)} />
+            <YAxis dataKey={dataKeys[0]} type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={dataKeys[0]} {...valueAxisProps()} />
             {tooltip}
             <Scatter data={data} fill={getChartColor(0)}>
               {data.map((_, i) => (
