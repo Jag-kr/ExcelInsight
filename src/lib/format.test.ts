@@ -79,4 +79,10 @@ describe('patchFormat', () => {
     expect(patchFormat(f, { dataLabels: false })).toEqual({ dataLabels: false });
     expect(f).toEqual({ dataLabels: true });
   });
+  it('stores seriesColors as a whole map and drops it when cleared', () => {
+    const f = patchFormat({ number: 'compact' }, { seriesColors: { A: '#112233', B: '#445566' } });
+    expect(f).toEqual({ number: 'compact', seriesColors: { A: '#112233', B: '#445566' } });
+    expect(patchFormat(f, { seriesColors: { B: '#445566' } })?.seriesColors).toEqual({ B: '#445566' });
+    expect(patchFormat(patchFormat(undefined, { seriesColors: { A: '#112233' } }), { seriesColors: undefined })).toBeUndefined();
+  });
 });

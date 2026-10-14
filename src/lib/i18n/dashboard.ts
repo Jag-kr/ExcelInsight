@@ -59,6 +59,9 @@ const en = {
   xAxisTitle: 'X axis title',
   yAxisTitle: 'Y axis title',
   resetFormatting: 'Reset formatting',
+  seriesColors: 'Series colors',
+  seriesColor: 'Color',
+  resetColor: 'Reset color',
 } as const;
 
 export type DashboardKey = keyof typeof en;
@@ -115,6 +118,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     xAxisTitle: 'X अक्ष शीर्षक',
     yAxisTitle: 'Y अक्ष शीर्षक',
     resetFormatting: 'फ़ॉर्मैटिंग रीसेट करें',
+    seriesColors: 'श्रेणी के रंग',
+    seriesColor: 'रंग',
+    resetColor: 'रंग रीसेट करें',
   },
   es: {
     values: 'Valores',
@@ -166,6 +172,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     xAxisTitle: 'Título del eje X',
     yAxisTitle: 'Título del eje Y',
     resetFormatting: 'Restablecer formato',
+    seriesColors: 'Colores de series',
+    seriesColor: 'Color',
+    resetColor: 'Restablecer color',
   },
   zh: {
     values: '数值',
@@ -217,6 +226,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     xAxisTitle: 'X 轴标题',
     yAxisTitle: 'Y 轴标题',
     resetFormatting: '重置格式',
+    seriesColors: '系列颜色',
+    seriesColor: '颜色',
+    resetColor: '重置颜色',
   },
   fr: {
     values: 'Valeurs',
@@ -268,6 +280,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     xAxisTitle: 'Titre de l’axe X',
     yAxisTitle: 'Titre de l’axe Y',
     resetFormatting: 'Réinitialiser le format',
+    seriesColors: 'Couleurs des séries',
+    seriesColor: 'Couleur',
+    resetColor: 'Réinitialiser la couleur',
   },
   de: {
     values: 'Werte',
@@ -319,6 +334,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     xAxisTitle: 'Titel der X-Achse',
     yAxisTitle: 'Titel der Y-Achse',
     resetFormatting: 'Format zurücksetzen',
+    seriesColors: 'Serienfarben',
+    seriesColor: 'Farbe',
+    resetColor: 'Farbe zurücksetzen',
   },
 };
 
