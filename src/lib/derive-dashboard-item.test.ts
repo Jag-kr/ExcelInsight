@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { analyzeColumns, generateChartSuggestions, bucketDate } from './data-analyzer';
+import { analyzeColumns, generateChartSuggestions, bucketDate, type ColumnMeta } from './data-analyzer';
 import { buildDefaultDashboard } from './build-default-dashboard';
 import {
-  deriveDashboardItems, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES,
-  type ChartSpec, type DateGrain, type KpiAgg,
+  deriveDashboardItems, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
+  specForField, addFieldToSpec, type ChartSpec, type DateGrain, type KpiAgg,
 } from './derive-dashboard-item';
 
 const t = ((k: string) => k) as any;
@@ -305,5 +305,68 @@ describe('specFromSourceKey', () => {
 
   it('has no recipe for scatter plots', () => {
     expect(specFromSourceKey('scatter:a:b', [])).toBeNull();
+  });
+});
+
+describe('click-a-field helpers', () => {
+  const col = (name: string, type: ColumnMeta['type'], isSummable?: boolean): ColumnMeta => ({
+    name, type, uniqueCount: 3, totalCount: 10, nullCount: 0, uniqueRatio: 0.3, sampleValues: [],
+    ...(isSummable === undefined ? {} : { stats: { min: 0, max: 1, mean: 1, median: 1, sum: 1, stdDev: 0, isSummable } }),
+  });
+  const count = { column: null, agg: 'count' } as const;
+  const base: ChartSpec = { v: 2, dimension: 'Region', measures: [count] };
+
+  it('specForField: date -> monthly line of row counts', () => {
+    expect(specForField(col('When', 'date'))).toEqual({
+      displayAs: 'chart', type: 'line',
+      spec: { v: 2, dimension: 'When', grain: 'month', measures: [count] },
+    });
+  });
+
+  it.each(['categorical', 'range', 'text'] as const)('specForField: %s -> top-20 bar of row counts', type => {
+    expect(specForField(col('X', type))).toEqual({
+      displayAs: 'chart', type: 'bar',
+      spec: { v: 2, dimension: 'X', measures: [count], limit: 20 },
+    });
+  });
+
+  it('specForField: numeric -> KPI, sum when summable else average', () => {
+    expect(specForField(col('Sales', 'numeric', true))).toEqual({ displayAs: 'kpi', kpiSpec: { column: 'Sales', agg: 'sum' } });
+    expect(specForField(col('Rate', 'numeric', false))).toEqual({ displayAs: 'kpi', kpiSpec: { column: 'Rate', agg: 'average' } });
+  });
+
+  it('specForField: id -> null', () => {
+    expect(specForField(col('Id', 'id'))).toBeNull();
+  });
+
+  it('addFieldToSpec: replaces a lone row-count measure', () => {
+    expect(addFieldToSpec(base, col('Sales', 'numeric', true)).measures).toEqual([{ column: 'Sales', agg: 'sum' }]);
+  });
+
+  it('addFieldToSpec: appends a second measure and drops series', () => {
+    const one: ChartSpec = { ...base, measures: [{ column: 'Sales', agg: 'sum' }], series: 'Rep' };
+    const next = addFieldToSpec(one, col('Rate', 'numeric', false));
+    expect(next.measures).toEqual([{ column: 'Sales', agg: 'sum' }, { column: 'Rate', agg: 'average' }]);
+    expect(next.series).toBeUndefined();
+  });
+
+  it('addFieldToSpec: respects MAX_MEASURES and never duplicates a measure', () => {
+    const full: ChartSpec = {
+      ...base, measures: Array.from({ length: MAX_MEASURES }, (_, i) => ({ column: `M${i}`, agg: 'sum' as const })),
+    };
+    expect(addFieldToSpec(full, col('Extra', 'numeric', true))).toBe(full);
+    expect(addFieldToSpec(full, col('M0', 'numeric', true))).toBe(full);
+  });
+
+  it('addFieldToSpec: categorical sets series only with a single measure', () => {
+    expect(addFieldToSpec(base, col('Rep', 'categorical')).series).toBe('Rep');
+    const two: ChartSpec = { ...base, measures: [{ column: 'A', agg: 'sum' }, { column: 'B', agg: 'sum' }] };
+    expect(addFieldToSpec(two, col('Rep', 'categorical'))).toBe(two);
+  });
+
+  it('addFieldToSpec: unchanged for the axis column, dates and ids', () => {
+    expect(addFieldToSpec(base, col('Region', 'categorical'))).toBe(base);
+    expect(addFieldToSpec(base, col('When', 'date'))).toBe(base);
+    expect(addFieldToSpec(base, col('Id', 'id'))).toBe(base);
   });
 });
