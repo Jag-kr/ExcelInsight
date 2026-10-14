@@ -1,6 +1,6 @@
 import type { ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import type { DashboardItem } from '@/components/DashboardGrid';
-import { computeRepeatingColumns, computeNumericInsights, computeDataQuality, kpiCardId, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { computeRepeatingColumns, computeNumericInsights, computeDataQuality, kpiCardId, kpiTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 
 /**
  * Seeds the dashboard the user lands on straight after an upload: the first
@@ -33,7 +33,7 @@ export function buildDefaultDashboard(
   kpiSpecs.forEach(spec => {
     items.push({
       id: kpiCardId(spec),
-      title: spec.column ? `${t(spec.agg)} · ${spec.column}` : t('rowCount'),
+      title: kpiTitle(spec, t),
       type: 'bar', data: [], dataKeys: [], xKey: '',
       displayAs: 'kpi', kpiSpec: spec, size: 'xs',
     });
