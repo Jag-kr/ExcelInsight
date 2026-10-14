@@ -31,6 +31,11 @@ const en = {
   editChart: 'Edit chart',
   editChartDesc: 'Change the fields, aggregation and layout. The preview updates as you go.',
   saveChanges: 'Save changes',
+  fields: 'Fields',
+  searchFields: 'Search fields',
+  clickFieldToAdd: 'Click a field to add a chart',
+  noEditableSettings: 'This card has no editable settings yet.',
+  closeEditor: 'Close editor',
 } as const;
 
 export type DashboardKey = keyof typeof en;
@@ -59,6 +64,11 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     editChart: 'चार्ट संपादित करें',
     editChartDesc: 'फ़ील्ड, एग्रीगेशन और लेआउट बदलें। पूर्वावलोकन साथ-साथ अपडेट होता है।',
     saveChanges: 'बदलाव सहेजें',
+    fields: 'फ़ील्ड',
+    searchFields: 'फ़ील्ड खोजें',
+    clickFieldToAdd: 'चार्ट जोड़ने के लिए किसी फ़ील्ड पर क्लिक करें',
+    noEditableSettings: 'इस कार्ड में अभी संपादन योग्य सेटिंग नहीं हैं।',
+    closeEditor: 'संपादक बंद करें',
   },
   es: {
     values: 'Valores',
@@ -82,6 +92,11 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     editChart: 'Editar gráfico',
     editChartDesc: 'Cambia los campos, la agregación y el diseño. La vista previa se actualiza al momento.',
     saveChanges: 'Guardar cambios',
+    fields: 'Campos',
+    searchFields: 'Buscar campos',
+    clickFieldToAdd: 'Haz clic en un campo para añadir un gráfico',
+    noEditableSettings: 'Esta tarjeta aún no tiene ajustes editables.',
+    closeEditor: 'Cerrar editor',
   },
   zh: {
     values: '数值',
@@ -105,6 +120,11 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     editChart: '编辑图表',
     editChartDesc: '修改字段、聚合方式和布局，预览会实时更新。',
     saveChanges: '保存更改',
+    fields: '字段',
+    searchFields: '搜索字段',
+    clickFieldToAdd: '点击字段以添加图表',
+    noEditableSettings: '此卡片暂无可编辑的设置。',
+    closeEditor: '关闭编辑器',
   },
   fr: {
     values: 'Valeurs',
@@ -128,6 +148,11 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     editChart: 'Modifier le graphique',
     editChartDesc: 'Modifiez les champs, l’agrégation et la mise en forme. L’aperçu se met à jour en direct.',
     saveChanges: 'Enregistrer',
+    fields: 'Champs',
+    searchFields: 'Rechercher des champs',
+    clickFieldToAdd: 'Cliquez sur un champ pour ajouter un graphique',
+    noEditableSettings: 'Cette carte n’a pas encore de réglages modifiables.',
+    closeEditor: 'Fermer l’éditeur',
   },
   de: {
     values: 'Werte',
@@ -151,6 +176,11 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     editChart: 'Diagramm bearbeiten',
     editChartDesc: 'Felder, Aggregation und Darstellung ändern. Die Vorschau aktualisiert sich sofort.',
     saveChanges: 'Änderungen speichern',
+    fields: 'Felder',
+    searchFields: 'Felder suchen',
+    clickFieldToAdd: 'Auf ein Feld klicken, um ein Diagramm hinzuzufügen',
+    noEditableSettings: 'Diese Karte hat noch keine bearbeitbaren Einstellungen.',
+    closeEditor: 'Editor schließen',
   },
 };
 
