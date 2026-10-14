@@ -3,7 +3,7 @@ import { analyzeColumns, generateChartSuggestions, bucketDate, type ColumnMeta }
 import { buildDefaultDashboard } from './build-default-dashboard';
 import {
   deriveDashboardItems, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
-  specForField, addFieldToSpec, type ChartSpec, type DateGrain, type KpiAgg,
+  specForField, addFieldToSpec, specTitle, type ChartSpec, type DateGrain, type KpiAgg,
 } from './derive-dashboard-item';
 
 const t = ((k: string) => k) as any;
@@ -368,5 +368,10 @@ describe('click-a-field helpers', () => {
     expect(addFieldToSpec(base, col('Region', 'categorical'))).toBe(base);
     expect(addFieldToSpec(base, col('When', 'date'))).toBe(base);
     expect(addFieldToSpec(base, col('Id', 'id'))).toBe(base);
+  });
+
+  it('specTitle: joins measures and names the dimension', () => {
+    expect(specTitle({ dimension: 'Region', measures: [{ column: null, agg: 'count' }, { column: 'Sales', agg: 'sum' }] }, t))
+      .toBe('rowCount, sum Sales by Region');
   });
 });

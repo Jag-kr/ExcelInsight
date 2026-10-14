@@ -402,6 +402,12 @@ const compactNumber = new Intl.NumberFormat(undefined, { notation: 'compact', ma
 /** i18n key for an aggregation's label ("distinct" is "distinctCount" there). */
 export const aggKey = (a: KpiAgg) => (a === 'distinct' ? 'distinctCount' : a) as Exclude<KpiAgg, 'distinct'> | 'distinctCount';
 
+/** Generated chart title. The builder keeps a title only if it differs from this. */
+export function specTitle(spec: Pick<ChartSpec, 'measures' | 'dimension'>, t: TFn): string {
+  const label = (m: ChartMeasure) => (m.column ? `${t(aggKey(m.agg))} ${m.column}` : t('rowCount'));
+  return `${spec.measures.map(label).join(', ')} ${t('by')} ${spec.dimension}`;
+}
+
 /** Aggregations that read a numeric column; the rest work on any column. */
 export const NUMERIC_KPI_AGGS: KpiAgg[] = ['sum', 'average', 'min', 'max', 'median'];
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
 import {
-  aggregateChart, aggKey, MAX_MEASURES, NUMERIC_KPI_AGGS,
+  aggregateChart, aggKey, specTitle, MAX_MEASURES, NUMERIC_KPI_AGGS,
   type ChartSpec, type ChartMeasure, type DateGrain, type KpiAgg,
 } from '@/lib/derive-dashboard-item';
 import { ChartType, chartTypeOptions } from '@/lib/chart-themes';
@@ -71,8 +71,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
   }), [dimension, measures, isDate, grain, series, sort, limit, stacked, chartType]);
   const { data: chartData, dataKeys } = useMemo(() => aggregateChart(data, spec), [data, spec]);
 
-  const measureLabel = (m: ChartMeasure) => (m.column ? `${t(aggKey(m.agg))} ${m.column}` : t('rowCount'));
-  const titleFor = (s: Pick<ChartSpec, 'measures' | 'dimension'>) => `${s.measures.map(measureLabel).join(', ')} ${t('by')} ${s.dimension}`;
+  const titleFor = (s: Pick<ChartSpec, 'measures' | 'dimension'>) => specTitle(s, t);
   // Keep a title the user wrote; regenerate one that was generated.
   const title = initial && initial.title !== titleFor(initial.spec) ? initial.title : titleFor(spec);
 

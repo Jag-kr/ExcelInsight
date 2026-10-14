@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Calendar, Hash, KeyRound, Tag, Type, X, type LucideIcon } from 'lucide-react';
 import type { ColumnMeta, ColumnType } from '@/lib/data-analyzer';
-import { addFieldToSpec, specForField, type ChartSpec } from '@/lib/derive-dashboard-item';
+import { addFieldToSpec, specForField, specTitle, type ChartSpec } from '@/lib/derive-dashboard-item';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { ManualChartBuilder } from '../ManualChartBuilder';
 import type { DashboardItem } from '../DashboardGrid';
@@ -27,6 +28,7 @@ export interface EditorPaneProps {
 }
 
 export function EditorPane({ columns, data, selected, onChange, onAddField, onDeselect }: EditorPaneProps) {
+  const { t } = useI18n();
   const d = useDashboardT();
   const [query, setQuery] = useState('');
   // Bumped on field click so the builder remounts and reads the updated spec.
@@ -42,7 +44,9 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onDe
     if (!spec) return;
     const next = addFieldToSpec(spec, col);
     if (next === spec) return;
-    onChange({ type: item.type, spec: next, title: item.title });
+    // Follow the recipe while the title is still the generated one; keep a user-written title.
+    const title = item.title === specTitle(spec, t) ? specTitle(next, t) : item.title;
+    onChange({ type: item.type, spec: next, title });
     setRev(r => r + 1);
   };
 

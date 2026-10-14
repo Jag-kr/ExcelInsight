@@ -8,7 +8,7 @@ import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } fro
 import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
-import { deriveDashboardItems, kpiCardId, toChartSpec, specFromSourceKey, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { deriveDashboardItems, aggKey, kpiCardId, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
@@ -19,7 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
   Sparkles, RotateCcw, Trash2, X, MoreHorizontal, ChevronRight,
-  PanelLeftClose, PanelLeftOpen,
+  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -36,7 +36,7 @@ import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 // Served from public/ so logo swaps don't need a rebuild (SiteHeader and the
@@ -105,6 +105,7 @@ const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m =>
 const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false });
 const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
 const SmartInsights = dynamic(() => import('@/components/SmartInsights').then(m => m.SmartInsights), { ssr: false });
+const EditorPane = dynamic(() => import('@/components/dashboard/EditorPane').then(m => m.EditorPane), { ssr: false });
 const QuickAddPanel = dynamic(() => import('@/components/QuickAddPanel').then(m => m.QuickAddPanel), { ssr: false });
 
 /* ─── Sidebar nav items ─── */
@@ -170,10 +171,13 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   // A fresh upload arrives underived, so the overlay is up from the first paint.
   const [analyzing, setAnalyzing] = useState(() => Boolean(initialUpload));
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  // Not persisted: a reload starts with nothing selected.
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [paneCollapsed, setPaneCollapsed] = useState(() => initial?.paneCollapsed ?? false);
   const [mobileClearConfirmOpen, setMobileClearConfirmOpen] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const isDesktop = useIsDesktop();
 
   /**
    * The upload the landing page handed over is raw rows and nothing else — it
@@ -221,13 +225,13 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
         data, fileName, columns, suggestions, dashboardItems, filters,
         addedChartIds: Array.from(addedChartIds),
         addedInsightIds: Array.from(addedInsightIds),
-        activeTab, sidebarCollapsed,
+        activeTab, sidebarCollapsed, paneCollapsed,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {
       console.warn('Could not persist session', e);
     }
-  }, [analyzing, initialUpload, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed]);
+  }, [analyzing, initialUpload, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed, paneCollapsed]);
 
   const handleResetLayout = useCallback(() => {
     const { items, usedChartIds } = buildDefaultDashboard(data, columns, suggestions, t);
@@ -380,27 +384,52 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     trackEvent('chart_added', { source: 'table' });
   }, []);
 
-  /* The card being edited, with its recipe in ChartSpec form. Suggestion cards
-     are converted from their sourceKey, so any chart on the board opens. */
-  const editing = useMemo(() => {
-    const item = dashboardItems.find(i => i.id === editingId);
+  /* The selected card, with its recipe in ChartSpec form when it is a chart.
+     Suggestion cards are converted from their sourceKey, so any chart on the
+     board opens. Removing the selected card makes this null: auto-deselect. */
+  const selected = useMemo(() => {
+    const item = dashboardItems.find(i => i.id === selectedId);
     if (!item) return null;
-    const spec = item.spec ? toChartSpec(item.spec, item.type) : item.sourceKey ? specFromSourceKey(item.sourceKey, columns) : null;
-    return spec && { item, spec };
-  }, [editingId, dashboardItems, columns]);
+    const isChart = !item.displayAs || item.displayAs === 'chart';
+    const spec = !isChart ? null
+      : item.spec ? toChartSpec(item.spec, item.type)
+      : item.sourceKey ? specFromSourceKey(item.sourceKey, columns) : null;
+    return { item, spec };
+  }, [selectedId, dashboardItems, columns]);
 
-  const handleSaveEdit = useCallback((updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => {
-    if (!editing) return;
-    const { item } = editing;
+  const selectCard = useCallback((id: string | null) => {
+    setSelectedId(id);
+    if (id) setPaneCollapsed(false);
+  }, []);
+
+  const handleChangeSelected = useCallback((updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => {
+    if (!selected) return;
+    const { item } = selected;
     // An edited suggestion is now a custom chart: drop the suggestion link,
     // and free the suggestion in Quick Add unless another card still shows it.
+    // Idempotent: after the first call the item's sourceKey is already gone.
     setDashboardItems(prev => prev.map(i => (i.id === item.id ? { ...i, ...updates, sourceKey: undefined } : i)));
     const key = item.sourceKey;
     if (key && !dashboardItems.some(i => i.id !== item.id && i.sourceKey === key)) {
       setAddedChartIds(prev => { const next = new Set(prev); next.delete(key); return next; });
     }
-    setEditingId(null);
-  }, [editing, dashboardItems]);
+  }, [selected, dashboardItems]);
+
+  const handleAddField = useCallback((col: ColumnMeta) => {
+    const r = specForField(col);
+    if (!r) return;
+    if (r.displayAs === 'kpi') {
+      const spec = r.kpiSpec;
+      addKpiToDashboard(spec, `${t(aggKey(spec.agg))} · ${col.name}`);
+      selectCard(kpiCardId(spec));
+      return;
+    }
+    const id = `manual-${Date.now()}`;
+    // data/dataKeys are re-derived from the spec by liveItems.
+    setDashboardItems(prev => [...prev, { id, title: specTitle(r.spec, t), type: r.type, spec: r.spec, data: [], dataKeys: [] }]);
+    trackEvent('chart_added', { source: 'field' });
+    selectCard(id);
+  }, [addKpiToDashboard, selectCard, t]);
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
     /* Read up front, not inside an updater: un-marking needs item.sourceKey. */
@@ -436,6 +465,17 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
   const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
   const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
+
+  const editorPane = (
+    <EditorPane
+      columns={filteredColumns}
+      data={filteredData}
+      selected={selected}
+      onChange={handleChangeSelected}
+      onAddField={handleAddField}
+      onDeselect={() => selectCard(null)}
+    />
+  );
 
   const activeItem = SIDEBAR_ITEMS.find(i => i.value === activeTab);
 
@@ -676,7 +716,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                       {filteredData.length} {t('rows')} · {columns.length} {t('cols')} · {dashboardItems.length} {t('cards')}
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <Badge variant="secondary" className="rounded-full border-0 px-2.5 py-1 text-[11px] font-medium" style={{ background: `hsl(${getChartColorVar(0)} / 0.1)`, color: getChartColor(0) }}>
                       {filteredData.length} {t('rows')}
                     </Badge>
@@ -693,11 +733,19 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                         {Object.keys(filters).length} {t('activeFilters')}
                       </Badge>
                     )}
+                    <Button
+                      variant="ghost" size="icon" className="hidden lg:inline-flex h-7 w-7"
+                      aria-label={d('fieldsPanel')} title={d('fieldsPanel')} aria-expanded={!paneCollapsed}
+                      onClick={() => setPaneCollapsed(c => !c)}
+                    >
+                      {paneCollapsed ? <PanelRightOpen className="h-4 w-4" /> : <PanelRightClose className="h-4 w-4" />}
+                    </Button>
                   </div>
                 </div>
               </div>
 
-              <div ref={dashboardRef} className="min-h-[400px]">
+              <div className="lg:flex lg:items-start lg:gap-4">
+              <div ref={dashboardRef} className="min-h-[400px] min-w-0 lg:flex-1">
                 <Suspense fallback={<ChartFallback />}>
                   <DashboardGrid
                     items={liveItems}
@@ -708,7 +756,10 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     onRemove={handleRemoveFromDashboard}
                     onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
                     onDuplicate={handleDuplicate}
-                    onEdit={setEditingId}
+                    selectedId={selectedId}
+                    // Below lg a selection opens a full-width sheet, so body taps (tooltips) must not select: Edit menu only.
+                    onSelect={isDesktop ? selectCard : undefined}
+                    onEdit={selectCard}
                     emptyAction={
                       <div className="flex flex-wrap items-center justify-center gap-2">
                         <Button size="sm" onClick={() => setQuickAddOpen(true)} className="gap-1.5 text-sm h-9">
@@ -721,6 +772,13 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     }
                   />
                 </Suspense>
+              </div>
+              {/* Outside dashboardRef so the PDF export never captures it. */}
+              {isDesktop && !paneCollapsed && (
+                <aside className="flex w-80 xl:w-96 shrink-0 flex-col sticky top-20 max-h-[calc(100vh-6rem)] overflow-hidden rounded-xl border border-border bg-card">
+                  <Suspense fallback={<PanelFallback />}>{editorPane}</Suspense>
+                </aside>
+              )}
               </div>
             </TabsContent>
 
@@ -855,22 +913,14 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
         </main>
       </div>
 
-      {/* ─── Chart editor ─── */}
-      <Sheet open={!!editing} onOpenChange={open => { if (!open) setEditingId(null); }}>
-        <SheetContent side="right" className="w-full sm:max-w-md lg:max-w-lg overflow-y-auto">
-          <SheetHeader className="mb-4">
-            <SheetTitle className="text-base">{d('editChart')}</SheetTitle>
-            <SheetDescription className="text-xs">{d('editChartDesc')}</SheetDescription>
+      {/* ─── Editor: docked pane on desktop (above), sheet below lg ─── */}
+      <Sheet open={!isDesktop && !!selected} onOpenChange={open => { if (!open) selectCard(null); }}>
+        <SheetContent side="right" className="w-full sm:max-w-md p-0 [&>button]:hidden">
+          <SheetHeader className="sr-only">
+            <SheetTitle>{d('editChart')}</SheetTitle>
+            <SheetDescription>{d('editChartDesc')}</SheetDescription>
           </SheetHeader>
-          {editing && (
-            <ManualChartBuilder
-              key={editing.item.id}
-              data={filteredData}
-              columns={filteredColumns}
-              initial={{ type: editing.item.type, spec: editing.spec, title: editing.item.title }}
-              onSave={handleSaveEdit}
-            />
-          )}
+          {!isDesktop && editorPane}
         </SheetContent>
       </Sheet>
 

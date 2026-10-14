@@ -23,6 +23,8 @@ export type PersistedSession = {
   addedInsightIds: string[];
   activeTab: string;
   sidebarCollapsed: boolean;
+  /** Absent in sessions saved before the editor pane existed. */
+  paneCollapsed?: boolean;
 };
 
 export function loadSession(): PersistedSession | null {
