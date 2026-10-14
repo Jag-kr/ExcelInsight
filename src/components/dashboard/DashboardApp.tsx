@@ -163,8 +163,6 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const [suggestions, setSuggestions] = useState<ChartSuggestion[]>(() => initial?.suggestions ?? []);
   const [dashboardItems, setDashboardItems] = useState<DashboardItem[]>(() => initial?.dashboardItems ?? []);
   const [filters, setFilters] = useState<Record<string, string>>(() => initial?.filters ?? {});
-  const [addedChartIds, setAddedChartIds] = useState<Set<string>>(() => new Set(initial?.addedChartIds ?? []));
-  const [addedInsightIds, setAddedInsightIds] = useState<Set<string>>(() => new Set(initial?.addedInsightIds ?? []));
   const [activeTab, setActiveTab] = useState<string>(() => initial?.activeTab ?? 'dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => initial?.sidebarCollapsed ?? false);
   const [exporting, setExporting] = useState(false);
@@ -176,6 +174,18 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const [paneCollapsed, setPaneCollapsed] = useState(() => initial?.paneCollapsed ?? false);
   const [mobileClearConfirmOpen, setMobileClearConfirmOpen] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
+
+  /* "Already placed" markers, derived from the board so they can never drift from it
+     (and so undo/redo only has to snapshot dashboardItems). Chart suggestions are
+     keyed by sourceKey; insight, KPI and table cards by their own id. */
+  const addedChartIds = useMemo(
+    () => new Set(dashboardItems.flatMap(i => (i.sourceKey ? [i.sourceKey] : []))),
+    [dashboardItems]
+  );
+  const addedInsightIds = useMemo(
+    () => new Set(dashboardItems.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi' || i.displayAs === 'table').map(i => i.id)),
+    [dashboardItems]
+  );
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
 
@@ -194,10 +204,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       setColumns(cols);
       const charts = generateChartSuggestions(newData, cols);
       setSuggestions(charts);
-      const { items, usedChartIds } = buildDefaultDashboard(newData, cols, charts, t);
+      const { items } = buildDefaultDashboard(newData, cols, charts, t);
       setDashboardItems(items);
-      setAddedChartIds(usedChartIds);
-      setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi').map(i => i.id)));
       setAnalyzing(false);
 
       const fileExt = getFileExt(name);
@@ -240,10 +248,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   }, [analyzing, initialUpload, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed, paneCollapsed]);
 
   const handleResetLayout = useCallback(() => {
-    const { items, usedChartIds } = buildDefaultDashboard(data, columns, suggestions, t);
-    setDashboardItems(items);
-    setAddedChartIds(usedChartIds);
-    setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi').map(i => i.id)));
+    setDashboardItems(buildDefaultDashboard(data, columns, suggestions, t).items);
     // Reset reuses card ids; a surviving selection would write its stale spec back.
     setSelectedId(null);
     toast.success(t('resetLayout'));
@@ -252,8 +257,6 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const handleClearAll = useCallback(() => {
     setSelectedId(null);
     setDashboardItems([]);
-    setAddedChartIds(new Set());
-    setAddedInsightIds(new Set());
   }, []);
 
   const handleClearFile = useCallback(() => {
@@ -352,7 +355,6 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       type, data: s.data, dataKeys: s.dataKeys, xKey: s.xKey,
       sourceKey: s.key,
     }]);
-    setAddedChartIds(prev => new Set(prev).add(s.key));
     trackEvent('chart_added', { source: 'suggestion' });
   }, []);
 
@@ -368,7 +370,6 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       id: card.id, title: card.title, description: '', type: 'bar', data: [], dataKeys: [], xKey: '',
       displayAs: 'insight', insightType, insightContent: content,
     }]);
-    setAddedInsightIds(prev => new Set(prev).add(card.id));
     trackEvent('chart_added', { source: 'insight' });
   }, []);
 
@@ -380,7 +381,6 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
         displayAs: 'kpi' as const, kpiSpec: spec, size: 'xs' as const,
       }]
     ));
-    setAddedInsightIds(prev => new Set(prev).add(id));
     trackEvent('chart_added', { source: 'kpi' });
   }, []);
 
@@ -389,7 +389,6 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       id: card.id, title: card.title, description: '', type: 'bar', data: card.data,
       dataKeys: [], xKey: '', displayAs: 'table', tableColumns: card.columns,
     }]);
-    setAddedInsightIds(prev => new Set(prev).add(card.id));
     trackEvent('chart_added', { source: 'table' });
   }, []);
 
@@ -414,27 +413,21 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const handleChangeSelected = useCallback((updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => {
     if (!selected) return;
     const { item } = selected;
-    // An edited suggestion is now a custom chart: drop the suggestion link,
-    // and free the suggestion in Quick Add unless another card still shows it.
+    // An edited suggestion is now a custom chart: drop the suggestion link
+    // (which also frees it in Quick Add unless another card still shows it).
     // Idempotent: after the first call the item's sourceKey is already gone.
     // A suggestion's own title and description describe the old recipe: regenerate the title
     // (unless the user renamed it) and drop the description.
     const generated = item.sourceKey && item.title === suggestions.find(s => s.key === item.sourceKey)?.title;
     const patch = item.sourceKey ? { ...updates, title: generated ? specTitle(toChartSpec(updates.spec, updates.type), t) : updates.title, description: undefined } : updates;
     setDashboardItems(prev => prev.map(i => (i.id === item.id ? { ...i, ...patch, sourceKey: undefined } : i)));
-    const key = item.sourceKey;
-    if (key && !dashboardItems.some(i => i.id !== item.id && i.sourceKey === key)) {
-      setAddedChartIds(prev => { const next = new Set(prev); next.delete(key); return next; });
-    }
-  }, [selected, dashboardItems, suggestions, t]);
+  }, [selected, suggestions, t]);
 
   /* Apply a recipe edit that may rename the card. The id doubles as the
-     "already placed" key, so addedInsightIds and the selection follow it. */
+     "already placed" key (derived), so only the selection needs to follow it. */
   const retargetCard = useCallback((oldId: string, patch: Partial<DashboardItem>, newId?: string) => {
     setDashboardItems(prev => prev.map(i => (i.id === oldId ? { ...i, ...patch, id: newId ?? i.id } : i)));
-    if (!newId) return;
-    setAddedInsightIds(prev => { const next = new Set(prev); next.delete(oldId); return next.add(newId); });
-    selectCard(newId);
+    if (newId) selectCard(newId);
   }, [selectCard]);
 
   const handleChangeKpi = useCallback((spec: KpiSpec) => {
@@ -466,19 +459,14 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   }, [addKpiToDashboard, selectCard, t]);
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
-    /* Read up front, not inside an updater: un-marking needs item.sourceKey. */
+    /* Read up front, not inside an updater: Undo needs the item and its index. */
     const index = dashboardItems.findIndex(i => i.id === id);
     if (index === -1) return;
     const item = dashboardItems[index];
-    const stillShown = dashboardItems.some(i => i.id !== id && i.sourceKey === item.sourceKey);
-    const chartKey = item.sourceKey && !stillShown && addedChartIds.has(item.sourceKey) ? item.sourceKey : null;
-    const insightId = addedInsightIds.has(id) ? id : null;
 
     // Otherwise Undo would re-select the card (and re-open the sheet on phones).
     setSelectedId(cur => (cur === id ? null : cur));
     setDashboardItems(prev => prev.filter(i => i.id !== id));
-    if (chartKey) setAddedChartIds(prev => { const next = new Set(prev); next.delete(chartKey); return next; });
-    if (insightId) setAddedInsightIds(prev => { const next = new Set(prev); next.delete(insightId); return next; });
 
     toast.success(t('chartRemoved'), {
       action: {
@@ -490,12 +478,10 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
             next.splice(Math.min(index, next.length), 0, item);
             return next;
           });
-          if (chartKey) setAddedChartIds(prev => new Set(prev).add(chartKey));
-          if (insightId) setAddedInsightIds(prev => new Set(prev).add(insightId));
         },
       },
     });
-  }, [dashboardItems, addedChartIds, addedInsightIds, t]);
+  }, [dashboardItems, t]);
 
   /* ─── DASHBOARD APP SHELL ─── */
   const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
