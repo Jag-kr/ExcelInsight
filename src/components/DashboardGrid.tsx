@@ -473,6 +473,11 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
   const { t } = useI18n();
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  // A card added from the pane lands at the end of the board; bring it into view.
+  useEffect(() => {
+    if (selectedId) document.querySelector('[data-pdf-card][aria-current="true"]')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [selectedId]);
+
   // Esc deselects, unless it was meant for a field, menu or dialog.
   useEffect(() => {
     if (!selectedId || !onSelect) return;

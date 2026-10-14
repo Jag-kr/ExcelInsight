@@ -36,6 +36,7 @@ const en = {
   clickFieldToAdd: 'Click a field to add a chart',
   noEditableSettings: 'This card has no editable settings yet.',
   closeEditor: 'Close editor',
+  fieldsPanel: 'Fields panel',
 } as const;
 
 export type DashboardKey = keyof typeof en;
@@ -69,6 +70,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     clickFieldToAdd: 'चार्ट जोड़ने के लिए किसी फ़ील्ड पर क्लिक करें',
     noEditableSettings: 'इस कार्ड में अभी संपादन योग्य सेटिंग नहीं हैं।',
     closeEditor: 'संपादक बंद करें',
+    fieldsPanel: 'फ़ील्ड पैनल',
   },
   es: {
     values: 'Valores',
@@ -97,6 +99,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     clickFieldToAdd: 'Haz clic en un campo para añadir un gráfico',
     noEditableSettings: 'Esta tarjeta aún no tiene ajustes editables.',
     closeEditor: 'Cerrar editor',
+    fieldsPanel: 'Panel de campos',
   },
   zh: {
     values: '数值',
@@ -125,6 +128,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     clickFieldToAdd: '点击字段以添加图表',
     noEditableSettings: '此卡片暂无可编辑的设置。',
     closeEditor: '关闭编辑器',
+    fieldsPanel: '字段面板',
   },
   fr: {
     values: 'Valeurs',
@@ -153,6 +157,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     clickFieldToAdd: 'Cliquez sur un champ pour ajouter un graphique',
     noEditableSettings: 'Cette carte n’a pas encore de réglages modifiables.',
     closeEditor: 'Fermer l’éditeur',
+    fieldsPanel: 'Panneau des champs',
   },
   de: {
     values: 'Werte',
@@ -181,6 +186,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     clickFieldToAdd: 'Auf ein Feld klicken, um ein Diagramm hinzuzufügen',
     noEditableSettings: 'Diese Karte hat noch keine bearbeitbaren Einstellungen.',
     closeEditor: 'Editor schließen',
+    fieldsPanel: 'Feldbereich',
   },
 };
 
