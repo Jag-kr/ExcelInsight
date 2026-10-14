@@ -1,7 +1,11 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { colorsByCategory, getChartPalette, useChartPalette } from '@/lib/chart-themes';
+import { hslStringToRgb } from '@/lib/color-utils';
+import { useTheme } from '@/lib/theme';
 import { isDefaultFormat, patchFormat, type ChartFormat } from '@/lib/format';
 import { useDashboardT, type DashboardKey } from '@/lib/i18n/dashboard';
 import type { DashboardItem } from '../DashboardGrid';
@@ -65,18 +69,61 @@ function Pick<V extends string>({ label, value, options, onChange }: {
   );
 }
 
+/** Colour picker that shows drags locally and commits once, on the native `change` (picker closed), so a drag is one undo entry. */
+function ColorInput({ label, value, onCommit }: { label: string; value: string; onCommit: (hex: string) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState(value);
+  useEffect(() => setDraft(value), [value]);
+  // React's onChange is the native `input` event (fires while dragging); `change` is the final value.
+  useEffect(() => {
+    const el = ref.current;
+    const commit = () => el && onCommit(el.value);
+    el?.addEventListener('change', commit);
+    return () => el?.removeEventListener('change', commit);
+  });
+  return (
+    <input
+      ref={ref}
+      type="color"
+      aria-label={label}
+      value={draft}
+      onChange={e => setDraft(e.target.value)}
+      className="h-8 w-9 shrink-0 cursor-pointer rounded-md border border-border bg-secondary p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    />
+  );
+}
+
+const hex = ([r, g, b]: number[]) => '#' + [r, g, b].map(n => n.toString(16).padStart(2, '0')).join('');
+
 export interface FormatTabProps {
   item: DashboardItem;
+  /** Series (data keys) the chart draws, derived from its spec; empty for KPI cards. */
+  dataKeys?: string[];
+  /** Rows the chart draws, to tell whether a single series is coloured per category. */
+  rowCount?: number;
   /** Next format for the card; undefined clears it. */
   onChange: (format: ChartFormat | undefined) => void;
 }
 
-export function FormatTab({ item, onChange }: FormatTabProps) {
+export function FormatTab({ item, dataKeys = [], rowCount = 0, onChange }: FormatTabProps) {
   const d = useDashboardT();
   const gridId = useId();
   const f = item.format;
   const kpi = item.displayAs === 'kpi';
   const set = (patch: Partial<ChartFormat>) => onChange(patchFormat(f, patch));
+  const { theme } = useTheme();
+  const { paletteId } = useChartPalette();
+  const palette = getChartPalette(paletteId).colors[theme];
+  // Scatter and pie colour per point/slice, and a lone series on a short bar chart per category: no per-series colour there.
+  const isBar = item.type === 'bar' || item.type === 'horizontalBar';
+  const showSeriesColors = !kpi && dataKeys.length > 0
+    && (isBar || ['line', 'area', 'radar'].includes(item.type))
+    && !(isBar && colorsByCategory(dataKeys.length, rowCount));
+  const setSeriesColor = (key: string, color?: string) => {
+    const { [key]: _drop, ...rest } = f?.seriesColors ?? {};
+    const next = color ? { ...rest, [key]: color } : rest;
+    set({ seriesColors: Object.keys(next).length ? next : undefined });
+  };
   const hasAxes = !['pie', 'donut', 'radar'].includes(item.type);
 
   const numberOptions: [string, string][] = [
@@ -162,6 +209,35 @@ export function FormatTab({ item, onChange }: FormatTabProps) {
             </>
           )}
         </>
+      )}
+
+      {showSeriesColors && (
+        <fieldset className="space-y-1.5">
+          <legend className={LABEL}>{d('seriesColors')}</legend>
+          {dataKeys.map((key, i) => {
+            const custom = f?.seriesColors?.[key];
+            return (
+              <div key={key} className="flex items-center gap-2">
+                <span className="min-w-0 flex-1 truncate text-xs text-foreground" title={key}>{key}</span>
+                <ColorInput
+                  label={`${d('seriesColor')}: ${key}`}
+                  value={custom ?? hex(hslStringToRgb(palette[i % palette.length]))}
+                  onCommit={c => setSeriesColor(key, c)}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  aria-label={`${d('resetColor')}: ${key}`}
+                  disabled={!custom}
+                  onClick={() => setSeriesColor(key)}
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            );
+          })}
+        </fieldset>
       )}
 
       <Button variant="ghost" size="sm" className="h-8 w-full text-xs" disabled={isDefaultFormat(f)} onClick={() => onChange(undefined)}>

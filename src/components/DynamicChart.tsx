@@ -13,7 +13,7 @@ import { Download, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIc
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, getChartColor, getChartVarColor, getChartColorVar, CHART_COLOR_COUNT } from '@/lib/chart-themes';
+import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, getChartColor, getChartVarColor, getChartColorVar, colorsByCategory } from '@/lib/chart-themes';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useI18n } from '@/lib/i18n';
@@ -82,8 +82,13 @@ export function DynamicChart({
     if (type === 'pie' || type === 'donut' || type === 'scatter') {
       return buildPieChartConfig(data, xKey);
     }
-    return buildChartConfig(dataKeys);
-  }, [dataKeys, data, xKey, type]);
+    const config = buildChartConfig(dataKeys);
+    /* Per-series overrides; ignore anything but #rrggbb (storage can be hand-edited). */
+    for (const [key, color] of Object.entries(format?.seriesColors ?? {})) {
+      if (dataKeys.includes(key) && /^#[0-9a-f]{6}$/i.test(color)) config[key] = { label: key, color };
+    }
+    return config;
+  }, [dataKeys, data, xKey, type, format?.seriesColors]);
 
   /**
    * Whether bars should be coloured per category rather than per series.
@@ -100,7 +105,7 @@ export function DynamicChart({
    *    grouping that does not exist. Past the cap, one colour is the honest
    *    answer.
    */
-  const colorByCategory = dataKeys.length === 1 && data.length <= CHART_COLOR_COUNT;
+  const colorByCategory = colorsByCategory(dataKeys.length, data.length);
 
   /* Printed values only stay legible on a short, single-series bar chart —
      past that they collide with each other and with the axis. */

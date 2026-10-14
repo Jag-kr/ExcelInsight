@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Calendar, Hash, KeyRound, Merge, Tag, Type, X, type LucideIcon } from 'lucide-react';
 import type { ColumnMeta, ColumnType } from '@/lib/data-analyzer';
-import { addFieldToSpec, aggKey, aggsForColumn, normalizeAgg, repeatColumnOf, specForField, specTitle, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { addFieldToSpec, aggKey, aggregateChart, aggsForColumn, normalizeAgg, repeatColumnOf, specForField, specTitle, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -57,6 +57,8 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
   const kpi = item?.displayAs === 'kpi' ? item.kpiSpec : undefined;
   const repeatCol = item ? repeatColumnOf(item) : null;
   // Only chart recipes and KPI cards have formatting; any other selection falls back to Data.
+  // The stored item has no series list: re-derive it from the spec, as the chart does.
+  const agg = useMemo(() => (spec ? aggregateChart(data, spec) : undefined), [data, spec]);
   const canFormat = !!item && !!onChangeFormat && (!!spec || !!kpi);
   const showFormat = canFormat && tab === 'format';
 
@@ -91,7 +93,7 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
         </Tabs>
       )}
 
-      {showFormat && item && onChangeFormat && <FormatTab item={item} onChange={onChangeFormat} />}
+      {showFormat && item && onChangeFormat && <FormatTab item={item} dataKeys={agg?.dataKeys} rowCount={agg?.data.length} onChange={onChangeFormat} />}
       {!showFormat && item && spec && (
         <ManualChartBuilder
           key={item.id}
