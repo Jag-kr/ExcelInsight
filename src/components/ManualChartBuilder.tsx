@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
 import {
   aggregateChart, aggKey, MAX_MEASURES, NUMERIC_KPI_AGGS,
@@ -9,7 +9,7 @@ import { DynamicChart } from './DynamicChart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, X } from 'lucide-react';
+import { AreaChart, BarChart3, BarChartHorizontal, Donut, LineChart, PieChart, Plus, Radar, ScatterChart, X, type LucideIcon } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import type { DashboardItem } from './DashboardGrid';
@@ -20,6 +20,10 @@ const AUTO = '__auto';
 const GRAINS: DateGrain[] = ['day', 'week', 'month', 'quarter', 'year'];
 const GRAIN_KEYS = { day: 'grainDay', week: 'grainWeek', month: 'grainMonth', quarter: 'grainQuarter', year: 'grainYear' } as const;
 const STACKABLE: ChartType[] = ['bar', 'horizontalBar', 'area'];
+const TYPE_ICONS: Record<ChartType, LucideIcon> = {
+  bar: BarChart3, horizontalBar: BarChartHorizontal, line: LineChart, area: AreaChart,
+  donut: Donut, pie: PieChart, scatter: ScatterChart, radar: Radar,
+};
 
 interface ManualChartBuilderProps {
   data: Record<string, any>[];
@@ -29,6 +33,8 @@ interface ManualChartBuilderProps {
   /** Edit mode: prefills from an existing card and saves back onto it. */
   initial?: { type: ChartType; spec: ChartSpec; title: string };
   onSave?: (updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => void;
+  /** Live mode: fires on every edit (never on mount); hides the add/save button. */
+  onChange?: (updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => void;
 }
 
 /**
@@ -36,7 +42,7 @@ interface ManualChartBuilderProps {
  * Power BI's visual pane or Looker Studio's chart setup. Produces a ChartSpec
  * recipe; the card's data is always re-derived from it, never stored.
  */
-export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, onSave }: ManualChartBuilderProps) {
+export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, onSave, onChange }: ManualChartBuilderProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [chartType, setChartType] = useState<ChartType>(initial?.type ?? 'bar');
@@ -69,6 +75,19 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
   const titleFor = (s: Pick<ChartSpec, 'measures' | 'dimension'>) => `${s.measures.map(measureLabel).join(', ')} ${t('by')} ${s.dimension}`;
   // Keep a title the user wrote; regenerate one that was generated.
   const title = initial && initial.title !== titleFor(initial.spec) ? initial.title : titleFor(spec);
+
+  // Parent's onChange may change identity every render, so effects read it via a ref.
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const sig = JSON.stringify([chartType, spec, title]);
+  const lastSig = useRef(sig); // seeded with the first render, so mount never fires
+  const hasRows = chartData.length > 0;
+  useEffect(() => {
+    if (sig === lastSig.current || !spec.dimension || !hasRows) return;
+    lastSig.current = sig;
+    onChangeRef.current?.({ type: chartType, spec, title });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sig covers chartType/spec/title
+  }, [sig, hasRows]);
 
   const setDimensionAndGrain = (name: string) => {
     setDimension(name);
@@ -106,12 +125,20 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={label}>{t('chartType')}</label>
-          <Select value={chartType} onValueChange={v => setChartType(v as ChartType)}>
-            <SelectTrigger className={trigger}><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {chartTypeOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-4 gap-1.5">
+            {chartTypeOptions.map(o => {
+              const Icon = TYPE_ICONS[o.value];
+              const selected = o.value === chartType;
+              return (
+                <button key={o.value} type="button" aria-label={o.label} aria-pressed={selected} title={o.label}
+                  onClick={() => setChartType(o.value)}
+                  className={`flex h-9 min-w-9 items-center justify-center rounded-md border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    selected ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary' : 'border-border bg-secondary text-muted-foreground hover:text-foreground'}`}>
+                  <Icon className="h-4 w-4" />
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div>
@@ -224,9 +251,11 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
             stacked={spec.stacked}
             onChangeType={setChartType}
           />
-          <Button onClick={handleAdd} className="w-full" size="sm">
-            {onSave ? d('saveChanges') : <><Plus className="h-4 w-4 mr-1" /> {t('addDashboard')}</>}
-          </Button>
+          {!onChange && (
+            <Button onClick={handleAdd} className="w-full" size="sm">
+              {onSave ? d('saveChanges') : <><Plus className="h-4 w-4 mr-1" /> {t('addDashboard')}</>}
+            </Button>
+          )}
         </>
       )}
     </div>
