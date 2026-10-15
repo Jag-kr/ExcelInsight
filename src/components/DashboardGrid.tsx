@@ -11,7 +11,7 @@ import { ChartType, chartTypeOptions, getChartColor, getChartColorVar } from '@/
 import { TopValueBar } from './TopValueBar';
 import {
   Trash2, Maximize2, Minimize2, Square, Repeat2, BarChart3, AlertTriangle,
-  Copy, MoreHorizontal, RectangleHorizontal, Rows3, LineChart as LineChartIcon, Pencil,
+  Copy, Filter as FilterIcon, MoreHorizontal, RectangleHorizontal, Rows3, LineChart as LineChartIcon, Pencil,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n';
@@ -22,8 +22,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
-import { repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { crossDimensionOf, repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import type { ColumnMeta } from '@/lib/data-analyzer';
 import type { ChartFormat } from '@/lib/format';
+import { countActive, type Filter, type Filters } from '@/lib/filters';
+import { FilterControl } from './dashboard/FilterControl';
 
 export interface DashboardItem {
   id: string;
@@ -37,7 +40,11 @@ export interface DashboardItem {
   spec?: ManualChartSpec | ChartSpec;
   /** Per-card display options; absent = render exactly as before. */
   format?: ChartFormat;
-  displayAs?: 'chart' | 'table' | 'insight' | 'kpi';
+  /** Filters on this visual only, applied on top of the page filters (chart recipes and KPI cards). */
+  filters?: Filters;
+  displayAs?: 'chart' | 'table' | 'insight' | 'kpi' | 'slicer';
+  /** Slicer cards: the column whose page filter this card edits. */
+  slicerColumn?: string;
   tableColumns?: string[];
   size?: 'xs' | 'sm' | 'md' | 'lg';
   kpiSpec?: KpiSpec;
@@ -55,6 +62,14 @@ interface DashboardGridProps {
   onEdit?: (id: string) => void;
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
+  /** Cross-filtering: a bar/slice of a card with a cross dimension was clicked. `columns` resolves two-column sourceKeys. */
+  onChartSelect?: (itemId: string, label: string) => void;
+  columns?: ColumnMeta[];
+  /** Slicer cards read and edit these page filters. Removing a slicer does not clear its filter: the Filter tab still shows it. */
+  pageFilters?: Filters;
+  onPageFilterChange?: (column: string, filter: Filter | null) => void;
+  /** Distinct values per column, for the `in` slicers. */
+  slicerValues?: Record<string, string[]>;
   emptyAction?: React.ReactNode;
 }
 
@@ -279,6 +294,34 @@ const sizeIcons = {
   lg: Maximize2,
 };
 
+function DashboardSlicerCard({ item, column, values, filter, onChange }: {
+  item: DashboardItem;
+  column?: ColumnMeta;
+  values?: string[];
+  filter?: Filter;
+  onChange: (f: Filter | null) => void;
+}) {
+  const d = useDashboardT();
+  return (
+    <Card className="dashboard-panel animate-fade-in h-full flex flex-col gap-2 p-3 sm:p-4">
+      {/* pr-16 keeps the title clear of the hover action pill. */}
+      <div className="flex min-w-0 items-center gap-1.5 pr-16 text-xs sm:text-sm font-semibold text-foreground">
+        <FilterIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="truncate">{item.title}</span>
+      </div>
+      {column ? (
+        // The header already names the column: keep the control's own label for screen readers only.
+        // stopPropagation: clicks in the control's portalled popover must not select the card.
+        <div onClick={e => e.stopPropagation()} className="[&_legend]:sr-only [&>div>span:first-child]:sr-only">
+          <FilterControl column={column} values={values} filter={filter} onChange={onChange} />
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">{d('slicerColumnMissing')}</p>
+      )}
+    </Card>
+  );
+}
+
 /* Scatter suggestions plot raw points, so there is no field-well recipe to edit. */
 const isEditableChart = (item: DashboardItem) =>
   (!item.displayAs || item.displayAs === 'chart') &&
@@ -287,15 +330,18 @@ const isEditableChart = (item: DashboardItem) =>
 /* The pane also edits KPI and repeating-value cards. */
 const isEditable = (item: DashboardItem) => isEditableChart(item) || item.displayAs === 'kpi' || repeatColumnOf(item) !== null;
 
-function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem, onDuplicate, onEdit }: {
+function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove, onUpdateItem, onDuplicate, onEdit, slicer }: {
   item: DashboardItem;
   index: number;
   selected?: boolean;
   onSelect?: () => void;
+  onChartSelect?: (label: string) => void;
   onRemove: () => void;
   onUpdateItem: (updates: Partial<DashboardItem>) => void;
   onDuplicate?: () => void;
   onEdit?: () => void;
+  /** Pre-bound slicer body; only read when item.displayAs is 'slicer'. */
+  slicer?: React.ReactNode;
 }) {
   const { t } = useI18n();
   const d = useDashboardT();
@@ -314,6 +360,7 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
   const renameTitle = (v: string) => onUpdateItem({ title: v });
 
   const SizeIcon = sizeIcons[size];
+  const filterCount = item.displayAs === 'insight' || item.displayAs === 'table' ? 0 : countActive(item.filters ?? {});
 
   return (
     <div
@@ -341,108 +388,120 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
         }}
       />
 
-      {/* ─── Action pill (top-right, appears on hover) ─── */}
-      <div
-        data-pdf-hide
-        className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity duration-150 pointer-events-none"
-      >
-        {/* Size badge */}
-        <span className="pointer-events-auto inline-flex items-center gap-0.5 rounded-lg bg-background/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/60 shadow-sm">
-          <SizeIcon className="h-2.5 w-2.5" />
-          {sizeFractionLabel[size]}
-        </span>
+      {/* ─── Top-right: filter indicator (always visible) beside the action pill (appears on hover) ─── */}
+      <div data-pdf-hide className="absolute top-2 right-2 z-10 flex items-center gap-1 pointer-events-none">
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity duration-150">
+          {/* Size badge */}
+          <span className="pointer-events-auto inline-flex items-center gap-0.5 rounded-lg bg-background/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/60 shadow-sm">
+            <SizeIcon className="h-2.5 w-2.5" />
+            {sizeFractionLabel[size]}
+          </span>
 
-        {/* Actions dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="pointer-events-auto h-6 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border/60 hover:bg-secondary shadow-sm rounded-lg"
-              aria-label={t('moreActions')}
-            >
-              <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44 rounded-xl">
-            {/* Resize submenu */}
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="text-xs rounded-lg">
-                <RectangleHorizontal className="h-3.5 w-3.5 mr-2" />
-                {t('resize')}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="rounded-xl">
-                {([
-                  { v: 'xs' as const, Icon: Rows3, label: t('tile'), fraction: '¼' },
-                  { v: 'sm' as const, Icon: Minimize2, label: t('small'), fraction: '⅓' },
-                  { v: 'md' as const, Icon: Square, label: t('medium'), fraction: '½' },
-                  { v: 'lg' as const, Icon: Maximize2, label: t('large'), fraction: 'Full' },
-                ]).map(({ v, Icon, label, fraction }) => (
-                  <DropdownMenuItem
-                    key={v}
-                    onClick={() => setSize(v)}
-                    className="text-xs rounded-lg"
-                  >
-                    <Icon className="h-3.5 w-3.5 mr-2" />
-                    {label}
-                    <span className="ml-auto text-[10px] text-muted-foreground">{fraction}</span>
-                    {size === v && <span className="ml-1 text-primary">✓</span>}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-
-            {/* Chart type lives here rather than as a pill row in the card
-                header, which cost every card a second header line. */}
-            {(!item.displayAs || item.displayAs === 'chart') && (
+          {/* Actions dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="pointer-events-auto h-6 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border/60 hover:bg-secondary shadow-sm rounded-lg"
+                aria-label={t('moreActions')}
+              >
+                <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44 rounded-xl">
+              {/* Resize submenu */}
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="text-xs rounded-lg">
-                  <LineChartIcon className="h-3.5 w-3.5 mr-2" />
-                  {t('chartType')}
+                  <RectangleHorizontal className="h-3.5 w-3.5 mr-2" />
+                  {t('resize')}
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="rounded-xl">
-                  {chartTypeOptions.map(opt => (
+                  {([
+                    { v: 'xs' as const, Icon: Rows3, label: t('tile'), fraction: '¼' },
+                    { v: 'sm' as const, Icon: Minimize2, label: t('small'), fraction: '⅓' },
+                    { v: 'md' as const, Icon: Square, label: t('medium'), fraction: '½' },
+                    { v: 'lg' as const, Icon: Maximize2, label: t('large'), fraction: 'Full' },
+                  ]).map(({ v, Icon, label, fraction }) => (
                     <DropdownMenuItem
-                      key={opt.value}
-                      onClick={() => onUpdateItem({ type: opt.value })}
+                      key={v}
+                      onClick={() => setSize(v)}
                       className="text-xs rounded-lg"
                     >
-                      {opt.label}
-                      {item.type === opt.value && <span className="ml-auto text-primary">✓</span>}
+                      <Icon className="h-3.5 w-3.5 mr-2" />
+                      {label}
+                      <span className="ml-auto text-[10px] text-muted-foreground">{fraction}</span>
+                      {size === v && <span className="ml-1 text-primary">✓</span>}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
-            )}
 
-            {onEdit && isEditable(item) && (
-              <DropdownMenuItem onClick={onEdit} className="text-xs rounded-lg">
-                <Pencil className="h-3.5 w-3.5 mr-2" />
-                {isEditableChart(item) ? d('editChart') : d('editCard')}
+              {/* Chart type lives here rather than as a pill row in the card
+                  header, which cost every card a second header line. */}
+              {(!item.displayAs || item.displayAs === 'chart') && (
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="text-xs rounded-lg">
+                    <LineChartIcon className="h-3.5 w-3.5 mr-2" />
+                    {t('chartType')}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="rounded-xl">
+                    {chartTypeOptions.map(opt => (
+                      <DropdownMenuItem
+                        key={opt.value}
+                        onClick={() => onUpdateItem({ type: opt.value })}
+                        className="text-xs rounded-lg"
+                      >
+                        {opt.label}
+                        {item.type === opt.value && <span className="ml-auto text-primary">✓</span>}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              )}
+
+              {onEdit && isEditable(item) && (
+                <DropdownMenuItem onClick={onEdit} className="text-xs rounded-lg">
+                  <Pencil className="h-3.5 w-3.5 mr-2" />
+                  {isEditableChart(item) ? d('editChart') : d('editCard')}
+                </DropdownMenuItem>
+              )}
+
+              {onDuplicate && (
+                <DropdownMenuItem onClick={onDuplicate} className="text-xs rounded-lg">
+                  <Copy className="h-3.5 w-3.5 mr-2" />
+                  {t('duplicate')}
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onSelect={() => onRemove()}
+                className="text-xs text-destructive focus:text-destructive rounded-lg"
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-2" />
+                {t('remove')}
               </DropdownMenuItem>
-            )}
-
-            {onDuplicate && (
-              <DropdownMenuItem onClick={onDuplicate} className="text-xs rounded-lg">
-                <Copy className="h-3.5 w-3.5 mr-2" />
-                {t('duplicate')}
-              </DropdownMenuItem>
-            )}
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem
-              onSelect={() => onRemove()}
-              className="text-xs text-destructive focus:text-destructive rounded-lg"
-            >
-              <Trash2 className="h-3.5 w-3.5 mr-2" />
-              {t('remove')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        {/* Chart and KPI cards only: other cards never read item.filters. */}
+        {filterCount > 0 && (
+          <span
+            role="img"
+            className="pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-lg bg-background/90 text-primary border border-border/60 shadow-sm"
+            title={`${filterCount} ${d('visualFiltered')}`}
+            aria-label={`${filterCount} ${d('visualFiltered')}`}
+          >
+            <FilterIcon className="h-3.5 w-3.5" />
+          </span>
+        )}
       </div>
 
-      {item.displayAs === 'kpi' ? (
+      {item.displayAs === 'slicer' ? (
+        <ChartErrorBoundary title={item.title}>{slicer}</ChartErrorBoundary>
+      ) : item.displayAs === 'kpi' ? (
         <ChartErrorBoundary title={item.title}>
           <DashboardKpiCard item={item} index={index} onRename={renameTitle} />
         </ChartErrorBoundary>
@@ -468,6 +527,7 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
             size={size}
             stacked={!!item.spec && 'v' in item.spec && !!item.spec.stacked}
             format={item.format}
+            onSelect={onChartSelect}
           />
         </ChartErrorBoundary>
       )}
@@ -477,7 +537,7 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
   );
 }
 
-export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, emptyAction }: DashboardGridProps) {
+export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, onChartSelect, columns, pageFilters, onPageFilterChange, slicerValues, emptyAction }: DashboardGridProps) {
   const { t } = useI18n();
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -545,6 +605,19 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
     );
   }
 
+  const slicerFor = (item: DashboardItem) => {
+    const name = item.slicerColumn ?? '';
+    return (
+      <DashboardSlicerCard
+        item={item}
+        column={columns?.find(c => c.name === name)}
+        values={slicerValues?.[name]}
+        filter={pageFilters?.[name]}
+        onChange={f => onPageFilterChange?.(name, f)}
+      />
+    );
+  };
+
   const activeItem = activeId ? items.find(i => i.id === activeId) : null;
 
   return (
@@ -564,10 +637,12 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
               index={i}
               selected={item.id === selectedId}
               onSelect={onSelect ? () => onSelect(item.id) : undefined}
+              onChartSelect={onChartSelect && crossDimensionOf(item, columns) ? (label) => onChartSelect(item.id, label) : undefined}
               onRemove={() => onRemove(item.id)}
               onUpdateItem={(updates) => onUpdateItem(item.id, updates)}
               onDuplicate={onDuplicate ? () => onDuplicate(item.id) : undefined}
               onEdit={onEdit ? () => onEdit(item.id) : undefined}
+              slicer={item.displayAs === 'slicer' ? slicerFor(item) : undefined}
             />
           ))}
         </div>
@@ -580,7 +655,9 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
       }}>
         {activeItem ? (
           <div className="dashboard-panel opacity-80 scale-[1.02] pointer-events-none">
-            {activeItem.displayAs === 'kpi' ? (
+            {activeItem.displayAs === 'slicer' ? (
+              slicerFor(activeItem)
+            ) : activeItem.displayAs === 'kpi' ? (
               <DashboardKpiCard item={activeItem} index={items.findIndex(i => i.id === activeItem.id)} onRename={() => {}} />
             ) : activeItem.displayAs === 'insight' ? (
               <DashboardInsightCard item={activeItem} onRename={() => {}} />

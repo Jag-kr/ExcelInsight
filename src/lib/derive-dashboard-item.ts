@@ -4,6 +4,7 @@ export type { DateGrain };
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
 import { numberFormatter, type ChartFormat } from '@/lib/format';
+import { applyFilters, type Filters } from '@/lib/filters';
 
 /**
  * Card data is derived from a recipe + the currently filtered dataset, never
@@ -334,8 +335,12 @@ function rebuildTable(cardId: string, columns: ColumnMeta[], data: Record<string
 
 /**
  * Rebuild one card against the filtered dataset. No recipe (a session saved
- * before recipes existed) → keep the stored snapshot. Recipe that no longer
- * resolves → empty, which renders the existing "no data" state.
+ * before recipes existed) → keep the stored snapshot. A chart with a `spec`, or
+ * a `sourceKey` that specFromSourceKey() can express, is re-aggregated from the
+ * rows it is given, so it never depends on which rows the suggestions list was
+ * built from. Only a sourceKey with no spec equivalent (scatter) is still looked
+ * up in `suggestions`; if that no longer resolves → empty, which renders the
+ * existing "no data" state.
  */
 function deriveDashboardItem(
   item: DashboardItem,
@@ -345,7 +350,7 @@ function deriveDashboardItem(
   t: TFn
 ): DashboardItem {
   if (item.displayAs === 'kpi') {
-    return { ...item, kpiValue: computeKpiValue(data, item.kpiSpec, item.format) };
+    return { ...item, kpiValue: computeKpiValue(applyFilters(data, item.filters ?? {}), item.kpiSpec, item.format) };
   }
 
   if (item.displayAs === 'insight') {
@@ -366,12 +371,32 @@ function deriveDashboardItem(
     return rebuilt ? { ...item, data: rebuilt.data, tableColumns: rebuilt.columns } : item;
   }
 
+  /* Filters on this visual: KPI, spec and recipe cards only. Insight and table
+     cards are not filterable, and a scatter sourceKey (no recipe) reads its
+     precomputed suggestion, so none of those honour item.filters. */
+  const scoped = applyFilters(data, item.filters ?? {});
+
   if (item.spec) {
-    const { data: d, dataKeys } = aggregateChart(data, toChartSpec(item.spec, item.type));
+    const { data: d, dataKeys } = aggregateChart(scoped, toChartSpec(item.spec, item.type));
     return { ...item, data: d, dataKeys };
   }
 
   if (item.sourceKey) {
+    const recipe = specFromSourceKey(item.sourceKey, columns);
+    if (recipe) {
+      /* The suggestion analyzer skipped blank category cells for these kinds, while
+         aggregateChart would add an "Unknown" bar: keep the charts as they were. */
+      const skipBlanks = /^(dist|pie|rdist|top):/.test(item.sourceKey);
+      const rows = skipBlanks ? scoped.filter(r => { const v = r[recipe.dimension]; return v !== null && v !== undefined && v !== ''; }) : scoped;
+      const { data: d, dataKeys } = aggregateChart(rows, recipe);
+      /* Keep the card's own value key (agg suggestions use total/average, the
+         recipe says value) so saved series colours and formats still match. */
+      const [from] = dataKeys, [to] = item.dataKeys;
+      const rename = dataKeys.length === 1 && item.dataKeys.length === 1 && from !== to;
+      return rename
+        ? { ...item, data: d.map(r => ({ name: r.name, [to]: r[from] })), dataKeys: item.dataKeys }
+        : { ...item, data: d, dataKeys };
+    }
     const match = suggestions.find(s => s.key === item.sourceKey);
     if (!match) return { ...item, data: [] };
     return { ...item, data: match.data, dataKeys: match.dataKeys, xKey: match.xKey };
@@ -380,15 +405,30 @@ function deriveDashboardItem(
   return item;
 }
 
-/** Map a whole dashboard onto the filtered dataset, preserving order. */
+/**
+ * The column a card can cross-filter the rest of the board on (click a bar, the
+ * others narrow to it): a chart recipe with a dimension and no date grain.
+ * null for scatter, KPI, insight and table cards. `columns` is only needed to
+ * resolve a two-column sourceKey ("agg:A:B").
+ */
+export function crossDimensionOf(item: DashboardItem, columns: ColumnMeta[] = []): string | null {
+  if (item.displayAs && item.displayAs !== 'chart') return null;
+  const recipe = item.spec ? toChartSpec(item.spec, item.type) : item.sourceKey ? specFromSourceKey(item.sourceKey, columns) : null;
+  // ponytail: grain -> date range later
+  return recipe && !recipe.grain && recipe.dimension ? recipe.dimension : null;
+}
+
+/** Map a whole dashboard onto the filtered dataset, preserving order. `cross`: every card but its source reads the rows narrowed by that selection. */
 export function deriveDashboardItems(
   items: DashboardItem[],
   suggestions: ChartSuggestion[],
   columns: ColumnMeta[],
   data: Record<string, any>[],
-  t: TFn
+  t: TFn,
+  cross?: { itemId: string; filters: Filters }
 ): DashboardItem[] {
-  return items.map(item => deriveDashboardItem(item, suggestions, columns, data, t));
+  const narrowed = cross ? applyFilters(data, cross.filters) : data;
+  return items.map(item => deriveDashboardItem(item, suggestions, columns, item.id === cross?.itemId ? data : narrowed, t));
 }
 
 /* ─── KPI cards ─── */
