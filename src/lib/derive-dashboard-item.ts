@@ -2,6 +2,7 @@ import { bucketDate, type ColumnMeta, type ChartSuggestion, type DateGrain } fro
 
 export type { DateGrain };
 import type { DashboardItem } from '@/components/DashboardGrid';
+import type { ChartType } from '@/lib/chart-themes';
 
 /**
  * Card data is derived from a recipe + the currently filtered dataset, never
@@ -100,6 +101,46 @@ export function specFromSourceKey(key: string, columns: ColumnMeta[]): ChartSpec
     }
     default: return null;
   }
+}
+
+const totalOrMeanOf = (col: ColumnMeta): KpiAgg => (col.stats?.isSummable ? 'sum' : 'average');
+
+/** What clicking a field in the field list should create (null = nothing useful, e.g. ids). */
+export function specForField(col: ColumnMeta):
+  | { displayAs: 'chart'; type: ChartType; spec: ChartSpec }
+  | { displayAs: 'kpi'; kpiSpec: KpiSpec }
+  | null {
+  const count: ChartMeasure[] = [{ column: null, agg: 'count' }];
+  switch (col.type) {
+    case 'date':
+      return { displayAs: 'chart', type: 'line', spec: { v: 2, dimension: col.name, grain: 'month', measures: count } };
+    case 'categorical':
+    case 'range':
+    case 'text':
+      return { displayAs: 'chart', type: 'bar', spec: { v: 2, dimension: col.name, measures: count, limit: 20 } };
+    case 'numeric':
+      return { displayAs: 'kpi', kpiSpec: { column: col.name, agg: totalOrMeanOf(col) } };
+    default:
+      return null;
+  }
+}
+
+/** Fold another field into an existing chart recipe; returns `spec` itself when nothing applies. */
+export function addFieldToSpec(spec: ChartSpec, col: ColumnMeta): ChartSpec {
+  if ((col.type === 'numeric' || col.type === 'range') && col.stats) {
+    if (spec.measures.some(m => m.column === col.name)) return spec;
+    const measure: ChartMeasure = { column: col.name, agg: totalOrMeanOf(col) };
+    const onlyCount = spec.measures.length === 1 && spec.measures[0].column === null;
+    if (!onlyCount && spec.measures.length >= MAX_MEASURES) return spec;
+    // A legend only works with one measure; a lone count is replaced, not kept beside the new one.
+    return onlyCount
+      ? { ...spec, measures: [measure] }
+      : { ...spec, measures: [...spec.measures, measure], series: undefined };
+  }
+  if ((col.type === 'categorical' || col.type === 'text') && col.name !== spec.dimension && spec.measures.length === 1) {
+    return { ...spec, series: col.name };
+  }
+  return spec;
 }
 
 /** Legend/tooltip key for a measure. A lone measure keeps the legacy keys so
@@ -275,14 +316,17 @@ export function repeatTable(col: RepeatingColumn, t: TFn) {
   };
 }
 
+const COPY_SUFFIX = /(-copy-\d+)+$/;
+const REPEAT_TABLE = 'insight-repeat-table-';
+
 /** Insight tables carry stable ids assigned in SmartInsights; a duplicate
     appends `-copy-<ts>`, which is stripped so it rebuilds like the original. */
 function rebuildTable(cardId: string, columns: ColumnMeta[], data: Record<string, any>[], t: TFn) {
-  const id = cardId.replace(/(-copy-\d+)+$/, '');
+  const id = cardId.replace(COPY_SUFFIX, '');
   if (id === 'insight-stats-table') return statsTable(columns, t);
   if (id === 'insight-quality-table') return qualityTable(columns, t);
-  if (id.startsWith('insight-repeat-table-')) {
-    return repeatTable(computeColumnRepetition(id.slice('insight-repeat-table-'.length), data), t);
+  if (id.startsWith(REPEAT_TABLE)) {
+    return repeatTable(computeColumnRepetition(id.slice(REPEAT_TABLE.length), data), t);
   }
   return null;
 }
@@ -361,6 +405,12 @@ const compactNumber = new Intl.NumberFormat(undefined, { notation: 'compact', ma
 /** i18n key for an aggregation's label ("distinct" is "distinctCount" there). */
 export const aggKey = (a: KpiAgg) => (a === 'distinct' ? 'distinctCount' : a) as Exclude<KpiAgg, 'distinct'> | 'distinctCount';
 
+/** Generated chart title. The builder keeps a title only if it differs from this. */
+export function specTitle(spec: Pick<ChartSpec, 'measures' | 'dimension'>, t: TFn): string {
+  const label = (m: ChartMeasure) => (m.column ? `${t(aggKey(m.agg))} ${m.column}` : t('rowCount'));
+  return `${spec.measures.map(label).join(', ')} ${t('by')} ${spec.dimension}`;
+}
+
 /** Aggregations that read a numeric column; the rest work on any column. */
 export const NUMERIC_KPI_AGGS: KpiAgg[] = ['sum', 'average', 'min', 'max', 'median'];
 
@@ -405,4 +455,70 @@ export function computeKpiValue(data: Record<string, any>[], spec?: KpiSpec): st
 /** Stable card id, so Quick Add can tell an already-placed metric from a new one. */
 export function kpiCardId(spec: KpiSpec): string {
   return `kpi:${spec.column ?? '__rows'}:${spec.agg}`;
+}
+
+/** i18n title of a KPI card, as generated (follows the spec until the user renames it). */
+export function kpiTitle(spec: KpiSpec, t: TFn): string {
+  return spec.column ? `${t(aggKey(spec.agg))} · ${spec.column}` : t('rowCount');
+}
+
+const isNumericColumn = (columns: ColumnMeta[], name: string | null) =>
+  !!name && ['numeric', 'range'].includes(columns.find(c => c.name === name)?.type ?? '');
+
+/** Aggregations a column supports: rows only count; numeric columns get the full set. */
+export function aggsForColumn(columns: ColumnMeta[], column: string | null): KpiAgg[] {
+  return !column ? ['count'] : isNumericColumn(columns, column) ? [...NUMERIC_KPI_AGGS, 'count', 'distinct'] : ['count', 'distinct'];
+}
+
+/** Repair an aggregation after its column changed; `columnChanged` also upgrades count -> sum on a numeric column. */
+export function normalizeAgg(columns: ColumnMeta[], column: string | null, agg: KpiAgg, columnChanged = false): KpiAgg {
+  if (!column) return 'count';
+  if (!isNumericColumn(columns, column) && NUMERIC_KPI_AGGS.includes(agg)) return 'count';
+  return columnChanged && isNumericColumn(columns, column) && agg === 'count' ? 'sum' : agg;
+}
+
+/** What changes on a card when its recipe is edited: item fields to merge plus a new id when it moves. */
+export interface RetargetResult {
+  patch: Partial<DashboardItem>;
+  newId?: string;
+}
+
+/**
+ * Apply a new KPI spec. The title follows only if it was still the generated
+ * one; the id follows only if it was the canonical one (not a `-copy-` id) and
+ * the new canonical id is free, so "already placed" stays accurate.
+ */
+export function retargetKpi(item: DashboardItem, spec: KpiSpec, ids: string[], t: TFn): RetargetResult {
+  const old = item.kpiSpec;
+  const title = old && item.title === kpiTitle(old, t) ? kpiTitle(spec, t) : item.title;
+  const id = kpiCardId(spec);
+  return { patch: { kpiSpec: spec, title }, newId: old && item.id === kpiCardId(old) && !ids.includes(id) ? id : undefined };
+}
+
+/** The column a "repeating values" card tallies (chart insight or id-encoded table); null for any other card. */
+export function repeatColumnOf(item: Pick<DashboardItem, 'id' | 'displayAs' | 'insightType' | 'insightContent'>): string | null {
+  if (item.displayAs === 'insight' && item.insightType === 'repeating') return item.insightContent?.name ?? null;
+  const id = item.id.replace(COPY_SUFFIX, '');
+  return item.displayAs === 'table' && id.startsWith(REPEAT_TABLE) ? id.slice(REPEAT_TABLE.length) : null;
+}
+
+/**
+ * Point a repeating-values card at another column. A table's id is its recipe,
+ * so it must be renamed (null = target already placed, ignore the change); a
+ * chart keeps its id when the canonical one is taken or it is a duplicate.
+ */
+export function retargetRepeat(item: DashboardItem, column: string, ids: string[], t: TFn): RetargetResult | null {
+  const old = repeatColumnOf(item);
+  if (!old || old === column) return null;
+  // SmartInsights and buildDefaultDashboard word the generated title differently.
+  const titles = (c: string) => [`${c}${t('repeatingValuesSuffix')}`, `${c} — ${t('repeatingValues')}`];
+  const form = titles(old).indexOf(item.title);
+  const patch: Partial<DashboardItem> = form < 0 ? {} : { title: titles(column)[form] };
+  if (item.displayAs === 'table') {
+    const id = REPEAT_TABLE + column + (item.id.match(COPY_SUFFIX)?.[0] ?? '');
+    return ids.includes(id) ? null : { patch, newId: id };
+  }
+  patch.insightContent = { ...item.insightContent, name: column };
+  const id = `insight-repeat-chart-${column}`;
+  return { patch, newId: item.id === `insight-repeat-chart-${old}` && !ids.includes(id) ? id : undefined };
 }

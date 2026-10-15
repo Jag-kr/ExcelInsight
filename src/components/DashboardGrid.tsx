@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent,
 } from '@dnd-kit/core';
@@ -22,7 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
-import type { ManualChartSpec, ChartSpec, KpiSpec } from '@/lib/derive-dashboard-item';
+import { repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 
 export interface DashboardItem {
   id: string;
@@ -50,6 +50,8 @@ interface DashboardGridProps {
   onUpdateItem: (id: string, updates: Partial<DashboardItem>) => void;
   onDuplicate?: (id: string) => void;
   onEdit?: (id: string) => void;
+  selectedId?: string | null;
+  onSelect?: (id: string | null) => void;
   emptyAction?: React.ReactNode;
 }
 
@@ -278,9 +280,14 @@ const isEditableChart = (item: DashboardItem) =>
   (!item.displayAs || item.displayAs === 'chart') &&
   (!!item.spec || (!!item.sourceKey && !item.sourceKey.startsWith('scatter:')));
 
-function SortableCard({ item, index, onRemove, onUpdateItem, onDuplicate, onEdit }: {
+/* The pane also edits KPI and repeating-value cards. */
+const isEditable = (item: DashboardItem) => isEditableChart(item) || item.displayAs === 'kpi' || repeatColumnOf(item) !== null;
+
+function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem, onDuplicate, onEdit }: {
   item: DashboardItem;
   index: number;
+  selected?: boolean;
+  onSelect?: () => void;
   onRemove: () => void;
   onUpdateItem: (updates: Partial<DashboardItem>) => void;
   onDuplicate?: () => void;
@@ -309,6 +316,10 @@ function SortableCard({ item, index, onRemove, onUpdateItem, onDuplicate, onEdit
       ref={setNodeRef}
       style={style}
       data-pdf-card
+      aria-current={selected || undefined}
+      onClick={(e) => {
+        if (!(e.target as HTMLElement).closest('button, input, textarea, a, [role="menuitem"], [role="menu"], [data-pdf-hide]')) onSelect?.();
+      }}
       className={`relative group ${sizeClasses[size]} ${
         isDragging ? 'scale-[1.02] shadow-2xl ring-2 z-50' : ''
       } transition-all duration-200`}
@@ -400,10 +411,10 @@ function SortableCard({ item, index, onRemove, onUpdateItem, onDuplicate, onEdit
               </DropdownMenuSub>
             )}
 
-            {onEdit && isEditableChart(item) && (
+            {onEdit && isEditable(item) && (
               <DropdownMenuItem onClick={onEdit} className="text-xs rounded-lg">
                 <Pencil className="h-3.5 w-3.5 mr-2" />
-                {d('editChart')}
+                {isEditableChart(item) ? d('editChart') : d('editCard')}
               </DropdownMenuItem>
             )}
 
@@ -455,13 +466,32 @@ function SortableCard({ item, index, onRemove, onUpdateItem, onDuplicate, onEdit
           />
         </ChartErrorBoundary>
       )}
+
+      {selected && <div data-pdf-hide aria-hidden className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-primary" />}
     </div>
   );
 }
 
-export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, onEdit, emptyAction }: DashboardGridProps) {
+export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, emptyAction }: DashboardGridProps) {
   const { t } = useI18n();
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  // A card added from the pane lands at the end of the board; bring it into view.
+  useEffect(() => {
+    if (selectedId) document.querySelector('[data-pdf-card][aria-current="true"]')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [selectedId]);
+
+  // Esc deselects, unless it was meant for a field, menu or dialog.
+  useEffect(() => {
+    if (!selectedId || !onSelect) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      if ((e.target as HTMLElement | null)?.closest?.('input, textarea, select, [contenteditable], [role="dialog"], [role="menu"], [role="listbox"]')) return;
+      onSelect(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedId, onSelect]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -527,6 +557,8 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
               key={item.id}
               item={item}
               index={i}
+              selected={item.id === selectedId}
+              onSelect={onSelect ? () => onSelect(item.id) : undefined}
               onRemove={() => onRemove(item.id)}
               onUpdateItem={(updates) => onUpdateItem(item.id, updates)}
               onDuplicate={onDuplicate ? () => onDuplicate(item.id) : undefined}
