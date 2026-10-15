@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { analyzeColumns, generateChartSuggestions, bucketDate, type ColumnMeta } from './data-analyzer';
 import { buildDefaultDashboard } from './build-default-dashboard';
 import type { DashboardItem } from '@/components/DashboardGrid';
+import type { ChartFormat } from './format';
 import {
   deriveDashboardItems, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
   specForField, addFieldToSpec, specTitle, kpiTitle, kpiCardId, aggsForColumn, normalizeAgg,
-  retargetKpi, retargetRepeat, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg,
+  retargetKpi, retargetRepeat, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg, type KpiSpec,
 } from './derive-dashboard-item';
 
 const t = ((k: string) => k) as any;
@@ -175,6 +176,40 @@ describe('computeKpiValue', () => {
   it('renders a dash rather than NaN when nothing is numeric', () => {
     expect(computeKpiValue([{ c: 'x' }], { column: 'c', agg: 'sum' })).toBe('—');
     expect(computeKpiValue([], { column: 'v', agg: 'average' })).toBe('—');
+    expect(computeKpiValue([{ c: 'x' }], { column: 'c', agg: 'sum' }, { number: 'currency' })).toBe('—');
+  });
+
+  describe('with a card format', () => {
+    const kpi = (rows: Record<string, unknown>[], f?: ChartFormat, agg: KpiSpec['agg'] = 'sum') =>
+      computeKpiValue(rows, { column: 'v', agg }, f);
+    const big = [{ v: 1_234_567 }];
+
+    it('is identical to no format when number and decimals are unset', () => {
+      expect(kpi(big)).toBe(computeKpiValue(big, { column: 'v', agg: 'sum' }));
+      expect(kpi(big, {})).toBe(kpi(big));
+      expect(kpi(big, { number: undefined, decimals: undefined, legend: 'none' })).toBe(kpi(big));
+    });
+
+    it('decimals alone sets the compact precision', () => {
+      expect(kpi(big, { decimals: 0 })).toBe(new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 0 }).format(1_234_567));
+      expect(kpi(big, { decimals: 0 })).not.toBe(kpi(big));
+    });
+
+    it('auto shows the full locale number', () => {
+      expect(kpi(big, { number: 'auto' })).toBe((1_234_567).toLocaleString());
+    });
+
+    it('percent treats a fraction column as a ratio', () => {
+      expect(kpi([{ v: 0.25 }, { v: 0.5 }], { number: 'percent', decimals: 1 }, 'average')).toBe(
+        new Intl.NumberFormat(undefined, { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(0.375),
+      );
+    });
+
+    it('currency uses the chosen code', () => {
+      expect(kpi([{ v: 1234.5 }], { number: 'currency', currency: 'EUR', decimals: 2 })).toBe(
+        new Intl.NumberFormat(undefined, { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(1234.5),
+      );
+    });
   });
 });
 

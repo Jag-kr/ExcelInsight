@@ -23,6 +23,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
 import { repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import type { ChartFormat } from '@/lib/format';
 
 export interface DashboardItem {
   id: string;
@@ -34,6 +35,8 @@ export interface DashboardItem {
   xKey?: string;
   sourceKey?: string;
   spec?: ManualChartSpec | ChartSpec;
+  /** Per-card display options; absent = render exactly as before. */
+  format?: ChartFormat;
   displayAs?: 'chart' | 'table' | 'insight' | 'kpi';
   tableColumns?: string[];
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -244,7 +247,8 @@ function DashboardKpiCard({ item, index, onRename }: { item: DashboardItem; inde
       <div className="text-[11px] font-medium" style={{ color: getChartColor(index) }}>
         <EditableTitle value={item.title} onChange={onRename} />
       </div>
-      <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none">
+      {/* Ellipsis, not a silent clip: a cut-off "$136,6" reads as a different number. */}
+      <p className="truncate text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none" title={item.kpiValue}>
         {item.kpiValue ?? '—'}
       </p>
     </Card>
@@ -463,6 +467,7 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
             showControls={false}
             size={size}
             stacked={!!item.spec && 'v' in item.spec && !!item.spec.stacked}
+            format={item.format}
           />
         </ChartErrorBoundary>
       )}
@@ -591,6 +596,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
                 xKey={activeItem.xKey}
                 showControls={false}
                 size={(activeItem.size || 'md') as 'xs' | 'sm' | 'md' | 'lg'}
+                format={activeItem.format}
               />
             )}
           </div>
