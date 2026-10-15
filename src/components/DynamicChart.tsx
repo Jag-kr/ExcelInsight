@@ -5,6 +5,7 @@ import {
   PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   XAxis, YAxis, CartesianGrid, LabelList,
 } from 'recharts';
+import type { LabelProps } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import html2canvas from 'html2canvas';
@@ -12,11 +13,12 @@ import { Download, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIc
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, getChartColor, getChartVarColor, getChartColorVar, CHART_COLOR_COUNT } from '@/lib/chart-themes';
+import { ChartType, chartTypeOptions, buildChartConfig, buildPieChartConfig, getChartColor, getChartVarColor, getChartColorVar, colorsByCategory } from '@/lib/chart-themes';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useI18n } from '@/lib/i18n';
 import { trackEvent } from '@/lib/analytics';
+import { numberFormatter, type ChartFormat } from '@/lib/format';
 
 interface DynamicChartProps {
   title: string;
@@ -31,6 +33,8 @@ interface DynamicChartProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
   /** Stack series on one bar/area instead of grouping them side by side. */
   stacked?: boolean;
+  /** Optional presentation overrides; undefined/empty renders exactly as before. */
+  format?: ChartFormat;
 }
 
 const SIZE_CLASSES: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
@@ -56,12 +60,17 @@ const CHART_TYPE_ICONS: Record<ChartType, React.ElementType> = {
    breaks an unescaped url(#id) reference — same sanitising as getChartVarColor. */
 const gradientId = (key: string) => `grad-${key.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
+/* Axis title as displayed: horizontal = under the x axis, vertical = beside the y axis. */
+const axisTitle = (value?: string, vertical = false): LabelProps | undefined => value
+  ? { value, className: 'fill-muted-foreground', fontSize: 11, ...(vertical ? { angle: -90, position: 'insideLeft', style: { textAnchor: 'middle' } } : { position: 'insideBottom' }) }
+  : undefined;
+
 const PRIMARY_CHART_TYPES: ChartType[] = ['bar', 'line', 'area', 'donut'];
 const OVERFLOW_CHART_TYPES: ChartType[] = ['horizontalBar', 'pie', 'scatter', 'radar'];
 
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
-  onChangeType, onRenameTitle, showControls = true, size = 'md', stacked = false,
+  onChangeType, onRenameTitle, showControls = true, size = 'md', stacked = false, format,
 }: DynamicChartProps) {
   const { t } = useI18n();
   const chartRef = useRef<HTMLDivElement>(null);
@@ -73,8 +82,13 @@ export function DynamicChart({
     if (type === 'pie' || type === 'donut' || type === 'scatter') {
       return buildPieChartConfig(data, xKey);
     }
-    return buildChartConfig(dataKeys);
-  }, [dataKeys, data, xKey, type]);
+    const config = buildChartConfig(dataKeys);
+    /* Per-series overrides; ignore anything but #rrggbb (storage can be hand-edited). */
+    for (const [key, color] of Object.entries(format?.seriesColors ?? {})) {
+      if (dataKeys.includes(key) && /^#[0-9a-f]{6}$/i.test(color)) config[key] = { label: key, color };
+    }
+    return config;
+  }, [dataKeys, data, xKey, type, format?.seriesColors]);
 
   /**
    * Whether bars should be coloured per category rather than per series.
@@ -91,11 +105,41 @@ export function DynamicChart({
    *    grouping that does not exist. Past the cap, one colour is the honest
    *    answer.
    */
-  const colorByCategory = dataKeys.length === 1 && data.length <= CHART_COLOR_COUNT;
+  const colorByCategory = colorsByCategory(dataKeys.length, data.length);
 
   /* Printed values only stay legible on a short, single-series bar chart —
      past that they collide with each other and with the axis. */
-  const showValueLabels = dataKeys.length === 1 && data.length <= 8 && size !== 'xs';
+  const showValueLabels = format?.dataLabels ?? (dataKeys.length === 1 && data.length <= 8 && size !== 'xs');
+
+  /* Only built when a number mode or decimals is chosen; otherwise recharts' defaults apply. */
+  const fmt = useMemo(
+    () => (format?.number || format?.decimals !== undefined ? numberFormatter(format) : undefined),
+    [format],
+  );
+  const labelFmt = fmt && ((v: unknown) => fmt(Number(v)));
+  const tooltip = <ChartTooltip content={<ChartTooltipContent valueFormatter={fmt} />} />;
+  const legend = format?.legend === 'none' ? null : (
+    <ChartLegend {...(format?.legend === 'top' ? { verticalAlign: 'top' as const } : {})} content={<ChartLegendContent />} />
+  );
+  const xLabel = axisTitle(format?.xTitle);
+  const yLabel = axisTitle(format?.yTitle, true);
+  /* Props are spread only when set: recharts merges axis props over its defaults, so an
+     explicit `undefined` (width, height, verticalAlign) would override them and blank the chart. */
+  const xTitleProps = (height: number) => (format?.xTitle ? { height, label: xLabel } : {});
+  const yTitleProps = (width: number) => (format?.yTitle ? { width, label: yLabel } : {});
+  /* A formatted value axis ("$13,500.00") is wider than recharts' default 60px; size it from
+     the longest tick we can expect (the data max, nudged up for the nice-number round-up). */
+  const tickWidth = useMemo(() => {
+    if (!fmt) return 0;
+    let max = 0;
+    for (const row of data) for (const k of dataKeys) { const v = Math.abs(Number(row[k])); if (Number.isFinite(v) && v > max) max = v; }
+    return fmt(max * 1.2).length * 7 + 16;
+  }, [fmt, data, dataKeys]);
+  const valueAxisProps = () => ({
+    ...(fmt ? { tickFormatter: fmt, width: Math.max(60, tickWidth) + (format?.yTitle ? 20 : 0) } : {}),
+    ...(format?.yTitle ? { label: yLabel, ...(fmt ? {} : { width: 80 }) } : {}),
+  });
+  const grid = format?.gridlines !== false;
 
   /**
    * Recharts reads the tooltip's swatch colour from `payload.fill` (see
@@ -144,21 +188,21 @@ export function DynamicChart({
       case 'bar':
         return (
           <BarChart data={barData} accessibilityLayer>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey={xKey} tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 11 }} angle={-25} textAnchor="end" height={60} />
-            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-            <ChartTooltip content={<ChartTooltipContent />} />
+            {grid && <CartesianGrid vertical={false} />}
+            <XAxis dataKey={xKey} tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 11 }} angle={-25} textAnchor="end" height={60} {...xTitleProps(80)} />
+            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...valueAxisProps()} />
+            {tooltip}
             {/* One series means one legend entry — which, once the bars are
                 coloured per category, describes none of them. The axis already
                 names every bar, so the legend is dropped rather than left
                 showing a swatch that matches nothing on screen. */}
-            {!colorByCategory && <ChartLegend content={<ChartLegendContent />} />}
+            {!colorByCategory && legend}
             {dataKeys.map((key) => (
               <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={stacked ? 0 : [4, 4, 0, 0]} stackId={stacked ? 'stack' : undefined}>
                 {colorByCategory && barData.map((_, i) => (
                   <Cell key={i} fill={getChartColor(i)} />
                 ))}
-                {showValueLabels && <LabelList dataKey={key} position="top" fontSize={10} className="fill-muted-foreground" />}
+                {showValueLabels && <LabelList dataKey={key} position="top" fontSize={10} className="fill-muted-foreground" formatter={labelFmt} />}
               </Bar>
             ))}
           </BarChart>
@@ -166,17 +210,17 @@ export function DynamicChart({
       case 'horizontalBar':
         return (
           <BarChart data={barData} layout="vertical" accessibilityLayer>
-            <CartesianGrid horizontal={false} />
-            <XAxis type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-            <YAxis dataKey={xKey} type="category" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} width={80} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            {!colorByCategory && <ChartLegend content={<ChartLegendContent />} />}
+            {grid && <CartesianGrid horizontal={false} />}
+            <XAxis type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...(fmt ? { tickFormatter: fmt } : {})} {...xTitleProps(50)} />
+            <YAxis dataKey={xKey} type="category" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} width={80} {...yTitleProps(100)} />
+            {tooltip}
+            {!colorByCategory && legend}
             {dataKeys.map((key) => (
               <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={stacked ? 0 : [0, 4, 4, 0]} stackId={stacked ? 'stack' : undefined}>
                 {colorByCategory && barData.map((_, i) => (
                   <Cell key={i} fill={getChartColor(i)} />
                 ))}
-                {showValueLabels && <LabelList dataKey={key} position="right" fontSize={10} className="fill-muted-foreground" />}
+                {showValueLabels && <LabelList dataKey={key} position="right" fontSize={10} className="fill-muted-foreground" formatter={labelFmt} />}
               </Bar>
             ))}
           </BarChart>
@@ -184,13 +228,15 @@ export function DynamicChart({
       case 'line':
         return (
           <LineChart data={data} accessibilityLayer>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey={xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
+            {grid && <CartesianGrid vertical={false} />}
+            <XAxis dataKey={xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...xTitleProps(50)} />
+            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...valueAxisProps()} />
+            {tooltip}
+            {legend}
             {dataKeys.map((key) => (
-              <Line key={key} type="monotone" dataKey={key} stroke={getChartVarColor(key)} strokeWidth={2} dot={{ fill: getChartVarColor(key), r: 3 }} />
+              <Line key={key} type="monotone" dataKey={key} stroke={getChartVarColor(key)} strokeWidth={2} dot={{ fill: getChartVarColor(key), r: 3 }}>
+                {format?.dataLabels && <LabelList dataKey={key} position="top" fontSize={10} className="fill-muted-foreground" formatter={labelFmt} />}
+              </Line>
             ))}
           </LineChart>
         );
@@ -205,13 +251,15 @@ export function DynamicChart({
                 </linearGradient>
               ))}
             </defs>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey={xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
+            {grid && <CartesianGrid vertical={false} />}
+            <XAxis dataKey={xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...xTitleProps(50)} />
+            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...valueAxisProps()} />
+            {tooltip}
+            {legend}
             {dataKeys.map((key) => (
-              <Area key={key} type="monotone" dataKey={key} stroke={getChartVarColor(key)} fill={`url(#${gradientId(key)})`} strokeWidth={2} stackId={stacked ? 'stack' : undefined} />
+              <Area key={key} type="monotone" dataKey={key} stroke={getChartVarColor(key)} fill={`url(#${gradientId(key)})`} strokeWidth={2} stackId={stacked ? 'stack' : undefined}>
+                {format?.dataLabels && <LabelList dataKey={key} position="top" fontSize={10} className="fill-muted-foreground" formatter={labelFmt} />}
+              </Area>
             ))}
           </AreaChart>
         );
@@ -234,17 +282,17 @@ export function DynamicChart({
                 <Cell key={i} fill={getChartColor(i)} stroke="hsl(var(--card))" />
               ))}
             </Pie>
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
+            {tooltip}
+            {legend}
           </PieChart>
         );
       case 'scatter':
         return (
           <ScatterChart accessibilityLayer>
-            <CartesianGrid />
-            <XAxis dataKey={xKey} type={typeof data[0]?.[xKey] === 'number' ? 'number' : 'category'} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={xKey} />
-            <YAxis dataKey={dataKeys[0]} type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={dataKeys[0]} />
-            <ChartTooltip content={<ChartTooltipContent />} />
+            {grid && <CartesianGrid />}
+            <XAxis dataKey={xKey} type={typeof data[0]?.[xKey] === 'number' ? 'number' : 'category'} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={xKey} {...xTitleProps(50)} />
+            <YAxis dataKey={dataKeys[0]} type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} name={dataKeys[0]} {...valueAxisProps()} />
+            {tooltip}
             <Scatter data={data} fill={getChartColor(0)}>
               {data.map((_, i) => (
                 <Cell key={i} fill={getChartColor(i)} />
@@ -261,8 +309,8 @@ export function DynamicChart({
             {dataKeys.map((key) => (
               <Radar key={key} dataKey={key} stroke={getChartVarColor(key)} fill={getChartVarColor(key)} fillOpacity={0.25} />
             ))}
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
+            {tooltip}
+            {legend}
           </RadarChart>
         );
       default:
