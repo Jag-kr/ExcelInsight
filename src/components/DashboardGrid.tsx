@@ -22,7 +22,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
-import { repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { crossDimensionOf, repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import type { ColumnMeta } from '@/lib/data-analyzer';
 import type { ChartFormat } from '@/lib/format';
 import { countActive, type Filters } from '@/lib/filters';
 
@@ -58,6 +59,9 @@ interface DashboardGridProps {
   onEdit?: (id: string) => void;
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
+  /** Cross-filtering: a bar/slice of a card with a cross dimension was clicked. `columns` resolves two-column sourceKeys. */
+  onChartSelect?: (itemId: string, label: string) => void;
+  columns?: ColumnMeta[];
   emptyAction?: React.ReactNode;
 }
 
@@ -290,11 +294,12 @@ const isEditableChart = (item: DashboardItem) =>
 /* The pane also edits KPI and repeating-value cards. */
 const isEditable = (item: DashboardItem) => isEditableChart(item) || item.displayAs === 'kpi' || repeatColumnOf(item) !== null;
 
-function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem, onDuplicate, onEdit }: {
+function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove, onUpdateItem, onDuplicate, onEdit }: {
   item: DashboardItem;
   index: number;
   selected?: boolean;
   onSelect?: () => void;
+  onChartSelect?: (label: string) => void;
   onRemove: () => void;
   onUpdateItem: (updates: Partial<DashboardItem>) => void;
   onDuplicate?: () => void;
@@ -482,6 +487,7 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
             size={size}
             stacked={!!item.spec && 'v' in item.spec && !!item.spec.stacked}
             format={item.format}
+            onSelect={onChartSelect}
           />
         </ChartErrorBoundary>
       )}
@@ -491,7 +497,7 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
   );
 }
 
-export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, emptyAction }: DashboardGridProps) {
+export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, onChartSelect, columns, emptyAction }: DashboardGridProps) {
   const { t } = useI18n();
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -578,6 +584,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
               index={i}
               selected={item.id === selectedId}
               onSelect={onSelect ? () => onSelect(item.id) : undefined}
+              onChartSelect={onChartSelect && crossDimensionOf(item, columns) ? (label) => onChartSelect(item.id, label) : undefined}
               onRemove={() => onRemove(item.id)}
               onUpdateItem={(updates) => onUpdateItem(item.id, updates)}
               onDuplicate={onDuplicate ? () => onDuplicate(item.id) : undefined}

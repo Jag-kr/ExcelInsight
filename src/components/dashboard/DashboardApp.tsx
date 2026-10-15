@@ -8,7 +8,7 @@ import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } fro
 import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
-import { deriveDashboardItems, kpiCardId, kpiTitle, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { crossDimensionOf, deriveDashboardItems, kpiCardId, kpiTitle, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { applyFilters, countActive, normalizeFilters, type Filters } from '@/lib/filters';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
@@ -173,6 +173,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   // Not persisted: a reload starts with nothing selected.
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Transient cross-filter from a chart click: not persisted, not in undo history.
+  const [cross, setCross] = useState<{ itemId: string; column: string; value: string } | null>(null);
   const [paneCollapsed, setPaneCollapsed] = useState(() => initial?.paneCollapsed ?? false);
   const [mobileClearConfirmOpen, setMobileClearConfirmOpen] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
@@ -255,12 +257,14 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     setDashboardItems(buildDefaultDashboard(data, columns, suggestions, t).items);
     // Reset reuses card ids; a surviving selection would write its stale spec back.
     setSelectedId(null);
+    setCross(null);
     toast.success(t('resetLayout'), { action: { label: t('undo'), onClick: () => setDashboardItems(() => before) } });
   }, [dashboardItems, data, columns, suggestions, t, setDashboardItems]);
 
   const handleClearAll = useCallback(() => {
     const before = dashboardItems;
     setSelectedId(null);
+    setCross(null);
     setDashboardItems([]);
     toast.success(t('clearAll'), { action: { label: t('undo'), onClick: () => setDashboardItems(() => before) } });
   }, [dashboardItems, t, setDashboardItems]);
@@ -342,9 +346,25 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
 
   /* Render/export view: user-owned fields from dashboardItems, numbers re-derived
      for the active filters. dashboardItems stays the source of truth for edits. */
+  const handleChartSelect = useCallback((itemId: string, label: string) => {
+    const item = dashboardItems.find(i => i.id === itemId);
+    const column = item && crossDimensionOf(item, columns);
+    // 'Unknown' is the blank bucket, which an `in` filter can never match.
+    if (!column || label === 'Unknown') return;
+    setCross(c => (c?.itemId === itemId && c.value === label ? null : { itemId, column, value: label }));
+  }, [dashboardItems, columns]);
+
+  // Dropped automatically once its source card is removed or re-pointed at another axis.
+  const activeCross = useMemo(() => {
+    const item = cross && dashboardItems.find(i => i.id === cross.itemId);
+    return cross && item && crossDimensionOf(item, columns) === cross.column ? cross : null;
+  }, [cross, dashboardItems, columns]);
+
   const liveItems = useMemo(
-    () => deriveDashboardItems(dashboardItems, filteredSuggestions, filteredColumns, filteredData, t),
-    [dashboardItems, filteredSuggestions, filteredColumns, filteredData, t]
+    () => deriveDashboardItems(dashboardItems, filteredSuggestions, filteredColumns, filteredData, t, activeCross
+      ? { itemId: activeCross.itemId, filters: { [activeCross.column]: { kind: 'in', values: [activeCross.value] } } }
+      : undefined),
+    [dashboardItems, filteredSuggestions, filteredColumns, filteredData, t, activeCross]
   );
 
   const handleMerge = useCallback((col1: string, col2: string, newName: string, separator: string) => {
@@ -809,6 +829,18 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                         {countActive(filters)} {t('activeFilters')}
                       </Badge>
                     )}
+                    {activeCross && (
+                      <Badge variant="secondary" className="rounded-full border-0 py-1 pl-2.5 pr-1 text-[11px] font-medium gap-1" style={{ background: `hsl(${getChartColorVar(0)} / 0.1)`, color: getChartColor(0) }}>
+                        <span className="max-w-[16rem] truncate">{activeCross.column} = {activeCross.value}</span>
+                        <button
+                          type="button" onClick={() => setCross(null)}
+                          aria-label={d('clearCrossFilter')} title={d('clearCrossFilter')}
+                          className="rounded-full p-0.5 hover:bg-foreground/10 focus-visible:outline focus-visible:outline-2"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    )}
                     <Button
                       variant="ghost" size="icon" className="h-7 w-7" disabled={!canUndo} onClick={undo}
                       aria-label={t('undo')} title={`${t('undo')} (Ctrl+Z)`}
@@ -848,6 +880,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     // Below lg a selection opens a full-width sheet, so body taps (tooltips) must not select: Edit menu only.
                     onSelect={isDesktop ? selectCard : undefined}
                     onEdit={selectCard}
+                    onChartSelect={handleChartSelect}
+                    columns={columns}
                     emptyAction={
                       <div className="flex flex-wrap items-center justify-center gap-2">
                         <Button size="sm" onClick={() => setQuickAddOpen(true)} className="gap-1.5 text-sm h-9">
