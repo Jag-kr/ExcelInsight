@@ -8,18 +8,19 @@ import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } fro
 import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
-import { deriveDashboardItems, kpiCardId, toChartSpec, specFromSourceKey, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { deriveDashboardItems, kpiCardId, kpiTitle, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
+import { useUndoableState } from '@/hooks/use-undoable-state';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  BarChart3, Wrench, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
+  BarChart3, Merge, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
   Sparkles, RotateCcw, Trash2, X, MoreHorizontal, ChevronRight,
-  PanelLeftClose, PanelLeftOpen,
+  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Undo2, Redo2,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -36,7 +37,7 @@ import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 // Served from public/ so logo swaps don't need a rebuild (SiteHeader and the
@@ -89,7 +90,7 @@ const PanelFallback = () => (
  * The heavy leaves — recharts (via DynamicChart), html2canvas (via
  * DynamicChart's PNG export) and @dnd-kit (via DashboardGrid) — stay behind
  * their own boundaries so that mounting the shell doesn't drag in every panel
- * at once; a user who never opens the Build tab never pays for ColumnMerger.
+ * at once; a user who never opens the merge dialog never pays for ColumnMerger.
  *
  * Every call site below was already wrapped in <Suspense> with a skeleton, so
  * no `loading` option is passed here: the existing boundaries do the work.
@@ -100,11 +101,11 @@ const PanelFallback = () => (
  */
 const DataSummary = dynamic(() => import('@/components/DataSummary').then(m => m.DataSummary), { ssr: false });
 const DynamicChart = dynamic(() => import('@/components/DynamicChart').then(m => m.DynamicChart), { ssr: false });
-const ManualChartBuilder = dynamic(() => import('@/components/ManualChartBuilder').then(m => m.ManualChartBuilder), { ssr: false });
 const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m => m.ColumnMerger), { ssr: false });
 const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false });
 const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
 const SmartInsights = dynamic(() => import('@/components/SmartInsights').then(m => m.SmartInsights), { ssr: false });
+const EditorPane = dynamic(() => import('@/components/dashboard/EditorPane').then(m => m.EditorPane), { ssr: false });
 const QuickAddPanel = dynamic(() => import('@/components/QuickAddPanel').then(m => m.QuickAddPanel), { ssr: false });
 
 /* ─── Sidebar nav items ─── */
@@ -112,7 +113,6 @@ const SIDEBAR_ITEMS = [
   { value: 'dashboard', icon: LayoutDashboard, labelKey: 'dashboard' },
   { value: 'explore',   icon: BarChart3,       labelKey: 'explore' },
   { value: 'insights',  icon: Lightbulb,       labelKey: 'insights' },
-  { value: 'build',     icon: Wrench,          labelKey: 'build' },
   { value: 'filter',    icon: Filter,          labelKey: 'filter' },
   { value: 'data',      icon: Database,        labelKey: 'data' },
 ] as const;
@@ -160,20 +160,34 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const [fileName, setFileName] = useState(() => initialUpload?.fileName ?? initial?.fileName ?? '');
   const [columns, setColumns] = useState<ColumnMeta[]>(() => initial?.columns ?? []);
   const [suggestions, setSuggestions] = useState<ChartSuggestion[]>(() => initial?.suggestions ?? []);
-  const [dashboardItems, setDashboardItems] = useState<DashboardItem[]>(() => initial?.dashboardItems ?? []);
+  const [dashboardItems, setDashboardItems, { undo, redo, canUndo, canRedo }] = useUndoableState<DashboardItem[]>(() => initial?.dashboardItems ?? []);
   const [filters, setFilters] = useState<Record<string, string>>(() => initial?.filters ?? {});
-  const [addedChartIds, setAddedChartIds] = useState<Set<string>>(() => new Set(initial?.addedChartIds ?? []));
-  const [addedInsightIds, setAddedInsightIds] = useState<Set<string>>(() => new Set(initial?.addedInsightIds ?? []));
-  const [activeTab, setActiveTab] = useState<string>(() => initial?.activeTab ?? 'dashboard');
+  const [activeTab, setActiveTab] = useState<string>(() => (SIDEBAR_ITEMS.find(i => i.value === initial?.activeTab)?.value ?? 'dashboard'));
+  const [mergeOpen, setMergeOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => initial?.sidebarCollapsed ?? false);
   const [exporting, setExporting] = useState(false);
   // A fresh upload arrives underived, so the overlay is up from the first paint.
   const [analyzing, setAnalyzing] = useState(() => Boolean(initialUpload));
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  // Not persisted: a reload starts with nothing selected.
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [paneCollapsed, setPaneCollapsed] = useState(() => initial?.paneCollapsed ?? false);
   const [mobileClearConfirmOpen, setMobileClearConfirmOpen] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
+
+  /* "Already placed" markers, derived from the board so they can never drift from it
+     (and so undo/redo only has to snapshot dashboardItems). Chart suggestions are
+     keyed by sourceKey; insight, KPI and table cards by their own id. */
+  const addedChartIds = useMemo(
+    () => new Set(dashboardItems.flatMap(i => (i.sourceKey ? [i.sourceKey] : []))),
+    [dashboardItems]
+  );
+  const addedInsightIds = useMemo(
+    () => new Set(dashboardItems.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi' || i.displayAs === 'table').map(i => i.id)),
+    [dashboardItems]
+  );
   const isMobile = useIsMobile();
+  const isDesktop = useIsDesktop();
 
   /**
    * The upload the landing page handed over is raw rows and nothing else — it
@@ -190,10 +204,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       setColumns(cols);
       const charts = generateChartSuggestions(newData, cols);
       setSuggestions(charts);
-      const { items, usedChartIds } = buildDefaultDashboard(newData, cols, charts, t);
-      setDashboardItems(items);
-      setAddedChartIds(usedChartIds);
-      setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi').map(i => i.id)));
+      const { items } = buildDefaultDashboard(newData, cols, charts, t);
+      setDashboardItems(items, { record: false }); // starter board is not undoable
       setAnalyzing(false);
 
       const fileExt = getFileExt(name);
@@ -216,32 +228,40 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     // make every subsequent visit restore a spreadsheet they never uploaded.
     if (initialUpload?.ephemeral) { localStorage.removeItem(STORAGE_KEY); return; }
     if (!data.length) { localStorage.removeItem(STORAGE_KEY); return; }
-    try {
-      const payload: PersistedSession = {
-        data, fileName, columns, suggestions, dashboardItems, filters,
-        addedChartIds: Array.from(addedChartIds),
-        addedInsightIds: Array.from(addedInsightIds),
-        activeTab, sidebarCollapsed,
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    } catch (e) {
-      console.warn('Could not persist session', e);
-    }
-  }, [analyzing, initialUpload, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed]);
+    // Live pane edits fire per keystroke; debounce so a large dataset isn't
+    // re-stringified each time. Unmount cancels the pending write, so clearing
+    // the file can't resurrect it.
+    const timer = setTimeout(() => {
+      try {
+        const payload: PersistedSession = {
+          data, fileName, columns, suggestions, dashboardItems, filters,
+          addedChartIds: Array.from(addedChartIds),
+          addedInsightIds: Array.from(addedInsightIds),
+          activeTab, sidebarCollapsed, paneCollapsed,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {
+        console.warn('Could not persist session', e);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [analyzing, initialUpload, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed, paneCollapsed]);
 
   const handleResetLayout = useCallback(() => {
-    const { items, usedChartIds } = buildDefaultDashboard(data, columns, suggestions, t);
-    setDashboardItems(items);
-    setAddedChartIds(usedChartIds);
-    setAddedInsightIds(new Set(items.filter(i => i.displayAs === 'insight' || i.displayAs === 'kpi').map(i => i.id)));
-    toast.success(t('resetLayout'));
-  }, [data, columns, suggestions, t]);
+    // Toast Undo restores this snapshot rather than calling global undo(): the toast can outlive other edits.
+    const before = dashboardItems;
+    setDashboardItems(buildDefaultDashboard(data, columns, suggestions, t).items);
+    // Reset reuses card ids; a surviving selection would write its stale spec back.
+    setSelectedId(null);
+    toast.success(t('resetLayout'), { action: { label: t('undo'), onClick: () => setDashboardItems(() => before) } });
+  }, [dashboardItems, data, columns, suggestions, t, setDashboardItems]);
 
   const handleClearAll = useCallback(() => {
+    const before = dashboardItems;
+    setSelectedId(null);
     setDashboardItems([]);
-    setAddedChartIds(new Set());
-    setAddedInsightIds(new Set());
-  }, []);
+    toast.success(t('clearAll'), { action: { label: t('undo'), onClick: () => setDashboardItems(() => before) } });
+  }, [dashboardItems, t, setDashboardItems]);
 
   const handleClearFile = useCallback(() => {
     // No local resets needed: onClearFile unmounts this whole tree. Storage is
@@ -262,7 +282,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       next.splice(idx + 1, 0, copy);
       return next;
     });
-  }, []);
+  }, [setDashboardItems]);
 
   // ── Derived filtered data (declared before any callbacks that use it) ──
   const filteredData = useMemo(() => {
@@ -331,7 +351,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const addToDashboard = useCallback((chart: DashboardItem) => {
     setDashboardItems(prev => [...prev, chart]);
     trackEvent('chart_added', { source: 'manual' });
-  }, []);
+  }, [setDashboardItems]);
 
   const addSuggestionToDashboard = useCallback((s: ChartSuggestion, type: ChartType = s.type) => {
     setDashboardItems(prev => [...prev, {
@@ -339,9 +359,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       type, data: s.data, dataKeys: s.dataKeys, xKey: s.xKey,
       sourceKey: s.key,
     }]);
-    setAddedChartIds(prev => new Set(prev).add(s.key));
     trackEvent('chart_added', { source: 'suggestion' });
-  }, []);
+  }, [setDashboardItems]);
 
   const addInsightToDashboard = useCallback((card: { id: string; title: string; content: any; type: 'insight' }) => {
     const content = card.content;
@@ -355,9 +374,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       id: card.id, title: card.title, description: '', type: 'bar', data: [], dataKeys: [], xKey: '',
       displayAs: 'insight', insightType, insightContent: content,
     }]);
-    setAddedInsightIds(prev => new Set(prev).add(card.id));
     trackEvent('chart_added', { source: 'insight' });
-  }, []);
+  }, [setDashboardItems]);
 
   const addKpiToDashboard = useCallback((spec: KpiSpec, title: string) => {
     const id = kpiCardId(spec);
@@ -367,53 +385,94 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
         displayAs: 'kpi' as const, kpiSpec: spec, size: 'xs' as const,
       }]
     ));
-    setAddedInsightIds(prev => new Set(prev).add(id));
     trackEvent('chart_added', { source: 'kpi' });
-  }, []);
+  }, [setDashboardItems]);
 
   const addTableToDashboard = useCallback((card: { id: string; title: string; data: any[]; columns: string[] }) => {
     setDashboardItems(prev => [...prev, {
       id: card.id, title: card.title, description: '', type: 'bar', data: card.data,
       dataKeys: [], xKey: '', displayAs: 'table', tableColumns: card.columns,
     }]);
-    setAddedInsightIds(prev => new Set(prev).add(card.id));
     trackEvent('chart_added', { source: 'table' });
+  }, [setDashboardItems]);
+
+  /* The selected card, with its recipe in ChartSpec form when it is a chart.
+     Suggestion cards are converted from their sourceKey, so any chart on the
+     board opens. Removing the selected card makes this null: auto-deselect. */
+  const selected = useMemo(() => {
+    const item = dashboardItems.find(i => i.id === selectedId);
+    if (!item) return null;
+    const isChart = !item.displayAs || item.displayAs === 'chart';
+    const spec = !isChart ? null
+      : item.spec ? toChartSpec(item.spec, item.type)
+      : item.sourceKey ? specFromSourceKey(item.sourceKey, columns) : null;
+    return { item, spec };
+  }, [selectedId, dashboardItems, columns]);
+
+  const selectCard = useCallback((id: string | null) => {
+    setSelectedId(id);
+    if (id) setPaneCollapsed(false);
   }, []);
 
-  /* The card being edited, with its recipe in ChartSpec form. Suggestion cards
-     are converted from their sourceKey, so any chart on the board opens. */
-  const editing = useMemo(() => {
-    const item = dashboardItems.find(i => i.id === editingId);
-    if (!item) return null;
-    const spec = item.spec ? toChartSpec(item.spec, item.type) : item.sourceKey ? specFromSourceKey(item.sourceKey, columns) : null;
-    return spec && { item, spec };
-  }, [editingId, dashboardItems, columns]);
+  const handleChangeSelected = useCallback((updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => {
+    if (!selected) return;
+    const { item } = selected;
+    // An edited suggestion is now a custom chart: drop the suggestion link
+    // (which also frees it in Quick Add unless another card still shows it).
+    // Idempotent: after the first call the item's sourceKey is already gone.
+    // A suggestion's own title and description describe the old recipe: regenerate the title
+    // (unless the user renamed it) and drop the description.
+    const generated = item.sourceKey && item.title === suggestions.find(s => s.key === item.sourceKey)?.title;
+    const patch = item.sourceKey ? { ...updates, title: generated ? specTitle(toChartSpec(updates.spec, updates.type), t) : updates.title, description: undefined } : updates;
+    // ponytail: one history entry per pane edit; coalesce by card id+time if it feels noisy
+    setDashboardItems(prev => prev.map(i => (i.id === item.id ? { ...i, ...patch, sourceKey: undefined } : i)));
+  }, [selected, suggestions, t, setDashboardItems]);
 
-  const handleSaveEdit = useCallback((updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => {
-    if (!editing) return;
-    const { item } = editing;
-    // An edited suggestion is now a custom chart: drop the suggestion link,
-    // and free the suggestion in Quick Add unless another card still shows it.
-    setDashboardItems(prev => prev.map(i => (i.id === item.id ? { ...i, ...updates, sourceKey: undefined } : i)));
-    const key = item.sourceKey;
-    if (key && !dashboardItems.some(i => i.id !== item.id && i.sourceKey === key)) {
-      setAddedChartIds(prev => { const next = new Set(prev); next.delete(key); return next; });
+  /* Apply a recipe edit that may rename the card. The id doubles as the
+     "already placed" key (derived), so only the selection needs to follow it. */
+  const retargetCard = useCallback((oldId: string, patch: Partial<DashboardItem>, newId?: string) => {
+    // ponytail: one history entry per pane edit; coalesce by card id+time if it feels noisy
+    setDashboardItems(prev => prev.map(i => (i.id === oldId ? { ...i, ...patch, id: newId ?? i.id } : i)));
+    if (newId) selectCard(newId);
+  }, [selectCard, setDashboardItems]);
+
+  const handleChangeKpi = useCallback((spec: KpiSpec) => {
+    if (!selected) return;
+    const r = retargetKpi(selected.item, spec, dashboardItems.map(i => i.id), t);
+    retargetCard(selected.item.id, r.patch, r.newId);
+  }, [selected, dashboardItems, retargetCard, t]);
+
+  const handleChangeRepeat = useCallback((column: string) => {
+    if (!selected) return;
+    const r = retargetRepeat(selected.item, column, dashboardItems.map(i => i.id), t);
+    if (r) retargetCard(selected.item.id, r.patch, r.newId);
+  }, [selected, dashboardItems, retargetCard, t]);
+
+  const handleAddField = useCallback((col: ColumnMeta) => {
+    const r = specForField(col);
+    if (!r) return;
+    if (r.displayAs === 'kpi') {
+      const spec = r.kpiSpec;
+      addKpiToDashboard(spec, kpiTitle(spec, t));
+      selectCard(kpiCardId(spec));
+      return;
     }
-    setEditingId(null);
-  }, [editing, dashboardItems]);
+    const id = `manual-${Date.now()}`;
+    // data/dataKeys are re-derived from the spec by liveItems.
+    setDashboardItems(prev => [...prev, { id, title: specTitle(r.spec, t), type: r.type, spec: r.spec, data: [], dataKeys: [] }]);
+    trackEvent('chart_added', { source: 'field' });
+    selectCard(id);
+  }, [addKpiToDashboard, selectCard, t, setDashboardItems]);
 
   const handleRemoveFromDashboard = useCallback((id: string) => {
-    /* Read up front, not inside an updater: un-marking needs item.sourceKey. */
+    /* Read up front, not inside an updater: Undo needs the item and its index. */
     const index = dashboardItems.findIndex(i => i.id === id);
     if (index === -1) return;
     const item = dashboardItems[index];
-    const stillShown = dashboardItems.some(i => i.id !== id && i.sourceKey === item.sourceKey);
-    const chartKey = item.sourceKey && !stillShown && addedChartIds.has(item.sourceKey) ? item.sourceKey : null;
-    const insightId = addedInsightIds.has(id) ? id : null;
 
+    // Otherwise Undo would re-select the card (and re-open the sheet on phones).
+    setSelectedId(cur => (cur === id ? null : cur));
     setDashboardItems(prev => prev.filter(i => i.id !== id));
-    if (chartKey) setAddedChartIds(prev => { const next = new Set(prev); next.delete(chartKey); return next; });
-    if (insightId) setAddedInsightIds(prev => { const next = new Set(prev); next.delete(insightId); return next; });
 
     toast.success(t('chartRemoved'), {
       action: {
@@ -425,17 +484,45 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
             next.splice(Math.min(index, next.length), 0, item);
             return next;
           });
-          if (chartKey) setAddedChartIds(prev => new Set(prev).add(chartKey));
-          if (insightId) setAddedInsightIds(prev => new Set(prev).add(insightId));
         },
       },
     });
-  }, [dashboardItems, addedChartIds, addedInsightIds, t]);
+  }, [dashboardItems, t, setDashboardItems]);
+
+  useEffect(() => {
+    if (activeTab !== 'dashboard') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      // Leave native text undo and Radix widgets alone.
+      if ((e.target as Element | null)?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="dialog"], [role="menu"], [role="listbox"]')) return;
+      const k = e.key.toLowerCase();
+      const isRedo = (k === 'z' && e.shiftKey) || (k === 'y' && e.ctrlKey && !e.shiftKey);
+      const isUndo = k === 'z' && !e.shiftKey;
+      if (isUndo && canUndo) { e.preventDefault(); undo(); }
+      else if (isRedo && canRedo) { e.preventDefault(); redo(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeTab, canUndo, canRedo, undo, redo]);
 
   /* ─── DASHBOARD APP SHELL ─── */
   const chartCount = dashboardItems.filter(i => !i.displayAs || i.displayAs === 'chart').length;
   const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
   const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
+
+  const editorPane = (
+    <EditorPane
+      columns={filteredColumns}
+      data={filteredData}
+      selected={selected}
+      onChange={handleChangeSelected}
+      onAddField={handleAddField}
+      onChangeKpi={handleChangeKpi}
+      onChangeRepeatColumn={handleChangeRepeat}
+      onDeselect={() => selectCard(null)}
+      onMergeColumns={() => setMergeOpen(true)}
+    />
+  );
 
   const activeItem = SIDEBAR_ITEMS.find(i => i.value === activeTab);
 
@@ -635,8 +722,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     <DropdownMenuItem onClick={handleResetLayout} className="text-xs">
                       <RotateCcw className="h-3.5 w-3.5 mr-2" /> {t('resetLayout')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setActiveTab('build')} className="text-xs">
-                      <Wrench className="h-3.5 w-3.5 mr-2" /> {t('build')}
+                    <DropdownMenuItem onClick={() => setMergeOpen(true)} className="text-xs">
+                      <Merge className="h-3.5 w-3.5 mr-2" /> {t('mergeColumns')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setActiveTab('insights')} className="text-xs">
                       <Lightbulb className="h-3.5 w-3.5 mr-2" /> {t('insights')}
@@ -676,7 +763,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                       {filteredData.length} {t('rows')} · {columns.length} {t('cols')} · {dashboardItems.length} {t('cards')}
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <Badge variant="secondary" className="rounded-full border-0 px-2.5 py-1 text-[11px] font-medium" style={{ background: `hsl(${getChartColorVar(0)} / 0.1)`, color: getChartColor(0) }}>
                       {filteredData.length} {t('rows')}
                     </Badge>
@@ -693,11 +780,31 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                         {Object.keys(filters).length} {t('activeFilters')}
                       </Badge>
                     )}
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7" disabled={!canUndo} onClick={undo}
+                      aria-label={t('undo')} title={`${t('undo')} (Ctrl+Z)`}
+                    >
+                      <Undo2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7" disabled={!canRedo} onClick={redo}
+                      aria-label={d('redo')} title={`${d('redo')} (Ctrl+Shift+Z)`}
+                    >
+                      <Redo2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost" size="icon" className="hidden lg:inline-flex h-7 w-7"
+                      aria-label={d('fieldsPanel')} title={d('fieldsPanel')} aria-expanded={!paneCollapsed}
+                      onClick={() => setPaneCollapsed(c => !c)}
+                    >
+                      {paneCollapsed ? <PanelRightOpen className="h-4 w-4" /> : <PanelRightClose className="h-4 w-4" />}
+                    </Button>
                   </div>
                 </div>
               </div>
 
-              <div ref={dashboardRef} className="min-h-[400px]">
+              <div className="lg:flex lg:items-start lg:gap-4">
+              <div ref={dashboardRef} className="min-h-[400px] min-w-0 lg:flex-1">
                 <Suspense fallback={<ChartFallback />}>
                   <DashboardGrid
                     items={liveItems}
@@ -708,7 +815,10 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     onRemove={handleRemoveFromDashboard}
                     onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
                     onDuplicate={handleDuplicate}
-                    onEdit={setEditingId}
+                    selectedId={selectedId}
+                    // Below lg a selection opens a full-width sheet, so body taps (tooltips) must not select: Edit menu only.
+                    onSelect={isDesktop ? selectCard : undefined}
+                    onEdit={selectCard}
                     emptyAction={
                       <div className="flex flex-wrap items-center justify-center gap-2">
                         <Button size="sm" onClick={() => setQuickAddOpen(true)} className="gap-1.5 text-sm h-9">
@@ -721,6 +831,13 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     }
                   />
                 </Suspense>
+              </div>
+              {/* Outside dashboardRef so the PDF export never captures it. */}
+              {isDesktop && !paneCollapsed && (
+                <aside className="flex w-80 xl:w-96 shrink-0 flex-col sticky top-20 max-h-[calc(100vh-6rem)] overflow-hidden rounded-xl border border-border bg-card">
+                  <Suspense fallback={<PanelFallback />}>{editorPane}</Suspense>
+                </aside>
+              )}
               </div>
             </TabsContent>
 
@@ -762,26 +879,6 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                   <SmartInsights columns={filteredColumns} data={filteredData} onAddToDashboard={addInsightToDashboard} onAddTableToDashboard={addTableToDashboard} addedInsightIds={addedInsightIds} />
                 </Suspense>
               </Card>
-            </TabsContent>
-
-            {/* ═══════════════ BUILD TAB ═══════════════ */}
-            <TabsContent value="build" className="space-y-4 mt-0">
-              <div className="dashboard-surface p-4">
-                <h2 className="text-base font-bold text-foreground">{t('build')}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">{t('buildTabDesc')}</p>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <Card className="elevated-card p-5 min-h-[300px]">
-                  <Suspense fallback={<PanelFallback />}>
-                    <ManualChartBuilder data={filteredData} columns={filteredColumns} onAddToDashboard={addToDashboard} />
-                  </Suspense>
-                </Card>
-                <Card className="elevated-card p-5 min-h-[300px]">
-                  <Suspense fallback={<PanelFallback />}>
-                    <ColumnMerger columns={columns} onMerge={handleMerge} />
-                  </Suspense>
-                </Card>
-              </div>
             </TabsContent>
 
             {/* ═══════════════ FILTER TAB ═══════════════ */}
@@ -855,22 +952,26 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
         </main>
       </div>
 
-      {/* ─── Chart editor ─── */}
-      <Sheet open={!!editing} onOpenChange={open => { if (!open) setEditingId(null); }}>
-        <SheetContent side="right" className="w-full sm:max-w-md lg:max-w-lg overflow-y-auto">
-          <SheetHeader className="mb-4">
-            <SheetTitle className="text-base">{d('editChart')}</SheetTitle>
-            <SheetDescription className="text-xs">{d('editChartDesc')}</SheetDescription>
+      {/* ─── Editor: docked pane on desktop (above), sheet below lg ─── */}
+      <Sheet open={!isDesktop && !!selected} onOpenChange={open => { if (!open) selectCard(null); }}>
+        <SheetContent side="right" className="w-full sm:max-w-md p-0 [&>button]:hidden">
+          <SheetHeader className="sr-only">
+            <SheetTitle>{d('editChart')}</SheetTitle>
+            <SheetDescription>{d('editChartDesc')}</SheetDescription>
           </SheetHeader>
-          {editing && (
-            <ManualChartBuilder
-              key={editing.item.id}
-              data={filteredData}
-              columns={filteredColumns}
-              initial={{ type: editing.item.type, spec: editing.spec, title: editing.item.title }}
-              onSave={handleSaveEdit}
-            />
-          )}
+          {!isDesktop && editorPane}
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={mergeOpen} onOpenChange={setMergeOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader className="sr-only">
+            <SheetTitle>{t('mergeColumns')}</SheetTitle>
+            <SheetDescription>{t('mergeColumns')}</SheetDescription>
+          </SheetHeader>
+          <Suspense fallback={<PanelFallback />}>
+            <ColumnMerger columns={columns} onMerge={handleMerge} />
+          </Suspense>
         </SheetContent>
       </Sheet>
 
@@ -915,26 +1016,25 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
               </button>
             ))}
 
-            {/* More: Build + Filter + Clear file */}
+            {/* More: Merge columns + Filter + Clear file */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
                   aria-label={t('moreTabs')}
                   className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
-                    (activeTab === 'build' || activeTab === 'filter') ? 'text-primary' : 'text-muted-foreground'
+                    activeTab === 'filter' ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 >
                   <MoreHorizontal className="h-5 w-5" />
                   <span className="text-[10px] font-medium">
-                    {activeTab === 'build' ? t('build') : activeTab === 'filter' ? t('filter') : t('more')}
+                    {activeTab === 'filter' ? t('filter') : t('more')}
                   </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="end" className="w-44 mb-1">
-                <DropdownMenuItem onClick={() => setActiveTab('build')} className="text-xs gap-2">
-                  <Wrench className="h-3.5 w-3.5" /> {t('build')}
-                  {activeTab === 'build' && <span className="ml-auto text-primary">✓</span>}
+                <DropdownMenuItem onClick={() => setMergeOpen(true)} className="text-xs gap-2">
+                  <Merge className="h-3.5 w-3.5" /> {t('mergeColumns')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setActiveTab('filter')} className="text-xs gap-2">
                   <Filter className="h-3.5 w-3.5" /> {t('filter')}

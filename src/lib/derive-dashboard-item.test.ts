@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { analyzeColumns, generateChartSuggestions, bucketDate } from './data-analyzer';
+import { analyzeColumns, generateChartSuggestions, bucketDate, type ColumnMeta } from './data-analyzer';
 import { buildDefaultDashboard } from './build-default-dashboard';
+import type { DashboardItem } from '@/components/DashboardGrid';
 import {
-  deriveDashboardItems, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES,
-  type ChartSpec, type DateGrain, type KpiAgg,
+  deriveDashboardItems, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
+  specForField, addFieldToSpec, specTitle, kpiTitle, kpiCardId, aggsForColumn, normalizeAgg,
+  retargetKpi, retargetRepeat, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg,
 } from './derive-dashboard-item';
 
 const t = ((k: string) => k) as any;
@@ -305,5 +307,123 @@ describe('specFromSourceKey', () => {
 
   it('has no recipe for scatter plots', () => {
     expect(specFromSourceKey('scatter:a:b', [])).toBeNull();
+  });
+});
+
+describe('click-a-field helpers', () => {
+  const col = (name: string, type: ColumnMeta['type'], isSummable?: boolean): ColumnMeta => ({
+    name, type, uniqueCount: 3, totalCount: 10, nullCount: 0, uniqueRatio: 0.3, sampleValues: [],
+    ...(isSummable === undefined ? {} : { stats: { min: 0, max: 1, mean: 1, median: 1, sum: 1, stdDev: 0, isSummable } }),
+  });
+  const count = { column: null, agg: 'count' } as const;
+  const base: ChartSpec = { v: 2, dimension: 'Region', measures: [count] };
+
+  it('specForField: date -> monthly line of row counts', () => {
+    expect(specForField(col('When', 'date'))).toEqual({
+      displayAs: 'chart', type: 'line',
+      spec: { v: 2, dimension: 'When', grain: 'month', measures: [count] },
+    });
+  });
+
+  it.each(['categorical', 'range', 'text'] as const)('specForField: %s -> top-20 bar of row counts', type => {
+    expect(specForField(col('X', type))).toEqual({
+      displayAs: 'chart', type: 'bar',
+      spec: { v: 2, dimension: 'X', measures: [count], limit: 20 },
+    });
+  });
+
+  it('specForField: numeric -> KPI, sum when summable else average', () => {
+    expect(specForField(col('Sales', 'numeric', true))).toEqual({ displayAs: 'kpi', kpiSpec: { column: 'Sales', agg: 'sum' } });
+    expect(specForField(col('Rate', 'numeric', false))).toEqual({ displayAs: 'kpi', kpiSpec: { column: 'Rate', agg: 'average' } });
+  });
+
+  it('specForField: id -> null', () => {
+    expect(specForField(col('Id', 'id'))).toBeNull();
+  });
+
+  it('addFieldToSpec: replaces a lone row-count measure', () => {
+    expect(addFieldToSpec(base, col('Sales', 'numeric', true)).measures).toEqual([{ column: 'Sales', agg: 'sum' }]);
+  });
+
+  it('addFieldToSpec: appends a second measure and drops series', () => {
+    const one: ChartSpec = { ...base, measures: [{ column: 'Sales', agg: 'sum' }], series: 'Rep' };
+    const next = addFieldToSpec(one, col('Rate', 'numeric', false));
+    expect(next.measures).toEqual([{ column: 'Sales', agg: 'sum' }, { column: 'Rate', agg: 'average' }]);
+    expect(next.series).toBeUndefined();
+  });
+
+  it('addFieldToSpec: respects MAX_MEASURES and never duplicates a measure', () => {
+    const full: ChartSpec = {
+      ...base, measures: Array.from({ length: MAX_MEASURES }, (_, i) => ({ column: `M${i}`, agg: 'sum' as const })),
+    };
+    expect(addFieldToSpec(full, col('Extra', 'numeric', true))).toBe(full);
+    expect(addFieldToSpec(full, col('M0', 'numeric', true))).toBe(full);
+  });
+
+  it('addFieldToSpec: categorical sets series only with a single measure', () => {
+    expect(addFieldToSpec(base, col('Rep', 'categorical')).series).toBe('Rep');
+    const two: ChartSpec = { ...base, measures: [{ column: 'A', agg: 'sum' }, { column: 'B', agg: 'sum' }] };
+    expect(addFieldToSpec(two, col('Rep', 'categorical'))).toBe(two);
+  });
+
+  it('addFieldToSpec: unchanged for the axis column, dates and ids', () => {
+    expect(addFieldToSpec(base, col('Region', 'categorical'))).toBe(base);
+    expect(addFieldToSpec(base, col('When', 'date'))).toBe(base);
+    expect(addFieldToSpec(base, col('Id', 'id'))).toBe(base);
+  });
+
+  it('specTitle: joins measures and names the dimension', () => {
+    expect(specTitle({ dimension: 'Region', measures: [{ column: null, agg: 'count' }, { column: 'Sales', agg: 'sum' }] }, t))
+      .toBe('rowCount, sum Sales by Region');
+  });
+});
+
+describe('KPI and repeating-value card editing', () => {
+  const cols = analyzeColumns(DATA);
+  const rep = (id: string, extra: Partial<DashboardItem> = {}): DashboardItem => ({ id, title: '', type: 'bar', data: [], dataKeys: [], xKey: '', ...extra });
+
+  it('aggsForColumn / normalizeAgg follow the builder rules', () => {
+    expect(aggsForColumn(cols, null)).toEqual(['count']);
+    expect(aggsForColumn(cols, 'Rep')).toEqual(['count', 'distinct']);
+    expect(aggsForColumn(cols, 'Sales')).toContain('median');
+    expect(normalizeAgg(cols, null, 'sum')).toBe('count');
+    expect(normalizeAgg(cols, 'Rep', 'sum', true)).toBe('count');
+    expect(normalizeAgg(cols, 'Sales', 'count', true)).toBe('sum');
+    expect(normalizeAgg(cols, 'Sales', 'count')).toBe('count');
+    expect(normalizeAgg(cols, 'Sales', 'max', true)).toBe('max');
+  });
+
+  it('retargetKpi renames a generated title and canonical id, but keeps renamed titles, copies and taken ids', () => {
+    const old = { column: 'Sales', agg: 'sum' as KpiAgg };
+    const next = { column: null, agg: 'count' as KpiAgg };
+    const card = rep(kpiCardId(old), { title: kpiTitle(old, t), kpiSpec: old });
+    expect(retargetKpi(card, next, [card.id], t)).toEqual({
+      patch: { kpiSpec: next, title: 'rowCount' }, newId: kpiCardId(next),
+    });
+    expect(retargetKpi({ ...card, title: 'Mine' }, next, [card.id], t).patch.title).toBe('Mine');
+    expect(retargetKpi({ ...card, id: `${card.id}-copy-1` }, next, [], t).newId).toBeUndefined();
+    expect(retargetKpi(card, next, [card.id, kpiCardId(next)], t).newId).toBeUndefined();
+  });
+
+  it('retargetRepeat handles chart insights and id-encoded tables', () => {
+    const chart = rep('insight-repeat-chart-Region', {
+      displayAs: 'insight', insightType: 'repeating', insightContent: { name: 'Region', topValues: [] },
+      title: 'Region — repeatingValues',
+    });
+    expect(repeatColumnOf(chart)).toBe('Region');
+    expect(retargetRepeat(chart, 'Rep', [chart.id], t)).toEqual({
+      patch: { title: 'Rep — repeatingValues', insightContent: { name: 'Rep', topValues: [] } },
+      newId: 'insight-repeat-chart-Rep',
+    });
+    // Taken target / duplicate / renamed: chart keeps its id (and a user title).
+    expect(retargetRepeat(chart, 'Rep', [chart.id, 'insight-repeat-chart-Rep'], t)!.newId).toBeUndefined();
+    expect(retargetRepeat({ ...chart, id: `${chart.id}-copy-5`, title: 'Mine' }, 'Rep', [], t)).toMatchObject({ patch: { insightContent: { name: 'Rep' } } });
+    expect(retargetRepeat({ ...chart, title: 'Mine' }, 'Rep', [], t)!.patch.title).toBeUndefined();
+
+    const table = rep('insight-repeat-table-Region-copy-9', { displayAs: 'table', title: 'RegionrepeatingValuesSuffix' });
+    expect(repeatColumnOf(table)).toBe('Region');
+    expect(retargetRepeat(table, 'Rep', [], t)).toEqual({ patch: { title: 'ReprepeatingValuesSuffix' }, newId: 'insight-repeat-table-Rep-copy-9' });
+    expect(retargetRepeat(table, 'Rep', ['insight-repeat-table-Rep-copy-9'], t)).toBeNull();
+    expect(repeatColumnOf(rep('insight-stats-table', { displayAs: 'table' }))).toBeNull();
   });
 });
