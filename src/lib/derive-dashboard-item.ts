@@ -3,6 +3,7 @@ import { bucketDate, type ColumnMeta, type ChartSuggestion, type DateGrain } fro
 export type { DateGrain };
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
+import { numberFormatter, type ChartFormat } from '@/lib/format';
 
 /**
  * Card data is derived from a recipe + the currently filtered dataset, never
@@ -344,7 +345,7 @@ function deriveDashboardItem(
   t: TFn
 ): DashboardItem {
   if (item.displayAs === 'kpi') {
-    return { ...item, kpiValue: computeKpiValue(data, item.kpiSpec) };
+    return { ...item, kpiValue: computeKpiValue(data, item.kpiSpec, item.format) };
   }
 
   if (item.displayAs === 'insight') {
@@ -446,10 +447,13 @@ export function aggregateValues(values: unknown[], agg: KpiAgg): number | null {
  * A KPI's headline number, recomputed against the filtered rows on every
  * render pass — same contract as a chart's `data`, never persisted.
  */
-export function computeKpiValue(data: Record<string, any>[], spec?: KpiSpec): string {
+export function computeKpiValue(data: Record<string, any>[], spec?: KpiSpec, format?: ChartFormat): string {
   if (!spec) return '—';
   const n = spec.column ? aggregateValues(data.map(r => r[spec.column!]), spec.agg) : data.length;
-  return n === null ? '—' : compactNumber.format(n);
+  if (n === null) return '—';
+  /* No number/decimals set -> the shared compactNumber, so unformatted cards are unchanged. */
+  if (format?.number === undefined && format?.decimals === undefined) return compactNumber.format(n);
+  return numberFormatter({ ...format, number: format.number ?? 'compact' })(n);
 }
 
 /** Stable card id, so Quick Add can tell an already-placed metric from a new one. */

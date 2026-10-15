@@ -35,6 +35,7 @@ import { toast } from 'sonner';
 import { trackEvent, getFileExt } from '@/lib/analytics';
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
+import type { ChartFormat } from '@/lib/format';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
@@ -442,6 +443,17 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     retargetCard(selected.item.id, r.patch, r.newId);
   }, [selected, dashboardItems, retargetCard, t]);
 
+  const handleChangeFormat = useCallback((format: ChartFormat | undefined) => {
+    if (!selected) return;
+    const id = selected.item.id;
+    setDashboardItems(prev => prev.map(i => {
+      if (i.id !== id) return i;
+      const next = { ...i };
+      if (format) next.format = format; else delete next.format;
+      return next;
+    }));
+  }, [selected, setDashboardItems]);
+
   const handleChangeRepeat = useCallback((column: string) => {
     if (!selected) return;
     const r = retargetRepeat(selected.item, column, dashboardItems.map(i => i.id), t);
@@ -519,6 +531,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       onAddField={handleAddField}
       onChangeKpi={handleChangeKpi}
       onChangeRepeatColumn={handleChangeRepeat}
+      onChangeFormat={handleChangeFormat}
       onDeselect={() => selectCard(null)}
       onMergeColumns={() => setMergeOpen(true)}
     />
