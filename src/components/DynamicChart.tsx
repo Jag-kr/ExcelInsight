@@ -35,6 +35,12 @@ interface DynamicChartProps {
   stacked?: boolean;
   /** Optional presentation overrides; undefined/empty renders exactly as before. */
   format?: ChartFormat;
+  /**
+   * Cross-filtering: called with the category label of a clicked bar, column,
+   * slice or line/area point. Absent = marks are not interactive.
+   * Pointer-only: keyboard users have page filters and per-visual filters.
+   */
+  onSelect?: (label: string) => void;
 }
 
 const SIZE_CLASSES: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
@@ -70,7 +76,7 @@ const OVERFLOW_CHART_TYPES: ChartType[] = ['horizontalBar', 'pie', 'scatter', 'r
 
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
-  onChangeType, onRenameTitle, showControls = true, size = 'md', stacked = false, format,
+  onChangeType, onRenameTitle, showControls = true, size = 'md', stacked = false, format, onSelect,
 }: DynamicChartProps) {
   const { t } = useI18n();
   const chartRef = useRef<HTMLDivElement>(null);
@@ -152,6 +158,17 @@ export function DynamicChart({
     return data.map((row, i) => ({ ...row, fill: getChartColor(i) }));
   }, [data, colorByCategory]);
 
+  /* Handlers are spread only when onSelect is set (never `onClick={cond ? fn : undefined}`:
+     recharts merges props over its defaults, so an explicit undefined would override them). */
+  const pick = (row?: Record<string, unknown>) => {
+    const label = row?.[xKey] ?? row?.name;
+    if (label != null) onSelect!(String(label));
+  };
+  const markProps = onSelect ? { className: 'cursor-pointer', onClick: (d: { payload?: Record<string, unknown> }) => pick(d.payload) } : {};
+  const plotProps = onSelect
+    ? { style: { cursor: 'pointer' }, onClick: (s: { activeLabel?: string | number }) => { if (s?.activeLabel != null) onSelect(String(s.activeLabel)); } }
+    : {};
+
   const handleExport = async () => {
     if (!chartRef.current) return;
     try {
@@ -198,7 +215,7 @@ export function DynamicChart({
                 showing a swatch that matches nothing on screen. */}
             {!colorByCategory && legend}
             {dataKeys.map((key) => (
-              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={stacked ? 0 : [4, 4, 0, 0]} stackId={stacked ? 'stack' : undefined}>
+              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={stacked ? 0 : [4, 4, 0, 0]} stackId={stacked ? 'stack' : undefined} {...markProps}>
                 {colorByCategory && barData.map((_, i) => (
                   <Cell key={i} fill={getChartColor(i)} />
                 ))}
@@ -216,7 +233,7 @@ export function DynamicChart({
             {tooltip}
             {!colorByCategory && legend}
             {dataKeys.map((key) => (
-              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={stacked ? 0 : [0, 4, 4, 0]} stackId={stacked ? 'stack' : undefined}>
+              <Bar key={key} dataKey={key} fill={getChartVarColor(key)} radius={stacked ? 0 : [0, 4, 4, 0]} stackId={stacked ? 'stack' : undefined} {...markProps}>
                 {colorByCategory && barData.map((_, i) => (
                   <Cell key={i} fill={getChartColor(i)} />
                 ))}
@@ -227,7 +244,7 @@ export function DynamicChart({
         );
       case 'line':
         return (
-          <LineChart data={data} accessibilityLayer>
+          <LineChart data={data} accessibilityLayer {...plotProps}>
             {grid && <CartesianGrid vertical={false} />}
             <XAxis dataKey={xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...xTitleProps(50)} />
             <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...valueAxisProps()} />
@@ -242,7 +259,7 @@ export function DynamicChart({
         );
       case 'area':
         return (
-          <AreaChart data={data} accessibilityLayer>
+          <AreaChart data={data} accessibilityLayer {...plotProps}>
             <defs>
               {dataKeys.map((key) => (
                 <linearGradient key={key} id={gradientId(key)} x1="0" y1="0" x2="0" y2="1">
@@ -277,6 +294,7 @@ export function DynamicChart({
               outerRadius="75%"
               paddingAngle={type === 'donut' ? 2 : 0}
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              {...markProps}
             >
               {data.map((_, i) => (
                 <Cell key={i} fill={getChartColor(i)} stroke="hsl(var(--card))" />

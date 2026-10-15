@@ -4,7 +4,7 @@ export type { DateGrain };
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
 import { numberFormatter, type ChartFormat } from '@/lib/format';
-import { applyFilters } from '@/lib/filters';
+import { applyFilters, type Filters } from '@/lib/filters';
 
 /**
  * Card data is derived from a recipe + the currently filtered dataset, never
@@ -405,15 +405,30 @@ function deriveDashboardItem(
   return item;
 }
 
-/** Map a whole dashboard onto the filtered dataset, preserving order. */
+/**
+ * The column a card can cross-filter the rest of the board on (click a bar, the
+ * others narrow to it): a chart recipe with a dimension and no date grain.
+ * null for scatter, KPI, insight and table cards. `columns` is only needed to
+ * resolve a two-column sourceKey ("agg:A:B").
+ */
+export function crossDimensionOf(item: DashboardItem, columns: ColumnMeta[] = []): string | null {
+  if (item.displayAs && item.displayAs !== 'chart') return null;
+  const recipe = item.spec ? toChartSpec(item.spec, item.type) : item.sourceKey ? specFromSourceKey(item.sourceKey, columns) : null;
+  // ponytail: grain -> date range later
+  return recipe && !recipe.grain && recipe.dimension ? recipe.dimension : null;
+}
+
+/** Map a whole dashboard onto the filtered dataset, preserving order. `cross`: every card but its source reads the rows narrowed by that selection. */
 export function deriveDashboardItems(
   items: DashboardItem[],
   suggestions: ChartSuggestion[],
   columns: ColumnMeta[],
   data: Record<string, any>[],
-  t: TFn
+  t: TFn,
+  cross?: { itemId: string; filters: Filters }
 ): DashboardItem[] {
-  return items.map(item => deriveDashboardItem(item, suggestions, columns, data, t));
+  const narrowed = cross ? applyFilters(data, cross.filters) : data;
+  return items.map(item => deriveDashboardItem(item, suggestions, columns, item.id === cross?.itemId ? data : narrowed, t));
 }
 
 /* ─── KPI cards ─── */

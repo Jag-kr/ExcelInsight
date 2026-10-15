@@ -74,6 +74,7 @@ const en = {
   addFilter: 'Add filter',
   removeFilter: 'Remove filter on',
   visualFiltered: 'filter(s) on this visual',
+  clearCrossFilter: 'Clear cross-filter',
 } as const;
 
 export type DashboardKey = keyof typeof en;
@@ -145,6 +146,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     addFilter: 'फ़िल्टर जोड़ें',
     removeFilter: 'फ़िल्टर हटाएँ:',
     visualFiltered: 'फ़िल्टर इस विज़ुअल पर',
+    clearCrossFilter: 'क्रॉस-फ़िल्टर हटाएँ',
   },
   es: {
     values: 'Valores',
@@ -211,6 +213,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     addFilter: 'Añadir filtro',
     removeFilter: 'Quitar filtro de',
     visualFiltered: 'filtro(s) en este gráfico',
+    clearCrossFilter: 'Quitar filtro cruzado',
   },
   zh: {
     values: '数值',
@@ -277,6 +280,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     addFilter: '添加筛选',
     removeFilter: '移除筛选：',
     visualFiltered: '个筛选应用于此图表',
+    clearCrossFilter: '清除交叉筛选',
   },
   fr: {
     values: 'Valeurs',
@@ -343,6 +347,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     addFilter: 'Ajouter un filtre',
     removeFilter: 'Retirer le filtre sur',
     visualFiltered: 'filtre(s) sur ce visuel',
+    clearCrossFilter: 'Effacer le filtre croisé',
   },
   de: {
     values: 'Werte',
@@ -409,6 +414,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     addFilter: 'Filter hinzufügen',
     removeFilter: 'Filter entfernen:',
     visualFiltered: 'Filter auf diesem Visual',
+    clearCrossFilter: 'Kreuzfilter entfernen',
   },
 };
 

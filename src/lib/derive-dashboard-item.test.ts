@@ -4,7 +4,7 @@ import { buildDefaultDashboard } from './build-default-dashboard';
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartFormat } from './format';
 import {
-  deriveDashboardItems, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
+  deriveDashboardItems, crossDimensionOf, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
   specForField, addFieldToSpec, specTitle, kpiTitle, kpiCardId, aggsForColumn, normalizeAgg,
   retargetKpi, retargetRepeat, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg, type KpiSpec,
 } from './derive-dashboard-item';
@@ -588,5 +588,53 @@ describe('filters on a single visual', () => {
     expect(inactive.data).toEqual(plain.data);
     expect(plain.data).toHaveLength(3);
     expect(derive([kpi({ filters: rep() })])[0].kpiValue).toBe(derive([kpi()])[0].kpiValue);
+  });
+});
+
+describe('cross-filtering', () => {
+  const columns = analyzeColumns(DATA);
+  const chart = (id: string, extra: Partial<DashboardItem> = {}): DashboardItem => ({
+    id, title: id, type: 'bar', data: [], dataKeys: ['value'],
+    spec: { v: 2, dimension: 'Region', measures: [{ column: 'Sales', agg: 'sum' }] }, ...extra,
+  });
+  const byRep = chart('rep', { spec: { v: 2, dimension: 'Rep', measures: [{ column: 'Sales', agg: 'sum' }] } });
+  const kpi: DashboardItem = { id: 'k', title: 'k', type: 'bar', data: [], dataKeys: [], displayAs: 'kpi', kpiSpec: { column: 'Sales', agg: 'sum' } };
+  const north = { itemId: 'region', filters: { Region: { kind: 'in' as const, values: ['North'] } } };
+  const derive = (items: DashboardItem[], cross?: typeof north, rows = DATA) => deriveDashboardItems(items, [], columns, rows, t, cross);
+  const names = (i: DashboardItem) => i.data.map((r: { name: string }) => r.name).sort();
+
+  it('narrows every other card but not the source', () => {
+    const [src, other, k] = derive([chart('region'), byRep, kpi], north);
+    expect(names(src)).toEqual(['East', 'North', 'South']);
+    expect(names(other)).toEqual(['Ann', 'Bob']);
+    expect(k.kpiValue).toBe(computeKpiValue(DATA.filter(r => r.Region === 'North'), { column: 'Sales', agg: 'sum' }));
+  });
+
+  it('without cross is identical to today', () => {
+    const items = [chart('region'), byRep, kpi];
+    expect(derive(items, undefined)).toEqual(deriveDashboardItems(items, [], columns, DATA, t));
+    expect(names(derive(items)[1])).toEqual(['Ann', 'Bob', 'Cy']);
+  });
+
+  it('ANDs with page rows and item filters', () => {
+    const page = DATA.filter(r => r.Rep !== 'Ann');
+    const [, other] = derive([chart('region'), { ...byRep, filters: { Sales: { kind: 'range', min: 80 } } }], north, page);
+    expect(other.data).toEqual([{ name: 'Bob', value: 80 }]);
+  });
+
+  describe('crossDimensionOf', () => {
+    it('reads the dimension of a spec, legacy spec and sourceKey card', () => {
+      expect(crossDimensionOf(chart('a'))).toBe('Region');
+      expect(crossDimensionOf(chart('a', { spec: { xCol: 'Rep', yCol: 'Sales', aggregation: 'sum' } }))).toBe('Rep');
+      expect(crossDimensionOf({ ...chart('a'), spec: undefined, sourceKey: 'dist:Rep' })).toBe('Rep');
+      expect(crossDimensionOf({ ...chart('a'), spec: undefined, sourceKey: 'top:Region:Sales' }, columns)).toBe('Region');
+    });
+    it('is null for date grains, scatter, KPI and other card kinds', () => {
+      expect(crossDimensionOf(chart('a', { spec: { v: 2, dimension: 'Region', grain: 'month', measures: [{ column: null, agg: 'count' }] } }))).toBeNull();
+      expect(crossDimensionOf({ ...chart('a'), spec: undefined, sourceKey: 'scatter:Sales:Sales' })).toBeNull();
+      expect(crossDimensionOf(kpi)).toBeNull();
+      expect(crossDimensionOf({ ...chart('a'), displayAs: 'table' })).toBeNull();
+      expect(crossDimensionOf({ ...chart('a'), displayAs: 'insight' })).toBeNull();
+    });
   });
 });
