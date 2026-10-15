@@ -27,6 +27,15 @@ export const chartTypeOptions: { value: ChartType; label: string }[] = [
 export const CHART_COLOR_COUNT = 8;
 
 /**
+ * Whether a bar chart colours each category instead of each series: a single
+ * series whose categories fit the palette (past CHART_COLOR_COUNT it would wrap
+ * and imply a grouping that does not exist). Shared by DynamicChart and the
+ * editor's "Series colors" section, which has no effect in this case.
+ */
+export const colorsByCategory = (seriesCount: number, rowCount: number) =>
+  seriesCount === 1 && rowCount <= CHART_COLOR_COUNT;
+
+/**
  * Get the CSS variable reference for a chart color index.
  * Cycles through --chart-1 to --chart-8.
  */
