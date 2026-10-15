@@ -10,6 +10,7 @@ import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, Cha
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
 import { deriveDashboardItems, kpiCardId, kpiTitle, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { applyFilters, countActive, normalizeFilters, type Filters } from '@/lib/filters';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
@@ -162,7 +163,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const [columns, setColumns] = useState<ColumnMeta[]>(() => initial?.columns ?? []);
   const [suggestions, setSuggestions] = useState<ChartSuggestion[]>(() => initial?.suggestions ?? []);
   const [dashboardItems, setDashboardItems, { undo, redo, canUndo, canRedo }] = useUndoableState<DashboardItem[]>(() => initial?.dashboardItems ?? []);
-  const [filters, setFilters] = useState<Record<string, string>>(() => initial?.filters ?? {});
+  const [filters, setFilters] = useState<Filters>(() => normalizeFilters(initial?.filters));
   const [activeTab, setActiveTab] = useState<string>(() => (SIDEBAR_ITEMS.find(i => i.value === initial?.activeTab)?.value ?? 'dashboard'));
   const [mergeOpen, setMergeOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => initial?.sidebarCollapsed ?? false);
@@ -287,20 +288,23 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
 
   // ── Derived filtered data (declared before any callbacks that use it) ──
   const filteredData = useMemo(() => {
-    if (!Object.keys(filters).length) return data;
-    return data.filter(row => Object.entries(filters).every(([col, val]) => String(row[col]) === val));
+    return applyFilters(data, filters);
   }, [data, filters]);
 
   const filteredColumns = useMemo(() => {
-    if (!Object.keys(filters).length) return columns;
+    if (countActive(filters) === 0) return columns;
     return analyzeColumns(filteredData);
   }, [filteredData, columns, filters]);
 
+  const hasScatterCard = useMemo(() => dashboardItems.some(i => i.sourceKey?.startsWith('scatter:')), [dashboardItems]);
   const filteredSuggestions = useMemo(() => {
-    if (!Object.keys(filters).length) return suggestions;
+    if (countActive(filters) === 0) return suggestions;
+    // Only the Explore tab, the Filter tab preview, Quick Add and scatter cards read these;
+    // elsewhere the (stale) unfiltered list is never consumed, so skip the work.
+    if (!(activeTab === 'explore' || activeTab === 'filter' || quickAddOpen || hasScatterCard)) return suggestions;
     // Depends on filteredColumns (which already includes filteredData) — no double-compute
     return generateChartSuggestions(filteredData, filteredColumns);
-  }, [filteredData, filteredColumns, suggestions]);
+  }, [filteredData, filteredColumns, suggestions, filters, activeTab, quickAddOpen, hasScatterCard]);
 
   // ── PDF export (must come after filteredData is declared) ──
   const handleExportPdf = useCallback(async () => {
@@ -692,9 +696,9 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                   <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block" />
                   {columns.length} {t('cols')}
                 </span>
-                {Object.keys(filters).length > 0 && (
+                {countActive(filters) > 0 && (
                   <span className="stat-chip" style={{ background: 'hsl(var(--primary)/0.1)', color: 'hsl(var(--primary))' }}>
-                    {Object.keys(filters).length} {t('activeFilters')}
+                    {countActive(filters)} {t('activeFilters')}
                   </span>
                 )}
               </div>
@@ -788,9 +792,9 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                         {dashboardItems.length} {t('cards')}
                       </Badge>
                     )}
-                    {Object.keys(filters).length > 0 && (
+                    {countActive(filters) > 0 && (
                       <Badge variant="secondary" className="rounded-full border-0 bg-warning/10 px-2.5 py-1 text-[11px] text-warning-foreground font-medium">
-                        {Object.keys(filters).length} {t('activeFilters')}
+                        {countActive(filters)} {t('activeFilters')}
                       </Badge>
                     )}
                     <Button
@@ -905,7 +909,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                   <DataFilter columns={columns} data={data} filters={filters} onFiltersChange={setFilters} />
                 </Suspense>
               </Card>
-              {Object.keys(filters).length > 0 && filteredSuggestions.length > 0 && (
+              {countActive(filters) > 0 && filteredSuggestions.length > 0 && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {filteredSuggestions.slice(0, 4).map(s => (
                     <div key={s.id} className="min-h-[300px]">

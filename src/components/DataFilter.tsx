@@ -1,41 +1,41 @@
 import { useMemo } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { FilterControl } from '@/components/dashboard/FilterControl';
+import { countActive, filterKindFor, setFilter, type Filters } from '@/lib/filters';
 import { Filter, X } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 
 interface DataFilterProps {
   columns: ColumnMeta[];
-  data: Record<string, any>[];
-  filters: Record<string, string>;
-  onFiltersChange: (filters: Record<string, string>) => void;
+  data: Record<string, unknown>[];
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
 }
 
 export function DataFilter({ columns, data, filters, onFiltersChange }: DataFilterProps) {
   const { t } = useI18n();
 
-  const filterableColumns = useMemo(() =>
-    columns.filter(c => c.type === 'categorical' || c.type === 'range' || (c.type === 'text' && c.uniqueRatio < 0.5)),
-    [columns]
-  );
+  const filterable = useMemo(() => columns.filter(c => filterKindFor(c) !== null), [columns]);
 
+  // Candidates come from the unfiltered data, so picking one value doesn't hide the others.
   const columnValues = useMemo(() => {
     const result: Record<string, string[]> = {};
-    filterableColumns.forEach(col => {
+    filterable.forEach(col => {
+      if (filterKindFor(col) !== 'in') return;
       const vals = new Set<string>();
       data.forEach(row => {
         const v = row[col.name];
         if (v !== null && v !== undefined && v !== '') vals.add(String(v));
       });
-      result[col.name] = [...vals].sort();
+      result[col.name] = [...vals].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     });
     return result;
-  }, [data, filterableColumns]);
+  }, [data, filterable]);
 
-  const activeCount = Object.keys(filters).length;
+  const activeCount = countActive(filters);
 
-  if (!filterableColumns.length) {
+  if (!filterable.length) {
     return (
       <div className="text-center py-8 text-muted-foreground text-sm">
         {t('noFilters')}
@@ -63,29 +63,14 @@ export function DataFilter({ columns, data, filters, onFiltersChange }: DataFilt
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filterableColumns.map(col => (
-          <div key={col.name}>
-            <label className="text-xs text-muted-foreground mb-1 block truncate">{col.name}</label>
-            <Select
-              value={filters[col.name] || '__all'}
-              onValueChange={(v) => {
-                const next = { ...filters };
-                if (v === '__all') delete next[col.name];
-                else next[col.name] = v;
-                onFiltersChange(next);
-              }}
-            >
-              <SelectTrigger className="bg-secondary border-border text-sm h-9">
-                <SelectValue placeholder={t('selectValue')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all">{t('allValues')}</SelectItem>
-                {(columnValues[col.name] || []).map(v => (
-                  <SelectItem key={v} value={v}>{v}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        {filterable.map(col => (
+          <FilterControl
+            key={col.name}
+            column={col}
+            values={columnValues[col.name]}
+            filter={filters[col.name]}
+            onChange={f => onFiltersChange(setFilter(filters, col.name, f))}
+          />
         ))}
       </div>
     </div>
