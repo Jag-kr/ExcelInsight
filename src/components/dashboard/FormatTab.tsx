@@ -1,10 +1,9 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { colorsByCategory, getChartPalette, useChartPalette } from '@/lib/chart-themes';
-import { hslStringToRgb } from '@/lib/color-utils';
+import { colorsByCategory, getChartColor, useChartPalette } from '@/lib/chart-themes';
 import { useTheme } from '@/lib/theme';
 import { isDefaultFormat, patchFormat, type ChartFormat } from '@/lib/format';
 import { useDashboardT, type DashboardKey } from '@/lib/i18n/dashboard';
@@ -95,6 +94,17 @@ function ColorInput({ label, value, onCommit }: { label: string; value: string; 
 
 const hex = ([r, g, b]: number[]) => '#' + [r, g, b].map(n => n.toString(16).padStart(2, '0')).join('');
 
+/** The colour the chart really paints for series `i`: resolve the same --chart-N variable it uses
+    (palette data alone is wrong for the default palette, whose colours live in the stylesheet). */
+function paintedHex(i: number): string {
+  const probe = document.createElement('span');
+  probe.style.color = getChartColor(i);
+  document.body.appendChild(probe);
+  const rgb = (getComputedStyle(probe).color.match(/\d+/g) ?? ['0', '0', '0']).slice(0, 3).map(Number);
+  probe.remove();
+  return hex(rgb);
+}
+
 export interface FormatTabProps {
   item: DashboardItem;
   /** Series (data keys) the chart draws, derived from its spec; empty for KPI cards. */
@@ -113,7 +123,8 @@ export function FormatTab({ item, dataKeys = [], rowCount = 0, onChange }: Forma
   const set = (patch: Partial<ChartFormat>) => onChange(patchFormat(f, patch));
   const { theme } = useTheme();
   const { paletteId } = useChartPalette();
-  const palette = getChartPalette(paletteId).colors[theme];
+  // Re-resolve when the theme or palette changes (the CSS variables behind the swatch change with them).
+  const defaults = useMemo(() => dataKeys.map((_, i) => paintedHex(i)), [dataKeys, theme, paletteId]); // eslint-disable-line react-hooks/exhaustive-deps
   // Scatter and pie colour per point/slice, and a lone series on a short bar chart per category: no per-series colour there.
   const isBar = item.type === 'bar' || item.type === 'horizontalBar';
   const showSeriesColors = !kpi && dataKeys.length > 0
@@ -221,7 +232,7 @@ export function FormatTab({ item, dataKeys = [], rowCount = 0, onChange }: Forma
                 <span className="min-w-0 flex-1 truncate text-xs text-foreground" title={key}>{key}</span>
                 <ColorInput
                   label={`${d('seriesColor')}: ${key}`}
-                  value={custom ?? hex(hslStringToRgb(palette[i % palette.length]))}
+                  value={custom ?? defaults[i]}
                   onCommit={c => setSeriesColor(key, c)}
                 />
                 <Button
