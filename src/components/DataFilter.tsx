@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { ColumnMeta } from '@/lib/data-analyzer';
 import { Button } from '@/components/ui/button';
 import { FilterControl } from '@/components/dashboard/FilterControl';
-import { countActive, filterKindFor, setFilter, type Filters } from '@/lib/filters';
+import { countActive, distinctValues, filterKindFor, setFilter, type Filters } from '@/lib/filters';
 import { Filter, X } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 
@@ -23,12 +23,7 @@ export function DataFilter({ columns, data, filters, onFiltersChange }: DataFilt
     const result: Record<string, string[]> = {};
     filterable.forEach(col => {
       if (filterKindFor(col) !== 'in') return;
-      const vals = new Set<string>();
-      data.forEach(row => {
-        const v = row[col.name];
-        if (v !== null && v !== undefined && v !== '') vals.add(String(v));
-      });
-      result[col.name] = [...vals].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      result[col.name] = distinctValues(data, col.name);
     });
     return result;
   }, [data, filterable]);

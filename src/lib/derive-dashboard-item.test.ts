@@ -537,3 +537,56 @@ describe('sourceKey cards derive from their recipe, not the suggestion list', ()
     expect(live.data).toEqual([{ name: 'North', count: subset.length }]);
   });
 });
+
+describe('filters on a single visual', () => {
+  const columns = analyzeColumns(DATA);
+  const derive = (items: DashboardItem[], rows = DATA) => deriveDashboardItems(items, [], columns, rows, t);
+  const chart = (extra: Partial<DashboardItem> = {}): DashboardItem => ({
+    id: 'c', title: 'Sales by Region', type: 'bar', data: [], dataKeys: ['value'],
+    spec: { xCol: 'Region', yCol: 'Sales', aggregation: 'sum' }, ...extra,
+  });
+  const kpi = (extra: Partial<DashboardItem> = {}): DashboardItem => ({
+    id: 'k', title: 'Sales', type: 'bar', data: [], dataKeys: [], displayAs: 'kpi', kpiSpec: { column: 'Sales', agg: 'sum' }, ...extra,
+  });
+  const names = (i: DashboardItem) => i.data.map((r: { name: string }) => r.name).sort();
+  const rep = (...values: string[]) => ({ Rep: { kind: 'in' as const, values } });
+
+  it('a chart spec card aggregates only the rows its filters match', () => {
+    const [c] = derive([chart({ filters: rep('Ann') })]);
+    expect(c.data).toEqual([{ name: 'South', value: 250 }, { name: 'North', value: 100 }]);
+  });
+
+  it('a KPI card recomputes over its own filters', () => {
+    const [all, some] = derive([kpi(), kpi({ id: 'k2', filters: { Sales: { kind: 'range', min: 100 } } })]);
+    expect(all.kpiValue).toBe(computeKpiValue(DATA, { column: 'Sales', agg: 'sum' }));
+    expect(some.kpiValue).toBe(computeKpiValue(DATA.filter(r => r.Sales >= 100), { column: 'Sales', agg: 'sum' }));
+    expect(some.kpiValue).not.toBe(all.kpiValue);
+  });
+
+  it('a sourceKey recipe card honours its filters', () => {
+    const card: DashboardItem = { id: 'd', title: 'Rep', type: 'bar', data: [], dataKeys: ['count'], sourceKey: 'dist:Rep' };
+    const [plain, filtered] = derive([card, { ...card, id: 'd2', filters: { Region: { kind: 'in', values: ['East'] } } }]);
+    expect(names(plain)).toEqual(['Ann', 'Bob', 'Cy']);
+    expect(names(filtered)).toEqual(['Bob', 'Cy']);
+    expect(filtered.data.every((r: { count: number }) => r.count === 1)).toBe(true);
+  });
+
+  it('does not leak between cards', () => {
+    const [a, b] = derive([chart({ filters: rep('Cy') }), chart({ id: 'c2' })]);
+    expect(names(a)).toEqual(['East', 'South']);
+    expect(names(b)).toEqual(['East', 'North', 'South']);
+  });
+
+  it('combines with the page-filtered rows (AND)', () => {
+    const page = DATA.filter(r => r.Region !== 'East');
+    const [c] = derive([chart({ filters: rep('Bob', 'Cy') })], page);
+    expect(c.data).toEqual([{ name: 'South', value: 300 }, { name: 'North', value: 80 }]);
+  });
+
+  it('is unchanged without filters, and ignores an inactive one', () => {
+    const [plain, inactive] = derive([chart(), chart({ filters: rep() })]);
+    expect(inactive.data).toEqual(plain.data);
+    expect(plain.data).toHaveLength(3);
+    expect(derive([kpi({ filters: rep() })])[0].kpiValue).toBe(derive([kpi()])[0].kpiValue);
+  });
+});
