@@ -11,7 +11,7 @@ import { ChartType, chartTypeOptions, getChartColor, getChartColorVar } from '@/
 import { TopValueBar } from './TopValueBar';
 import {
   Trash2, Maximize2, Minimize2, Square, Repeat2, BarChart3, AlertTriangle,
-  Copy, MoreHorizontal, RectangleHorizontal, Rows3, LineChart as LineChartIcon, Pencil,
+  Copy, Filter as FilterIcon, MoreHorizontal, RectangleHorizontal, Rows3, LineChart as LineChartIcon, Pencil,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n';
@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
 import { repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 import type { ChartFormat } from '@/lib/format';
+import { countActive, type Filters } from '@/lib/filters';
 
 export interface DashboardItem {
   id: string;
@@ -37,6 +38,8 @@ export interface DashboardItem {
   spec?: ManualChartSpec | ChartSpec;
   /** Per-card display options; absent = render exactly as before. */
   format?: ChartFormat;
+  /** Filters on this visual only, applied on top of the page filters (chart recipes and KPI cards). */
+  filters?: Filters;
   displayAs?: 'chart' | 'table' | 'insight' | 'kpi';
   tableColumns?: string[];
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -314,6 +317,7 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
   const renameTitle = (v: string) => onUpdateItem({ title: v });
 
   const SizeIcon = sizeIcons[size];
+  const filterCount = item.displayAs === 'insight' || item.displayAs === 'table' ? 0 : countActive(item.filters ?? {});
 
   return (
     <div
@@ -341,105 +345,115 @@ function SortableCard({ item, index, selected, onSelect, onRemove, onUpdateItem,
         }}
       />
 
-      {/* ─── Action pill (top-right, appears on hover) ─── */}
-      <div
-        data-pdf-hide
-        className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity duration-150 pointer-events-none"
-      >
-        {/* Size badge */}
-        <span className="pointer-events-auto inline-flex items-center gap-0.5 rounded-lg bg-background/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/60 shadow-sm">
-          <SizeIcon className="h-2.5 w-2.5" />
-          {sizeFractionLabel[size]}
-        </span>
+      {/* ─── Top-right: filter indicator (always visible) beside the action pill (appears on hover) ─── */}
+      <div data-pdf-hide className="absolute top-2 right-2 z-10 flex items-center gap-1 pointer-events-none">
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity duration-150">
+          {/* Size badge */}
+          <span className="pointer-events-auto inline-flex items-center gap-0.5 rounded-lg bg-background/90 backdrop-blur-sm px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/60 shadow-sm">
+            <SizeIcon className="h-2.5 w-2.5" />
+            {sizeFractionLabel[size]}
+          </span>
 
-        {/* Actions dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="pointer-events-auto h-6 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border/60 hover:bg-secondary shadow-sm rounded-lg"
-              aria-label={t('moreActions')}
-            >
-              <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44 rounded-xl">
-            {/* Resize submenu */}
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="text-xs rounded-lg">
-                <RectangleHorizontal className="h-3.5 w-3.5 mr-2" />
-                {t('resize')}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="rounded-xl">
-                {([
-                  { v: 'xs' as const, Icon: Rows3, label: t('tile'), fraction: '¼' },
-                  { v: 'sm' as const, Icon: Minimize2, label: t('small'), fraction: '⅓' },
-                  { v: 'md' as const, Icon: Square, label: t('medium'), fraction: '½' },
-                  { v: 'lg' as const, Icon: Maximize2, label: t('large'), fraction: 'Full' },
-                ]).map(({ v, Icon, label, fraction }) => (
-                  <DropdownMenuItem
-                    key={v}
-                    onClick={() => setSize(v)}
-                    className="text-xs rounded-lg"
-                  >
-                    <Icon className="h-3.5 w-3.5 mr-2" />
-                    {label}
-                    <span className="ml-auto text-[10px] text-muted-foreground">{fraction}</span>
-                    {size === v && <span className="ml-1 text-primary">✓</span>}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-
-            {/* Chart type lives here rather than as a pill row in the card
-                header, which cost every card a second header line. */}
-            {(!item.displayAs || item.displayAs === 'chart') && (
+          {/* Actions dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="pointer-events-auto h-6 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border/60 hover:bg-secondary shadow-sm rounded-lg"
+                aria-label={t('moreActions')}
+              >
+                <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44 rounded-xl">
+              {/* Resize submenu */}
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="text-xs rounded-lg">
-                  <LineChartIcon className="h-3.5 w-3.5 mr-2" />
-                  {t('chartType')}
+                  <RectangleHorizontal className="h-3.5 w-3.5 mr-2" />
+                  {t('resize')}
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="rounded-xl">
-                  {chartTypeOptions.map(opt => (
+                  {([
+                    { v: 'xs' as const, Icon: Rows3, label: t('tile'), fraction: '¼' },
+                    { v: 'sm' as const, Icon: Minimize2, label: t('small'), fraction: '⅓' },
+                    { v: 'md' as const, Icon: Square, label: t('medium'), fraction: '½' },
+                    { v: 'lg' as const, Icon: Maximize2, label: t('large'), fraction: 'Full' },
+                  ]).map(({ v, Icon, label, fraction }) => (
                     <DropdownMenuItem
-                      key={opt.value}
-                      onClick={() => onUpdateItem({ type: opt.value })}
+                      key={v}
+                      onClick={() => setSize(v)}
                       className="text-xs rounded-lg"
                     >
-                      {opt.label}
-                      {item.type === opt.value && <span className="ml-auto text-primary">✓</span>}
+                      <Icon className="h-3.5 w-3.5 mr-2" />
+                      {label}
+                      <span className="ml-auto text-[10px] text-muted-foreground">{fraction}</span>
+                      {size === v && <span className="ml-1 text-primary">✓</span>}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
-            )}
 
-            {onEdit && isEditable(item) && (
-              <DropdownMenuItem onClick={onEdit} className="text-xs rounded-lg">
-                <Pencil className="h-3.5 w-3.5 mr-2" />
-                {isEditableChart(item) ? d('editChart') : d('editCard')}
+              {/* Chart type lives here rather than as a pill row in the card
+                  header, which cost every card a second header line. */}
+              {(!item.displayAs || item.displayAs === 'chart') && (
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="text-xs rounded-lg">
+                    <LineChartIcon className="h-3.5 w-3.5 mr-2" />
+                    {t('chartType')}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="rounded-xl">
+                    {chartTypeOptions.map(opt => (
+                      <DropdownMenuItem
+                        key={opt.value}
+                        onClick={() => onUpdateItem({ type: opt.value })}
+                        className="text-xs rounded-lg"
+                      >
+                        {opt.label}
+                        {item.type === opt.value && <span className="ml-auto text-primary">✓</span>}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              )}
+
+              {onEdit && isEditable(item) && (
+                <DropdownMenuItem onClick={onEdit} className="text-xs rounded-lg">
+                  <Pencil className="h-3.5 w-3.5 mr-2" />
+                  {isEditableChart(item) ? d('editChart') : d('editCard')}
+                </DropdownMenuItem>
+              )}
+
+              {onDuplicate && (
+                <DropdownMenuItem onClick={onDuplicate} className="text-xs rounded-lg">
+                  <Copy className="h-3.5 w-3.5 mr-2" />
+                  {t('duplicate')}
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onSelect={() => onRemove()}
+                className="text-xs text-destructive focus:text-destructive rounded-lg"
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-2" />
+                {t('remove')}
               </DropdownMenuItem>
-            )}
-
-            {onDuplicate && (
-              <DropdownMenuItem onClick={onDuplicate} className="text-xs rounded-lg">
-                <Copy className="h-3.5 w-3.5 mr-2" />
-                {t('duplicate')}
-              </DropdownMenuItem>
-            )}
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem
-              onSelect={() => onRemove()}
-              className="text-xs text-destructive focus:text-destructive rounded-lg"
-            >
-              <Trash2 className="h-3.5 w-3.5 mr-2" />
-              {t('remove')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        {/* Chart and KPI cards only: other cards never read item.filters. */}
+        {filterCount > 0 && (
+          <span
+            role="img"
+            className="pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-lg bg-background/90 text-primary border border-border/60 shadow-sm"
+            title={`${filterCount} ${d('visualFiltered')}`}
+            aria-label={`${filterCount} ${d('visualFiltered')}`}
+          >
+            <FilterIcon className="h-3.5 w-3.5" />
+          </span>
+        )}
       </div>
 
       {item.displayAs === 'kpi' ? (

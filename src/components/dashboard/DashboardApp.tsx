@@ -458,6 +458,17 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     }));
   }, [selected, setDashboardItems]);
 
+  const handleChangeFilters = useCallback((filters: Filters | undefined) => {
+    if (!selected) return;
+    const id = selected.item.id;
+    setDashboardItems(prev => prev.map(i => {
+      if (i.id !== id) return i;
+      const next = { ...i };
+      if (filters && countActive(filters)) next.filters = filters; else delete next.filters;
+      return next;
+    }));
+  }, [selected, setDashboardItems]);
+
   const handleChangeRepeat = useCallback((column: string) => {
     if (!selected) return;
     const r = retargetRepeat(selected.item, column, dashboardItems.map(i => i.id), t);
@@ -536,6 +547,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       onChangeKpi={handleChangeKpi}
       onChangeRepeatColumn={handleChangeRepeat}
       onChangeFormat={handleChangeFormat}
+      onChangeFilters={handleChangeFilters}
       onDeselect={() => selectCard(null)}
       onMergeColumns={() => setMergeOpen(true)}
     />

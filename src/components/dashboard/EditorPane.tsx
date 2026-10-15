@@ -11,7 +11,9 @@ import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { ManualChartBuilder } from '../ManualChartBuilder';
 import type { DashboardItem } from '../DashboardGrid';
+import type { Filters } from '@/lib/filters';
 import { FormatTab } from './FormatTab';
+import { VisualFilters } from './VisualFilters';
 
 const FIELD_ICONS: Record<ColumnType, LucideIcon> = {
   date: Calendar, numeric: Hash, range: Hash, categorical: Tag, text: Type, id: KeyRound,
@@ -38,16 +40,18 @@ export interface EditorPaneProps {
   onChangeRepeatColumn?: (column: string) => void;
   /** Live edits to the selected chart or KPI card's formatting; undefined clears it. */
   onChangeFormat?: (format: ChartFormat | undefined) => void;
+  /** Live edits to the selected chart or KPI card's own filters; undefined clears them. */
+  onChangeFilters?: (filters: Filters | undefined) => void;
   onDeselect: () => void;
   /** Opens the column merger; the button is hidden when omitted. */
   onMergeColumns?: () => void;
 }
 
-export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onDeselect, onMergeColumns }: EditorPaneProps) {
+export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onChangeFilters, onDeselect, onMergeColumns }: EditorPaneProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [query, setQuery] = useState('');
-  const [tab, setTab] = useState<'data' | 'format'>('data');
+  const [tab, setTab] = useState<'data' | 'format' | 'filters'>('data');
 
   const item = selected?.item;
   const spec = selected?.spec ?? null;
@@ -59,8 +63,12 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
   // Only chart recipes and KPI cards have formatting; any other selection falls back to Data.
   // The stored item has no series list: re-derive it from the spec, as the chart does.
   const agg = useMemo(() => (spec ? aggregateChart(data, spec) : undefined), [data, spec]);
-  const canFormat = !!item && !!onChangeFormat && (!!spec || !!kpi);
+  const editable = !!item && (!!spec || !!kpi);
+  const canFormat = editable && !!onChangeFormat;
+  const canFilter = editable && !!onChangeFilters;
   const showFormat = canFormat && tab === 'format';
+  const showFilters = canFilter && tab === 'filters';
+  const showData = !showFormat && !showFilters;
 
   const onField = (col: ColumnMeta) => {
     if (!item) return onAddField(col);
@@ -84,17 +92,21 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
         )}
       </div>
 
-      {canFormat && (
+      {(canFormat || canFilter) && (
         <Tabs value={tab} onValueChange={v => setTab(v as typeof tab)}>
-          <TabsList className="grid h-8 w-full grid-cols-2">
-            <TabsTrigger value="data" className="py-1 text-xs">{t('data')}</TabsTrigger>
-            <TabsTrigger value="format" className="py-1 text-xs">{d('format')}</TabsTrigger>
+          <TabsList className={`grid h-8 w-full ${canFormat && canFilter ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            <TabsTrigger value="data" className="px-1 py-1 text-xs">{t('data')}</TabsTrigger>
+            {canFormat && <TabsTrigger value="format" className="px-1 py-1 text-xs">{d('format')}</TabsTrigger>}
+            {canFilter && <TabsTrigger value="filters" className="px-1 py-1 text-xs">{d('filtersTab')}</TabsTrigger>}
           </TabsList>
         </Tabs>
       )}
 
       {showFormat && item && onChangeFormat && <FormatTab item={item} dataKeys={agg?.dataKeys} rowCount={agg?.data.length} onChange={onChangeFormat} />}
-      {!showFormat && item && spec && (
+      {showFilters && item && onChangeFilters && (
+        <VisualFilters key={item.id} columns={columns} data={data} filters={item.filters ?? {}} onChange={onChangeFilters} />
+      )}
+      {showData && item && spec && (
         <ManualChartBuilder
           key={item.id}
           data={data}
@@ -103,7 +115,7 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
           onChange={onChange}
         />
       )}
-      {!showFormat && kpi && onChangeKpi && (
+      {showData && kpi && onChangeKpi && (
         <div className="space-y-3">
           <div>
             <label className={LABEL}>{d('column')}</label>
@@ -129,7 +141,7 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
           </div>
         </div>
       )}
-      {!showFormat && repeatCol && onChangeRepeatColumn && (
+      {showData && repeatCol && onChangeRepeatColumn && (
         <div>
           <label className={LABEL}>{d('column')}</label>
           <Select value={repeatCol} onValueChange={onChangeRepeatColumn}>

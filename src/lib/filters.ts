@@ -93,6 +93,13 @@ export function setFilter(filters: Filters, column: string, f: Filter | null): F
   return f && isActive(f) ? { ...rest, [column]: f } : rest;
 }
 
+/** Distinct non-blank values of a column as strings, sorted numeric-aware: the candidates of an `in` filter. */
+export function distinctValues(data: Record<string, unknown>[], column: string): string[] {
+  const vals = new Set<string>();
+  for (const row of data) if (!blank(row[column])) vals.add(String(row[column]));
+  return [...vals].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+}
+
 export function filterKindFor(col: ColumnMeta): Filter['kind'] | null {
   switch (col.type) {
     case 'date': return 'date';

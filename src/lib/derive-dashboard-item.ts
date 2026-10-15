@@ -4,6 +4,7 @@ export type { DateGrain };
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
 import { numberFormatter, type ChartFormat } from '@/lib/format';
+import { applyFilters } from '@/lib/filters';
 
 /**
  * Card data is derived from a recipe + the currently filtered dataset, never
@@ -349,7 +350,7 @@ function deriveDashboardItem(
   t: TFn
 ): DashboardItem {
   if (item.displayAs === 'kpi') {
-    return { ...item, kpiValue: computeKpiValue(data, item.kpiSpec, item.format) };
+    return { ...item, kpiValue: computeKpiValue(applyFilters(data, item.filters ?? {}), item.kpiSpec, item.format) };
   }
 
   if (item.displayAs === 'insight') {
@@ -370,8 +371,13 @@ function deriveDashboardItem(
     return rebuilt ? { ...item, data: rebuilt.data, tableColumns: rebuilt.columns } : item;
   }
 
+  /* Filters on this visual: KPI, spec and recipe cards only. Insight and table
+     cards are not filterable, and a scatter sourceKey (no recipe) reads its
+     precomputed suggestion, so none of those honour item.filters. */
+  const scoped = applyFilters(data, item.filters ?? {});
+
   if (item.spec) {
-    const { data: d, dataKeys } = aggregateChart(data, toChartSpec(item.spec, item.type));
+    const { data: d, dataKeys } = aggregateChart(scoped, toChartSpec(item.spec, item.type));
     return { ...item, data: d, dataKeys };
   }
 
@@ -381,7 +387,7 @@ function deriveDashboardItem(
       /* The suggestion analyzer skipped blank category cells for these kinds, while
          aggregateChart would add an "Unknown" bar: keep the charts as they were. */
       const skipBlanks = /^(dist|pie|rdist|top):/.test(item.sourceKey);
-      const rows = skipBlanks ? data.filter(r => { const v = r[recipe.dimension]; return v !== null && v !== undefined && v !== ''; }) : data;
+      const rows = skipBlanks ? scoped.filter(r => { const v = r[recipe.dimension]; return v !== null && v !== undefined && v !== ''; }) : scoped;
       const { data: d, dataKeys } = aggregateChart(rows, recipe);
       /* Keep the card's own value key (agg suggestions use total/average, the
          recipe says value) so saved series colours and formats still match. */

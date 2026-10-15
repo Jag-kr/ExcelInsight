@@ -69,6 +69,11 @@ const en = {
   from: 'From',
   to: 'To',
   refineSearch: 'Showing the first 200 matches. Refine your search.',
+  filtersTab: 'Filters',
+  filtersOnVisual: 'Filters on this visual',
+  addFilter: 'Add filter',
+  removeFilter: 'Remove filter on',
+  visualFiltered: 'filter(s) on this visual',
 } as const;
 
 export type DashboardKey = keyof typeof en;
@@ -135,6 +140,11 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     from: 'से',
     to: 'तक',
     refineSearch: 'पहले 200 परिणाम दिख रहे हैं। खोज सीमित करें।',
+    filtersTab: 'फ़िल्टर',
+    filtersOnVisual: 'इस विज़ुअल पर फ़िल्टर',
+    addFilter: 'फ़िल्टर जोड़ें',
+    removeFilter: 'फ़िल्टर हटाएँ:',
+    visualFiltered: 'फ़िल्टर इस विज़ुअल पर',
   },
   es: {
     values: 'Valores',
@@ -196,6 +206,11 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     from: 'Desde',
     to: 'Hasta',
     refineSearch: 'Se muestran las primeras 200 coincidencias. Afina la búsqueda.',
+    filtersTab: 'Filtros',
+    filtersOnVisual: 'Filtros en este gráfico',
+    addFilter: 'Añadir filtro',
+    removeFilter: 'Quitar filtro de',
+    visualFiltered: 'filtro(s) en este gráfico',
   },
   zh: {
     values: '数值',
@@ -257,6 +272,11 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     from: '从',
     to: '至',
     refineSearch: '仅显示前 200 个匹配项，请缩小搜索范围。',
+    filtersTab: '筛选',
+    filtersOnVisual: '此图表的筛选',
+    addFilter: '添加筛选',
+    removeFilter: '移除筛选：',
+    visualFiltered: '个筛选应用于此图表',
   },
   fr: {
     values: 'Valeurs',
@@ -318,6 +338,11 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     from: 'Du',
     to: 'Au',
     refineSearch: 'Les 200 premières correspondances sont affichées. Affinez la recherche.',
+    filtersTab: 'Filtres',
+    filtersOnVisual: 'Filtres sur ce visuel',
+    addFilter: 'Ajouter un filtre',
+    removeFilter: 'Retirer le filtre sur',
+    visualFiltered: 'filtre(s) sur ce visuel',
   },
   de: {
     values: 'Werte',
@@ -379,6 +404,11 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     from: 'Von',
     to: 'Bis',
     refineSearch: 'Die ersten 200 Treffer werden angezeigt. Suche verfeinern.',
+    filtersTab: 'Filter',
+    filtersOnVisual: 'Filter für dieses Visual',
+    addFilter: 'Filter hinzufügen',
+    removeFilter: 'Filter entfernen:',
+    visualFiltered: 'Filter auf diesem Visual',
   },
 };
 
