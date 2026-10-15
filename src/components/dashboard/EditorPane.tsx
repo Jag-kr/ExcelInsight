@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Calendar, Hash, KeyRound, Merge, Tag, Type, X, type LucideIcon } from 'lucide-react';
+import { Calendar, Hash, KeyRound, Merge, SlidersHorizontal, Tag, Type, X, type LucideIcon } from 'lucide-react';
 import type { ColumnMeta, ColumnType } from '@/lib/data-analyzer';
 import { addFieldToSpec, aggKey, aggregateChart, aggsForColumn, normalizeAgg, repeatColumnOf, specForField, specTitle, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { ManualChartBuilder } from '../ManualChartBuilder';
 import type { DashboardItem } from '../DashboardGrid';
-import type { Filters } from '@/lib/filters';
+import { filterKindFor, type Filters } from '@/lib/filters';
 import { FormatTab } from './FormatTab';
 import { VisualFilters } from './VisualFilters';
 
@@ -45,9 +45,11 @@ export interface EditorPaneProps {
   onDeselect: () => void;
   /** Opens the column merger; the button is hidden when omitted. */
   onMergeColumns?: () => void;
+  /** Adds (or selects) a slicer card for the column; the per-field button is hidden when omitted. */
+  onAddSlicer?: (col: ColumnMeta) => void;
 }
 
-export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onChangeFilters, onDeselect, onMergeColumns }: EditorPaneProps) {
+export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onChangeFilters, onDeselect, onMergeColumns, onAddSlicer }: EditorPaneProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [query, setQuery] = useState('');
@@ -153,7 +155,7 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
         </div>
       )}
       {item && !spec && !(kpi && onChangeKpi) && !(repeatCol && onChangeRepeatColumn) && (
-        <p className="text-xs text-muted-foreground">{d('noEditableSettings')}</p>
+        <p className="text-xs text-muted-foreground">{item.displayAs === 'slicer' ? d('slicerHint') : d('noEditableSettings')}</p>
       )}
       {!item && <p className="text-xs text-muted-foreground">{d('clickFieldToAdd')}</p>}
 
@@ -179,17 +181,29 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
             const Icon = FIELD_ICONS[col.type];
             const disabled = !item && !specForField(col);
             return (
-              <li key={col.name}>
+              <li key={col.name} className="flex items-center gap-0.5">
                 <button
                   type="button"
                   title={col.name}
                   disabled={disabled}
                   onClick={() => onField(col)}
-                  className="flex min-h-8 w-full items-center gap-2 rounded-md px-2 text-left text-xs text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:text-muted-foreground disabled:opacity-60 disabled:hover:bg-transparent"
+                  className="flex min-h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 text-left text-xs text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:text-muted-foreground disabled:opacity-60 disabled:hover:bg-transparent"
                 >
                   <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <span className="truncate">{col.name}</span>
                 </button>
+                {onAddSlicer && filterKindFor(col) !== null && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 text-muted-foreground"
+                    aria-label={`${d('addSlicer')}: ${col.name}`}
+                    title={`${d('addSlicer')}: ${col.name}`}
+                    onClick={() => onAddSlicer(col)}
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                  </Button>
+                )}
               </li>
             );
           })}

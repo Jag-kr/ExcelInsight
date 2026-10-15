@@ -25,7 +25,8 @@ import { ChartErrorBoundary } from './ChartErrorBoundary';
 import { crossDimensionOf, repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 import type { ColumnMeta } from '@/lib/data-analyzer';
 import type { ChartFormat } from '@/lib/format';
-import { countActive, type Filters } from '@/lib/filters';
+import { countActive, type Filter, type Filters } from '@/lib/filters';
+import { FilterControl } from './dashboard/FilterControl';
 
 export interface DashboardItem {
   id: string;
@@ -41,7 +42,9 @@ export interface DashboardItem {
   format?: ChartFormat;
   /** Filters on this visual only, applied on top of the page filters (chart recipes and KPI cards). */
   filters?: Filters;
-  displayAs?: 'chart' | 'table' | 'insight' | 'kpi';
+  displayAs?: 'chart' | 'table' | 'insight' | 'kpi' | 'slicer';
+  /** Slicer cards: the column whose page filter this card edits. */
+  slicerColumn?: string;
   tableColumns?: string[];
   size?: 'xs' | 'sm' | 'md' | 'lg';
   kpiSpec?: KpiSpec;
@@ -62,6 +65,11 @@ interface DashboardGridProps {
   /** Cross-filtering: a bar/slice of a card with a cross dimension was clicked. `columns` resolves two-column sourceKeys. */
   onChartSelect?: (itemId: string, label: string) => void;
   columns?: ColumnMeta[];
+  /** Slicer cards read and edit these page filters. Removing a slicer does not clear its filter: the Filter tab still shows it. */
+  pageFilters?: Filters;
+  onPageFilterChange?: (column: string, filter: Filter | null) => void;
+  /** Distinct values per column, for the `in` slicers. */
+  slicerValues?: Record<string, string[]>;
   emptyAction?: React.ReactNode;
 }
 
@@ -286,6 +294,34 @@ const sizeIcons = {
   lg: Maximize2,
 };
 
+function DashboardSlicerCard({ item, column, values, filter, onChange }: {
+  item: DashboardItem;
+  column?: ColumnMeta;
+  values?: string[];
+  filter?: Filter;
+  onChange: (f: Filter | null) => void;
+}) {
+  const d = useDashboardT();
+  return (
+    <Card className="dashboard-panel animate-fade-in h-full flex flex-col gap-2 p-3 sm:p-4">
+      {/* pr-16 keeps the title clear of the hover action pill. */}
+      <div className="flex min-w-0 items-center gap-1.5 pr-16 text-xs sm:text-sm font-semibold text-foreground">
+        <FilterIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="truncate">{item.title}</span>
+      </div>
+      {column ? (
+        // The header already names the column: keep the control's own label for screen readers only.
+        // stopPropagation: clicks in the control's portalled popover must not select the card.
+        <div onClick={e => e.stopPropagation()} className="[&_legend]:sr-only [&>div>span:first-child]:sr-only">
+          <FilterControl column={column} values={values} filter={filter} onChange={onChange} />
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">{d('slicerColumnMissing')}</p>
+      )}
+    </Card>
+  );
+}
+
 /* Scatter suggestions plot raw points, so there is no field-well recipe to edit. */
 const isEditableChart = (item: DashboardItem) =>
   (!item.displayAs || item.displayAs === 'chart') &&
@@ -294,7 +330,7 @@ const isEditableChart = (item: DashboardItem) =>
 /* The pane also edits KPI and repeating-value cards. */
 const isEditable = (item: DashboardItem) => isEditableChart(item) || item.displayAs === 'kpi' || repeatColumnOf(item) !== null;
 
-function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove, onUpdateItem, onDuplicate, onEdit }: {
+function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove, onUpdateItem, onDuplicate, onEdit, slicer }: {
   item: DashboardItem;
   index: number;
   selected?: boolean;
@@ -304,6 +340,8 @@ function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove
   onUpdateItem: (updates: Partial<DashboardItem>) => void;
   onDuplicate?: () => void;
   onEdit?: () => void;
+  /** Pre-bound slicer body; only read when item.displayAs is 'slicer'. */
+  slicer?: React.ReactNode;
 }) {
   const { t } = useI18n();
   const d = useDashboardT();
@@ -461,7 +499,9 @@ function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove
         )}
       </div>
 
-      {item.displayAs === 'kpi' ? (
+      {item.displayAs === 'slicer' ? (
+        <ChartErrorBoundary title={item.title}>{slicer}</ChartErrorBoundary>
+      ) : item.displayAs === 'kpi' ? (
         <ChartErrorBoundary title={item.title}>
           <DashboardKpiCard item={item} index={index} onRename={renameTitle} />
         </ChartErrorBoundary>
@@ -497,7 +537,7 @@ function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove
   );
 }
 
-export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, onChartSelect, columns, emptyAction }: DashboardGridProps) {
+export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, onChartSelect, columns, pageFilters, onPageFilterChange, slicerValues, emptyAction }: DashboardGridProps) {
   const { t } = useI18n();
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -565,6 +605,19 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
     );
   }
 
+  const slicerFor = (item: DashboardItem) => {
+    const name = item.slicerColumn ?? '';
+    return (
+      <DashboardSlicerCard
+        item={item}
+        column={columns?.find(c => c.name === name)}
+        values={slicerValues?.[name]}
+        filter={pageFilters?.[name]}
+        onChange={f => onPageFilterChange?.(name, f)}
+      />
+    );
+  };
+
   const activeItem = activeId ? items.find(i => i.id === activeId) : null;
 
   return (
@@ -589,6 +642,7 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
               onUpdateItem={(updates) => onUpdateItem(item.id, updates)}
               onDuplicate={onDuplicate ? () => onDuplicate(item.id) : undefined}
               onEdit={onEdit ? () => onEdit(item.id) : undefined}
+              slicer={item.displayAs === 'slicer' ? slicerFor(item) : undefined}
             />
           ))}
         </div>
@@ -601,7 +655,9 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
       }}>
         {activeItem ? (
           <div className="dashboard-panel opacity-80 scale-[1.02] pointer-events-none">
-            {activeItem.displayAs === 'kpi' ? (
+            {activeItem.displayAs === 'slicer' ? (
+              slicerFor(activeItem)
+            ) : activeItem.displayAs === 'kpi' ? (
               <DashboardKpiCard item={activeItem} index={items.findIndex(i => i.id === activeItem.id)} onRename={() => {}} />
             ) : activeItem.displayAs === 'insight' ? (
               <DashboardInsightCard item={activeItem} onRename={() => {}} />
