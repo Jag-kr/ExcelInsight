@@ -68,8 +68,12 @@ describe('dashboard cards follow the active filters', () => {
     expect(narrowed.suggestions.some(s => s.key === 'dist:Region')).toBe(false);
     const stale = items.find(i => i.sourceKey === 'dist:Region')!;
     expect(stale).toBeDefined();
+    // dist:Region has a recipe, so it is re-aggregated (one bar) rather than looked up.
     const live = deriveDashboardItems([stale], narrowed.suggestions, narrowed.columns, narrowed.data, t);
-    expect(live[0].data).toEqual([]);
+    expect(live[0].data).toEqual([{ name: 'North', count: 2 }]);
+    // A key with no recipe (scatter) is still looked up in the suggestions, and empties when absent.
+    const scatter = { ...stale, sourceKey: 'scatter:Sales:Gone' };
+    expect(deriveDashboardItems([scatter], narrowed.suggestions, narrowed.columns, narrowed.data, t)[0].data).toEqual([]);
   });
 
   it('rebuilds custom charts from their spec', () => {
@@ -460,5 +464,76 @@ describe('KPI and repeating-value card editing', () => {
     expect(retargetRepeat(table, 'Rep', [], t)).toEqual({ patch: { title: 'ReprepeatingValuesSuffix' }, newId: 'insight-repeat-table-Rep-copy-9' });
     expect(retargetRepeat(table, 'Rep', ['insight-repeat-table-Rep-copy-9'], t)).toBeNull();
     expect(repeatColumnOf(rep('insight-stats-table', { displayAs: 'table' }))).toBeNull();
+  });
+});
+
+describe('sourceKey cards derive from their recipe, not the suggestion list', () => {
+  // Deterministic pseudo-random, so failures are reproducible.
+  let seed = 7;
+  const rnd = (n: number) => (seed = (seed * 48271) % 2147483647) % n;
+  const regions = ['North', 'South', 'East', 'West'];
+  const channels = ['Web', 'Email', 'Phone', 'Retail', 'Partner', 'Fax', 'Chat', 'Mail', 'Kiosk', 'Event', 'Print', 'Radio'];
+  const stores = Array.from({ length: 18 }, (_, i) => `Store ${String.fromCharCode(65 + i)}`); // > 15: dist is cut to 15, agg is skipped
+  const ROWS = Array.from({ length: 90 }, (_, i) => ({
+    OrderId: 1000 + i,
+    Region: regions[rnd(4)],
+    Channel: channels[rnd(12)],
+    Store: stores[rnd(18)],
+    Revenue: rnd(100000) / 100,
+    Units: 1 + rnd(40),
+    Rating: 1 + rnd(5),
+    OrderDate: `2025-${String(1 + (i % 8)).padStart(2, '0')}-${String(1 + rnd(27)).padStart(2, '0')}`,
+  }));
+
+  const asCard = (s: ReturnType<typeof generateChartSuggestions>[number]): DashboardItem =>
+    ({ id: s.id, title: s.title, type: s.type, data: s.data, dataKeys: s.dataKeys, xKey: s.xKey, sourceKey: s.key });
+
+  /** Derive every sourceKey card from `rows` and compare with the suggestions regenerated from the same rows. */
+  const check = (rows: typeof ROWS) => {
+    const columns = analyzeColumns(rows);
+    const suggestions = generateChartSuggestions(rows, columns);
+    const kinds = new Set(suggestions.map(s => s.key.split(':')[0]));
+    for (const s of suggestions) {
+      // A card built from the unfiltered suggestion, stale data and all.
+      const [live] = deriveDashboardItems([{ ...asCard(s), data: [] }], [], columns, rows, t);
+      if (s.key.startsWith('scatter:')) {
+        expect(live.data, s.key).toEqual([]); // no recipe: still looked up in the (empty) list
+        continue;
+      }
+      expect(live.dataKeys, s.key).toEqual(s.dataKeys);
+      // Suggestions may carry extra columns (agg has both total and average); only the plotted keys count.
+      const plotted = (r: Record<string, unknown>) => ({ name: r.name, ...Object.fromEntries(s.dataKeys.map(k => [k, r[k]])) });
+      /* Equal counts: the analyzer builds categories in a plain object, so integer-like labels
+         ("1".."5") come out ascending, while aggregateChart keeps first-seen order. Only that
+         tie order differs, so bar order is normalised for rdist; the values and the labels must match. */
+      const byValue = (rows: Record<string, unknown>[]) => !s.key.startsWith('rdist:') ? rows
+        : [...rows].sort((a, b) => Number(b[s.dataKeys[0]]) - Number(a[s.dataKeys[0]]) || String(a.name).localeCompare(String(b.name)));
+      expect(byValue(live.data), s.key).toEqual(byValue(s.data.map(plotted)));
+      expect(live.xKey, s.key).toBe(s.xKey);
+    }
+    return kinds;
+  };
+
+  it('matches the suggestion for every key kind', () => {
+    const kinds = check(ROWS);
+    expect([...kinds].sort()).toEqual(['agg', 'dist', 'pie', 'rdist', 'scatter', 'top', 'trend']);
+  });
+
+  it('keeps matching when the rows are a filtered subset', () => {
+    check(ROWS.filter(r => r.Region !== 'West'));
+    check(ROWS.filter(r => r.Units > 20));
+  });
+
+  it('ignores blank category cells, as the suggestions do', () => {
+    const blanky = ROWS.map((r, i) => (i % 9 === 0 ? { ...r, Region: null, Channel: '' } : r)) as unknown as typeof ROWS;
+    check(blanky);
+  });
+
+  it('recomputes from the rows it is given, not from the suggestions', () => {
+    const columns = analyzeColumns(ROWS);
+    const s = generateChartSuggestions(ROWS, columns).find(x => x.key === 'dist:Region')!;
+    const subset = ROWS.filter(r => r.Region === 'North');
+    const [live] = deriveDashboardItems([asCard(s)], [], columns, subset, t);
+    expect(live.data).toEqual([{ name: 'North', count: subset.length }]);
   });
 });

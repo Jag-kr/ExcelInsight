@@ -334,8 +334,12 @@ function rebuildTable(cardId: string, columns: ColumnMeta[], data: Record<string
 
 /**
  * Rebuild one card against the filtered dataset. No recipe (a session saved
- * before recipes existed) → keep the stored snapshot. Recipe that no longer
- * resolves → empty, which renders the existing "no data" state.
+ * before recipes existed) → keep the stored snapshot. A chart with a `spec`, or
+ * a `sourceKey` that specFromSourceKey() can express, is re-aggregated from the
+ * rows it is given, so it never depends on which rows the suggestions list was
+ * built from. Only a sourceKey with no spec equivalent (scatter) is still looked
+ * up in `suggestions`; if that no longer resolves → empty, which renders the
+ * existing "no data" state.
  */
 function deriveDashboardItem(
   item: DashboardItem,
@@ -372,6 +376,21 @@ function deriveDashboardItem(
   }
 
   if (item.sourceKey) {
+    const recipe = specFromSourceKey(item.sourceKey, columns);
+    if (recipe) {
+      /* The suggestion analyzer skipped blank category cells for these kinds, while
+         aggregateChart would add an "Unknown" bar: keep the charts as they were. */
+      const skipBlanks = /^(dist|pie|rdist|top):/.test(item.sourceKey);
+      const rows = skipBlanks ? data.filter(r => { const v = r[recipe.dimension]; return v !== null && v !== undefined && v !== ''; }) : data;
+      const { data: d, dataKeys } = aggregateChart(rows, recipe);
+      /* Keep the card's own value key (agg suggestions use total/average, the
+         recipe says value) so saved series colours and formats still match. */
+      const [from] = dataKeys, [to] = item.dataKeys;
+      const rename = dataKeys.length === 1 && item.dataKeys.length === 1 && from !== to;
+      return rename
+        ? { ...item, data: d.map(r => ({ name: r.name, [to]: r[from] })), dataKeys: item.dataKeys }
+        : { ...item, data: d, dataKeys };
+    }
     const match = suggestions.find(s => s.key === item.sourceKey);
     if (!match) return { ...item, data: [] };
     return { ...item, data: match.data, dataKeys: match.dataKeys, xKey: match.xKey };
