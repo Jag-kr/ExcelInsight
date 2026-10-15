@@ -10,7 +10,7 @@ import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, Cha
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
 import { crossDimensionOf, deriveDashboardItems, kpiCardId, kpiTitle, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { applyFilters, countActive, normalizeFilters, type Filters } from '@/lib/filters';
+import { applyFilters, countActive, distinctValues, filterKindFor, normalizeFilters, setFilter, type Filters } from '@/lib/filters';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
@@ -511,6 +511,29 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     selectCard(id);
   }, [addKpiToDashboard, selectCard, t, setDashboardItems]);
 
+  /* A slicer edits the page filters (the same state as the Filter tab), so removing the
+     card leaves its filter in place; the Filter tab still shows and clears it. */
+  const handleAddSlicer = useCallback((col: ColumnMeta) => {
+    const id = `slicer:${col.name}`;
+    if (!dashboardItems.some(i => i.id === id)) {
+      setDashboardItems(prev => (prev.some(i => i.id === id) ? prev : [...prev, {
+        id, title: col.name, type: 'bar' as const, data: [], dataKeys: [], xKey: '',
+        displayAs: 'slicer' as const, slicerColumn: col.name, size: 'sm' as const,
+      }]));
+      trackEvent('chart_added', { source: 'slicer' });
+    }
+    selectCard(id);
+  }, [dashboardItems, selectCard, setDashboardItems]);
+
+  // Candidates for `in` slicers, from the unfiltered rows (like DataFilter) so a pick never hides its siblings.
+  const slicerValues = useMemo(() => {
+    const out: Record<string, string[]> = {};
+    for (const { slicerColumn: c } of dashboardItems) {
+      if (c && !out[c] && columns.some(m => m.name === c && filterKindFor(m) === 'in')) out[c] = distinctValues(data, c);
+    }
+    return out;
+  }, [dashboardItems, columns, data]);
+
   const handleRemoveFromDashboard = useCallback((id: string) => {
     /* Read up front, not inside an updater: Undo needs the item and its index. */
     const index = dashboardItems.findIndex(i => i.id === id);
@@ -564,6 +587,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       selected={selected}
       onChange={handleChangeSelected}
       onAddField={handleAddField}
+      onAddSlicer={handleAddSlicer}
       onChangeKpi={handleChangeKpi}
       onChangeRepeatColumn={handleChangeRepeat}
       onChangeFormat={handleChangeFormat}
@@ -882,6 +906,9 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     onEdit={selectCard}
                     onChartSelect={handleChartSelect}
                     columns={columns}
+                    pageFilters={filters}
+                    onPageFilterChange={(c, f) => setFilters(prev => setFilter(prev, c, f))}
+                    slicerValues={slicerValues}
                     emptyAction={
                       <div className="flex flex-wrap items-center justify-center gap-2">
                         <Button size="sm" onClick={() => setQuickAddOpen(true)} className="gap-1.5 text-sm h-9">

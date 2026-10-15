@@ -75,6 +75,9 @@ const en = {
   removeFilter: 'Remove filter on',
   visualFiltered: 'filter(s) on this visual',
   clearCrossFilter: 'Clear cross-filter',
+  addSlicer: 'Add slicer',
+  slicerColumnMissing: 'Column not found',
+  slicerHint: 'This slicer edits the page filters; changes also show in the Filter tab.',
 } as const;
 
 export type DashboardKey = keyof typeof en;
@@ -147,6 +150,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     removeFilter: 'फ़िल्टर हटाएँ:',
     visualFiltered: 'फ़िल्टर इस विज़ुअल पर',
     clearCrossFilter: 'क्रॉस-फ़िल्टर हटाएँ',
+    addSlicer: 'स्लाइसर जोड़ें',
+    slicerColumnMissing: 'कॉलम नहीं मिला',
+    slicerHint: 'यह स्लाइसर पेज फ़िल्टर बदलता है; बदलाव फ़िल्टर टैब में भी दिखते हैं।',
   },
   es: {
     values: 'Valores',
@@ -214,6 +220,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     removeFilter: 'Quitar filtro de',
     visualFiltered: 'filtro(s) en este gráfico',
     clearCrossFilter: 'Quitar filtro cruzado',
+    addSlicer: 'Añadir segmentación',
+    slicerColumnMissing: 'Columna no encontrada',
+    slicerHint: 'Esta segmentación edita los filtros de la página; los cambios también aparecen en la pestaña Filtros.',
   },
   zh: {
     values: '数值',
@@ -281,6 +290,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     removeFilter: '移除筛选：',
     visualFiltered: '个筛选应用于此图表',
     clearCrossFilter: '清除交叉筛选',
+    addSlicer: '添加切片器',
+    slicerColumnMissing: '未找到该列',
+    slicerHint: '此切片器编辑页面筛选；更改也会显示在“筛选”选项卡中。',
   },
   fr: {
     values: 'Valeurs',
@@ -348,6 +360,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     removeFilter: 'Retirer le filtre sur',
     visualFiltered: 'filtre(s) sur ce visuel',
     clearCrossFilter: 'Effacer le filtre croisé',
+    addSlicer: 'Ajouter un segment',
+    slicerColumnMissing: 'Colonne introuvable',
+    slicerHint: 'Ce segment modifie les filtres de la page ; les changements apparaissent aussi dans l’onglet Filtres.',
   },
   de: {
     values: 'Werte',
@@ -415,6 +430,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     removeFilter: 'Filter entfernen:',
     visualFiltered: 'Filter auf diesem Visual',
     clearCrossFilter: 'Kreuzfilter entfernen',
+    addSlicer: 'Datenschnitt hinzufügen',
+    slicerColumnMissing: 'Spalte nicht gefunden',
+    slicerHint: 'Dieser Datenschnitt bearbeitet die Seitenfilter; Änderungen erscheinen auch im Tab Filter.',
   },
 };
 
