@@ -1,5 +1,6 @@
 import type { ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import type { DashboardItem } from '@/components/DashboardGrid';
+import type { Filters } from '@/lib/filters';
 
 /**
  * The working session — parsed rows plus everything derived from them — is
@@ -18,7 +19,8 @@ export type PersistedSession = {
   columns: ColumnMeta[];
   suggestions: ChartSuggestion[];
   dashboardItems: DashboardItem[];
-  filters: Record<string, string>;
+  /** Sessions saved before typed filters hold `Record<string, string>`; load through `normalizeFilters`. */
+  filters: Filters | Record<string, string>;
   addedChartIds: string[];
   addedInsightIds: string[];
   activeTab: string;
