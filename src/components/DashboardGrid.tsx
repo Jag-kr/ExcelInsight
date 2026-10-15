@@ -1,11 +1,8 @@
-import { useEffect, useState } from 'react';
-import {
-  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverlay, DragStartEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import ReactGridLayout, { useContainerWidth, type Layout, type LayoutItem } from 'react-grid-layout';
+// absoluteStrategy (top/left) rather than the default transforms: html2canvas, which the PDF export
+// runs per card, mis-offsets an element that carries its own translate().
+import { absoluteStrategy } from 'react-grid-layout/core';
 import { DynamicChart } from './DynamicChart';
 import { ChartType, chartTypeOptions, getChartColor, getChartColorVar } from '@/lib/chart-themes';
 import { TopValueBar } from './TopValueBar';
@@ -27,6 +24,11 @@ import type { ColumnMeta } from '@/lib/data-analyzer';
 import type { ChartFormat } from '@/lib/format';
 import { countActive, type Filter, type Filters } from '@/lib/filters';
 import { FilterControl } from './dashboard/FilterControl';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  GRID_COLS, layoutChanged, presetLayout, sizeFromWidth, sortByLayout, widthForSize, type CardSize, type GridPos,
+} from '@/lib/layout';
 
 export interface DashboardItem {
   id: string;
@@ -46,7 +48,9 @@ export interface DashboardItem {
   /** Slicer cards: the column whose page filter this card edits. */
   slicerColumn?: string;
   tableColumns?: string[];
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: CardSize;
+  /** Free-form grid position. Absent on legacy/new cards: presetLayout packs those from `size` / the bottom. */
+  layout?: GridPos;
   kpiSpec?: KpiSpec;
   kpiValue?: string;
   insightType?: 'repeating' | 'stats' | 'quality';
@@ -55,7 +59,8 @@ export interface DashboardItem {
 
 interface DashboardGridProps {
   items: DashboardItem[];
-  onReorder: (items: DashboardItem[]) => void;
+  /** A drag or resize finished and moved something: the full layout, by item id. Never fired for a no-op drop. */
+  onLayoutCommit?: (layouts: Record<string, GridPos>) => void;
   onRemove: (id: string) => void;
   onUpdateItem: (id: string, updates: Partial<DashboardItem>) => void;
   onDuplicate?: (id: string) => void;
@@ -114,7 +119,11 @@ function EditableTitle({ value, onChange, className }: { value: string; onChange
   );
 }
 
-function DashboardTable({ item, onRename }: { item: DashboardItem; onRename: (v: string) => void }) {
+/* `fill`: the card sits in a fixed-height grid cell, so content scrolls inside it instead of
+   growing the card (the mobile list keeps content-sized cards with the old 280px cap). */
+const scrollBody = (fill?: boolean) => (fill ? 'flex-1 min-h-0 overflow-auto' : 'flex-1 overflow-auto max-h-[280px]');
+
+function DashboardTable({ item, onRename, fill }: { item: DashboardItem; onRename: (v: string) => void; fill?: boolean }) {
   const { t } = useI18n();
   const cols = item.tableColumns || (item.data.length > 0 ? Object.keys(item.data[0]) : []);
   return (
@@ -124,7 +133,7 @@ function DashboardTable({ item, onRename }: { item: DashboardItem; onRename: (v:
           <EditableTitle value={item.title} onChange={onRename} />
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 sm:p-4 pt-2 flex-1 overflow-auto max-h-[280px]">
+      <CardContent className={`p-3 sm:p-4 pt-2 ${scrollBody(fill)}`}>
         {item.data.length === 0 ? (
           <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
             {t('noDataToDisplay')}
@@ -156,13 +165,13 @@ function DashboardTable({ item, onRename }: { item: DashboardItem; onRename: (v:
   );
 }
 
-function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRename: (v: string) => void }) {
+function DashboardInsightCard({ item, onRename, fill }: { item: DashboardItem; onRename: (v: string) => void; fill?: boolean }) {
   const { t } = useI18n();
   const content = item.insightContent;
 
   if (item.insightType === 'repeating' && content) {
     return (
-      <Card className="dashboard-panel animate-fade-in h-full space-y-2 p-4">
+      <Card className={`dashboard-panel animate-fade-in h-full space-y-2 p-4${fill ? ' overflow-auto' : ''}`}>
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 min-w-0 flex-1">
             <Repeat2 className="h-4 w-4 shrink-0" style={{ color: getChartColor(0) }} />
@@ -194,7 +203,7 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
             <EditableTitle value={item.title} onChange={onRename} />
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-2 flex-1 overflow-auto max-h-[280px]">
+        <CardContent className={`p-4 pt-2 ${scrollBody(fill)}`}>
           <Table className="text-xs">
             <TableHeader>
               <TableRow>
@@ -226,7 +235,7 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
 
   if (item.insightType === 'quality' && Array.isArray(content)) {
     return (
-      <Card className="dashboard-panel animate-fade-in h-full space-y-2 p-4">
+      <Card className={`dashboard-panel animate-fade-in h-full space-y-2 p-4${fill ? ' overflow-auto' : ''}`}>
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-warning" />
           <EditableTitle value={item.title} onChange={onRename} />
@@ -253,10 +262,10 @@ function DashboardInsightCard({ item, onRename }: { item: DashboardItem; onRenam
   return null;
 }
 
-function DashboardKpiCard({ item, index, onRename }: { item: DashboardItem; index: number; onRename: (v: string) => void }) {
+function DashboardKpiCard({ item, index, onRename, fill }: { item: DashboardItem; index: number; onRename: (v: string) => void; fill?: boolean }) {
   return (
     <Card
-      className="dashboard-panel animate-fade-in h-full flex flex-col justify-center gap-1 p-3 sm:p-4 border-0"
+      className={`dashboard-panel animate-fade-in h-full flex flex-col justify-center gap-1 p-3 sm:p-4 border-0${fill ? ' overflow-hidden' : ''}`}
       style={{ background: `hsl(${getChartColorVar(index)} / 0.12)` }}
     >
       <div className="text-[11px] font-medium" style={{ color: getChartColor(index) }}>
@@ -280,7 +289,7 @@ const sizeClasses: Record<string, string> = {
   lg: 'col-span-2 sm:col-span-2 md:col-span-2 lg:col-span-12',
 };
 
-const sizeFractionLabel: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
+const sizeFractionLabel: Record<CardSize, string> = {
   xs: '¼',
   sm: '⅓',
   md: '½',
@@ -294,8 +303,9 @@ const sizeIcons = {
   lg: Maximize2,
 };
 
-function DashboardSlicerCard({ item, column, values, filter, onChange }: {
+function DashboardSlicerCard({ item, column, values, filter, onChange, fill }: {
   item: DashboardItem;
+  fill?: boolean;
   column?: ColumnMeta;
   values?: string[];
   filter?: Filter;
@@ -303,7 +313,7 @@ function DashboardSlicerCard({ item, column, values, filter, onChange }: {
 }) {
   const d = useDashboardT();
   return (
-    <Card className="dashboard-panel animate-fade-in h-full flex flex-col gap-2 p-3 sm:p-4">
+    <Card className={`dashboard-panel animate-fade-in h-full flex flex-col gap-2 p-3 sm:p-4${fill ? ' overflow-auto' : ''}`}>
       {/* pr-16 keeps the title clear of the hover action pill. */}
       <div className="flex min-w-0 items-center gap-1.5 pr-16 text-xs sm:text-sm font-semibold text-foreground">
         <FilterIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
@@ -330,63 +340,64 @@ const isEditableChart = (item: DashboardItem) =>
 /* The pane also edits KPI and repeating-value cards. */
 const isEditable = (item: DashboardItem) => isEditableChart(item) || item.displayAs === 'kpi' || repeatColumnOf(item) !== null;
 
-function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove, onUpdateItem, onDuplicate, onEdit, slicer }: {
+/** Stable, id-taking handlers (see DashboardGrid): cards are memoised on these, so they must never change identity. */
+interface CardHandlers {
+  remove: (id: string) => void;
+  update: (id: string, updates: Partial<DashboardItem>) => void;
+  duplicate: (id: string) => void;
+  edit: (id: string) => void;
+  resize: (id: string, size: CardSize) => void;
+  chartSelect: (id: string, label: string) => void;
+  pageFilter: (column: string, filter: Filter | null) => void;
+}
+
+interface CardProps {
   item: DashboardItem;
   index: number;
-  selected?: boolean;
-  onSelect?: () => void;
-  onChartSelect?: (label: string) => void;
-  onRemove: () => void;
-  onUpdateItem: (updates: Partial<DashboardItem>) => void;
-  onDuplicate?: () => void;
-  onEdit?: () => void;
-  /** Pre-bound slicer body; only read when item.displayAs is 'slicer'. */
-  slicer?: React.ReactNode;
-}) {
+  size: CardSize;
+  /** Grid mode: the card fills a fixed cell and has a drag rail. Off on mobile (content-sized, no rail). */
+  fill: boolean;
+  canDuplicate: boolean;
+  canEdit: boolean;
+  canCross: boolean;
+  /** Slicer cards only. */
+  slicerColumn?: ColumnMeta;
+  slicerValues?: string[];
+  slicerFilter?: Filter;
+  handlers: CardHandlers;
+}
+
+/* The card's content and chrome, without its grid wrapper. Memoised: with stable props a drag, resize
+   or selection change elsewhere on the board never re-renders (and so never re-lays-out) a chart. */
+const DashboardCard = memo(function DashboardCard({
+  item, index, size, fill, canDuplicate, canEdit, canCross, slicerColumn, slicerValues, slicerFilter, handlers: h,
+}: CardProps) {
   const { t } = useI18n();
   const d = useDashboardT();
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
-  const size = (item.size || (item.displayAs === 'kpi' ? 'xs' : 'md')) as 'xs' | 'sm' | 'md' | 'lg';
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: transition || 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 50 : 'auto' as any,
-    ...(isDragging ? { '--tw-ring-color': `hsl(${getChartColorVar(0)} / 0.3)` } : {}),
-  };
-
-  const setSize = (s: 'xs' | 'sm' | 'md' | 'lg') => onUpdateItem({ size: s });
-  const renameTitle = (v: string) => onUpdateItem({ title: v });
+  const renameTitle = (v: string) => h.update(item.id, { title: v });
 
   const SizeIcon = sizeIcons[size];
   const filterCount = item.displayAs === 'insight' || item.displayAs === 'table' ? 0 : countActive(item.filters ?? {});
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      data-pdf-card
-      aria-current={selected || undefined}
-      onClick={(e) => {
-        if (!(e.target as HTMLElement).closest('button, input, textarea, a, [role="menuitem"], [role="menu"], [data-pdf-hide]')) onSelect?.();
-      }}
-      className={`relative group ${sizeClasses[size]} ${
-        isDragging ? 'scale-[1.02] shadow-2xl ring-2 z-50' : ''
-      } transition-all duration-200`}
-    >
-      {/* ─── Left-edge drag rail (always visible on hover) ─── */}
-      <div
-        data-pdf-hide
-        {...attributes}
-        {...listeners}
-        aria-label={t('dragToReorder')}
-        title={t('dragToReorder')}
-        className="absolute left-0 top-2 bottom-2 w-1 rounded-full z-20 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-150 cursor-grab active:cursor-grabbing touch-none"
-        style={{
-          background: `hsl(${getChartColorVar(0)} / 0.6)`,
-        }}
-      />
+    <>
+      {/* ─── Left-edge drag rail: a 12px grab strip holding the visible 4px bar (grid mode only) ─── */}
+      {/* ponytail: pointer-only. the old sortable grid's keyboard reordering is gone; keyboard users keep Resize,
+          Duplicate, Remove and the Edit pane. Add Move up/down menu items if that is requested. */}
+      {fill && (
+        <div
+          data-pdf-hide
+          title={t('dragToReorder')}
+          className="grid-drag-handle absolute left-0 top-2 bottom-2 w-3 z-20 cursor-grab active:cursor-grabbing touch-none"
+        >
+          <span
+            aria-hidden
+            className="block h-full w-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+            style={{ background: `hsl(${getChartColorVar(0)} / 0.6)` }}
+          />
+        </div>
+      )}
 
       {/* ─── Top-right: filter indicator (always visible) beside the action pill (appears on hover) ─── */}
       <div data-pdf-hide className="absolute top-2 right-2 z-10 flex items-center gap-1 pointer-events-none">
@@ -410,7 +421,7 @@ function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44 rounded-xl">
-              {/* Resize submenu */}
+              {/* Resize submenu: presets for the corner handle's free-form resize */}
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="text-xs rounded-lg">
                   <RectangleHorizontal className="h-3.5 w-3.5 mr-2" />
@@ -425,7 +436,7 @@ function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove
                   ]).map(({ v, Icon, label, fraction }) => (
                     <DropdownMenuItem
                       key={v}
-                      onClick={() => setSize(v)}
+                      onClick={() => h.resize(item.id, v)}
                       className="text-xs rounded-lg"
                     >
                       <Icon className="h-3.5 w-3.5 mr-2" />
@@ -449,7 +460,7 @@ function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove
                     {chartTypeOptions.map(opt => (
                       <DropdownMenuItem
                         key={opt.value}
-                        onClick={() => onUpdateItem({ type: opt.value })}
+                        onClick={() => h.update(item.id, { type: opt.value })}
                         className="text-xs rounded-lg"
                       >
                         {opt.label}
@@ -460,15 +471,15 @@ function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove
                 </DropdownMenuSub>
               )}
 
-              {onEdit && isEditable(item) && (
-                <DropdownMenuItem onClick={onEdit} className="text-xs rounded-lg">
+              {canEdit && isEditable(item) && (
+                <DropdownMenuItem onClick={() => h.edit(item.id)} className="text-xs rounded-lg">
                   <Pencil className="h-3.5 w-3.5 mr-2" />
                   {isEditableChart(item) ? d('editChart') : d('editCard')}
                 </DropdownMenuItem>
               )}
 
-              {onDuplicate && (
-                <DropdownMenuItem onClick={onDuplicate} className="text-xs rounded-lg">
+              {canDuplicate && (
+                <DropdownMenuItem onClick={() => h.duplicate(item.id)} className="text-xs rounded-lg">
                   <Copy className="h-3.5 w-3.5 mr-2" />
                   {t('duplicate')}
                 </DropdownMenuItem>
@@ -477,7 +488,7 @@ function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove
               <DropdownMenuSeparator />
 
               <DropdownMenuItem
-                onSelect={() => onRemove()}
+                onSelect={() => h.remove(item.id)}
                 className="text-xs text-destructive focus:text-destructive rounded-lg"
               >
                 <Trash2 className="h-3.5 w-3.5 mr-2" />
@@ -500,18 +511,27 @@ function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove
       </div>
 
       {item.displayAs === 'slicer' ? (
-        <ChartErrorBoundary title={item.title}>{slicer}</ChartErrorBoundary>
+        <ChartErrorBoundary title={item.title}>
+          <DashboardSlicerCard
+            item={item}
+            fill={fill}
+            column={slicerColumn}
+            values={slicerValues}
+            filter={slicerFilter}
+            onChange={f => h.pageFilter(item.slicerColumn ?? '', f)}
+          />
+        </ChartErrorBoundary>
       ) : item.displayAs === 'kpi' ? (
         <ChartErrorBoundary title={item.title}>
-          <DashboardKpiCard item={item} index={index} onRename={renameTitle} />
+          <DashboardKpiCard item={item} index={index} onRename={renameTitle} fill={fill} />
         </ChartErrorBoundary>
       ) : item.displayAs === 'insight' ? (
         <ChartErrorBoundary title={item.title}>
-          <DashboardInsightCard item={item} onRename={renameTitle} />
+          <DashboardInsightCard item={item} onRename={renameTitle} fill={fill} />
         </ChartErrorBoundary>
       ) : item.displayAs === 'table' ? (
         <ChartErrorBoundary title={item.title}>
-          <DashboardTable item={item} onRename={renameTitle} />
+          <DashboardTable item={item} onRename={renameTitle} fill={fill} />
         </ChartErrorBoundary>
       ) : (
         <ChartErrorBoundary title={item.title}>
@@ -525,21 +545,77 @@ function SortableCard({ item, index, selected, onSelect, onChartSelect, onRemove
             onRenameTitle={renameTitle}
             showControls={false}
             size={size}
+            fill={fill}
             stacked={!!item.spec && 'v' in item.spec && !!item.spec.stacked}
             format={item.format}
-            onSelect={onChartSelect}
+            onSelect={canCross ? (label: string) => h.chartSelect(item.id, label) : undefined}
           />
         </ChartErrorBoundary>
       )}
+    </>
+  );
+});
 
-      {selected && <div data-pdf-hide aria-hidden className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-primary" />}
+/* Grid geometry. Module-level so RGL sees the same object every render. */
+const GRID_CONFIG = { cols: GRID_COLS, rowHeight: 50, margin: [16, 16], containerPadding: [0, 0] } as const;
+const DRAG_CONFIG = { enabled: true, handle: '.grid-drag-handle', threshold: 5, bounded: false } as const;
+const RESIZE_CONFIG = { enabled: true, handles: ['se'] } as const;
+
+/* The few react-grid-layout / react-resizable rules this grid needs (absolute positioning, corner
+   handle only), inlined and themed here instead of importing the two library stylesheets: those
+   became an extra async CSS chunk whose entry sits in the webpack runtime of EVERY page (+1.3 kB
+   First Load JS on the landing page). Scoped to .ei-grid, and shipped with the lazy dashboard chunk. */
+const GRID_CSS = `
+.ei-grid .react-grid-layout{position:relative;transition:height 200ms ease}
+.ei-grid .react-grid-item{transition:left 200ms ease,top 200ms ease,width 200ms ease,height 200ms ease}
+.ei-grid .react-grid-item.resizing{transition:none;z-index:1;will-change:width,height}
+.ei-grid .react-grid-item.react-draggable-dragging{transition:none;z-index:3;opacity:.8}
+.ei-grid .react-grid-item.react-grid-placeholder{background:hsl(var(--primary));border-radius:.75rem;opacity:.2;transition-duration:100ms;z-index:2;user-select:none}
+.ei-grid .react-grid-item.react-grid-placeholder.placeholder-resizing{transition:none}
+.ei-grid .react-grid-item>.react-resizable-handle{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:se-resize;opacity:0}
+.ei-grid .react-grid-item:hover>.react-resizable-handle,.ei-grid .react-grid-item>.react-resizable-handle:focus-visible{opacity:1}
+.ei-grid .react-grid-item>.react-resizable-handle::after{content:"";position:absolute;right:3px;bottom:3px;width:5px;height:5px;border-right:2px solid hsl(var(--primary)/.7);border-bottom:2px solid hsl(var(--primary)/.7)}
+@media (hover:none){.ei-grid .react-grid-item>.react-resizable-handle{opacity:1}}
+`;
+
+/* Owns the width measurement: useContainerWidth observes its ref once, on mount, so this must mount
+   together with the container (not live in DashboardGrid, whose container comes and goes with the
+   empty state and the mobile list). */
+function FreeGrid({ layout, onCommit, children }: {
+  layout: LayoutItem[];
+  onCommit: (layout: Layout) => void;
+  children: React.ReactNode;
+}) {
+  const { width, containerRef, mounted } = useContainerWidth({ measureBeforeMount: true });
+  return (
+    <div ref={containerRef} className="ei-grid">
+      <style>{GRID_CSS}</style>
+      {mounted ? (
+        // Commit on drag/resize STOP only: onLayoutChange also fires on mount and on width changes.
+        <ReactGridLayout
+          width={width}
+          layout={layout}
+          gridConfig={GRID_CONFIG}
+          dragConfig={DRAG_CONFIG}
+          resizeConfig={RESIZE_CONFIG}
+          positionStrategy={absoluteStrategy}
+          onDragStop={onCommit}
+          onResizeStop={onCommit}
+        >
+          {children}
+        </ReactGridLayout>
+      ) : (
+        <Skeleton className="h-64 w-full rounded-xl" />
+      )}
     </div>
   );
 }
 
-export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, onChartSelect, columns, pageFilters, onPageFilterChange, slicerValues, emptyAction }: DashboardGridProps) {
+const IGNORE_SELECT = 'button, input, textarea, a, [role="menuitem"], [role="menu"], [data-pdf-hide]';
+
+export function DashboardGrid({ items, onLayoutCommit, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, onChartSelect, columns, pageFilters, onPageFilterChange, slicerValues, emptyAction }: DashboardGridProps) {
   const { t } = useI18n();
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   // A card added from the pane lands at the end of the board; bring it into view.
   useEffect(() => {
@@ -558,28 +634,94 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedId, onSelect]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  /* Effective layout: persisted positions kept, layout-less cards packed from their legacy size / the
+     bottom. Keyed on a cheap signature, not on `items` identity: filters and cross-filter rebuild every
+     item object, which must not look like a layout change. */
+  const sig = items.map(i => `${i.id}|${i.size ?? ''}|${i.displayAs ?? ''}|${i.layout ? `${i.layout.x},${i.layout.y},${i.layout.w},${i.layout.h}` : ''}`).join(';');
+  const { effective, rglLayout } = useMemo(() => {
+    const effective = presetLayout(items);
+    const rglLayout: LayoutItem[] = items.map(i => ({
+      i: i.id, ...effective[i.id],
+      // KPI tiles may shrink to 2x2; everything else keeps room for its chrome.
+      ...(i.displayAs === 'kpi' ? { minW: 2, minH: 2 } : { minW: 3, minH: 3 }),
+    }));
+    return { effective, rglLayout };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sig]);
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
+  // Reading order: the DOM (and tab, and PDF) order on desktop, the list order on mobile.
+  const ordered = useMemo(() => sortByLayout(items, effective), [items, effective]);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    setActiveId(null);
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = items.findIndex(i => i.id === active.id);
-      const newIndex = items.findIndex(i => i.id === over.id);
-      onReorder(arrayMove(items, oldIndex, newIndex));
-    }
-  };
+  /* Handlers that take an id and read the latest props through a ref, so their identity never changes
+     and parents may pass inline closures freely. */
+  const latest = useRef({ onRemove, onUpdateItem, onDuplicate, onEdit, onSelect, onChartSelect, onPageFilterChange, onLayoutCommit, effective });
+  latest.current = { onRemove, onUpdateItem, onDuplicate, onEdit, onSelect, onChartSelect, onPageFilterChange, onLayoutCommit, effective };
+  const handlers = useMemo<CardHandlers & { select: (id: string) => void }>(() => ({
+    remove: id => latest.current.onRemove(id),
+    update: (id, updates) => latest.current.onUpdateItem(id, updates),
+    duplicate: id => latest.current.onDuplicate?.(id),
+    edit: id => latest.current.onEdit?.(id),
+    select: id => latest.current.onSelect?.(id),
+    chartSelect: (id, label) => latest.current.onChartSelect?.(id, label),
+    pageFilter: (column, f) => latest.current.onPageFilterChange?.(column, f),
+    // Resize menu preset: commit the whole effective layout, not just this card. A lone layout on a
+    // board of layout-less cards would make presetLayout repack all the others below it.
+    resize: (id, size) => {
+      const eff = latest.current.effective;
+      const cur = eff[id];
+      if (!cur) return;
+      const w = widthForSize(size);
+      latest.current.onLayoutCommit?.({ ...eff, [id]: { ...cur, w, x: Math.min(cur.x, GRID_COLS - w) } });
+    },
+  }), []);
 
-  const handleDragCancel = () => {
-    setActiveId(null);
-  };
+  const commit = useCallback((rgl: Layout) => {
+    const next: Record<string, GridPos> = {};
+    for (const l of rgl) next[l.i] = { x: l.x, y: l.y, w: l.w, h: l.h };
+    // A click or a drop where it started must not create an undo entry.
+    if (layoutChanged(latest.current.effective, next)) latest.current.onLayoutCommit?.(next);
+  }, []);
+
+  const canSelect = !!onSelect;
+  const canDuplicate = !!onDuplicate;
+  const canEdit = !!onEdit;
+  const hasChartSelect = !!onChartSelect;
+
+  /* One element per card, memoised on the real inputs: RGL compares children by reference, so while a
+     card is being dragged or resized (RGL moves it internally, nothing here re-renders) every other
+     card, and every chart, is skipped. */
+  const nodes = useMemo(() => ordered.map((item, i) => {
+    const size = sizeFromWidth(effective[item.id].w);
+    const name = item.slicerColumn ?? '';
+    const selected = item.id === selectedId;
+    return (
+      <div
+        key={item.id}
+        data-pdf-card
+        aria-current={selected || undefined}
+        onClick={canSelect ? (e) => {
+          if (!(e.target as HTMLElement).closest(IGNORE_SELECT)) handlers.select(item.id);
+        } : undefined}
+        // Grid mode: RGL positions and sizes this element itself (inline style).
+        className={isMobile ? `relative group ${sizeClasses[size]}` : 'group'}
+      >
+        <DashboardCard
+          item={item}
+          index={i}
+          size={size}
+          fill={!isMobile}
+          canDuplicate={canDuplicate}
+          canEdit={canEdit}
+          canCross={hasChartSelect && !!crossDimensionOf(item, columns)}
+          slicerColumn={item.displayAs === 'slicer' ? columns?.find(c => c.name === name) : undefined}
+          slicerValues={item.displayAs === 'slicer' ? slicerValues?.[name] : undefined}
+          slicerFilter={item.displayAs === 'slicer' ? pageFilters?.[name] : undefined}
+          handlers={handlers}
+        />
+        {selected && <div data-pdf-hide aria-hidden className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-primary" />}
+      </div>
+    );
+  }), [ordered, effective, selectedId, isMobile, canSelect, canDuplicate, canEdit, hasChartSelect, columns, slicerValues, pageFilters, handlers]);
 
   if (!items.length) {
     return (
@@ -605,80 +747,10 @@ export function DashboardGrid({ items, onReorder, onRemove, onUpdateItem, onDupl
     );
   }
 
-  const slicerFor = (item: DashboardItem) => {
-    const name = item.slicerColumn ?? '';
-    return (
-      <DashboardSlicerCard
-        item={item}
-        column={columns?.find(c => c.name === name)}
-        values={slicerValues?.[name]}
-        filter={pageFilters?.[name]}
-        onChange={f => onPageFilterChange?.(name, f)}
-      />
-    );
-  };
+  // Phones get the old responsive list (no drag, no resize), in reading order of the desktop layout.
+  if (isMobile) {
+    return <div className="grid grid-cols-2 gap-3 sm:gap-4 auto-rows-[minmax(0,auto)]">{nodes}</div>;
+  }
 
-  const activeItem = activeId ? items.find(i => i.id === activeId) : null;
-
-  return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4 auto-rows-[minmax(0,auto)]">
-          {items.map((item, i) => (
-            <SortableCard
-              key={item.id}
-              item={item}
-              index={i}
-              selected={item.id === selectedId}
-              onSelect={onSelect ? () => onSelect(item.id) : undefined}
-              onChartSelect={onChartSelect && crossDimensionOf(item, columns) ? (label) => onChartSelect(item.id, label) : undefined}
-              onRemove={() => onRemove(item.id)}
-              onUpdateItem={(updates) => onUpdateItem(item.id, updates)}
-              onDuplicate={onDuplicate ? () => onDuplicate(item.id) : undefined}
-              onEdit={onEdit ? () => onEdit(item.id) : undefined}
-              slicer={item.displayAs === 'slicer' ? slicerFor(item) : undefined}
-            />
-          ))}
-        </div>
-      </SortableContext>
-
-      {/* Drag overlay for visual feedback */}
-      <DragOverlay dropAnimation={{
-        duration: 200,
-        easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
-      }}>
-        {activeItem ? (
-          <div className="dashboard-panel opacity-80 scale-[1.02] pointer-events-none">
-            {activeItem.displayAs === 'slicer' ? (
-              slicerFor(activeItem)
-            ) : activeItem.displayAs === 'kpi' ? (
-              <DashboardKpiCard item={activeItem} index={items.findIndex(i => i.id === activeItem.id)} onRename={() => {}} />
-            ) : activeItem.displayAs === 'insight' ? (
-              <DashboardInsightCard item={activeItem} onRename={() => {}} />
-            ) : activeItem.displayAs === 'table' ? (
-              <DashboardTable item={activeItem} onRename={() => {}} />
-            ) : (
-              <DynamicChart
-                title={activeItem.title}
-                description={activeItem.description}
-                type={activeItem.type}
-                data={activeItem.data}
-                dataKeys={activeItem.dataKeys}
-                xKey={activeItem.xKey}
-                showControls={false}
-                size={(activeItem.size || 'md') as 'xs' | 'sm' | 'md' | 'lg'}
-                format={activeItem.format}
-              />
-            )}
-          </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
-  );
+  return <FreeGrid layout={rglLayout} onCommit={commit}>{nodes}</FreeGrid>;
 }
