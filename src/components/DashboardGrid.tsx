@@ -460,6 +460,20 @@ const DashboardCard = memo(function DashboardCard({
             {sizeFractionLabel[size]}
           </span>
 
+          {/* Edit: opens the edit window (same action as the menu item below). */}
+          {canEdit && isEditable(item) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="pointer-events-auto h-6 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border/60 hover:bg-secondary shadow-sm rounded-lg"
+              aria-label={isEditableChart(item) ? d('editChart') : d('editCard')}
+              title={isEditableChart(item) ? d('editChart') : d('editCard')}
+              onClick={() => h.edit(item.id)}
+            >
+              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+          )}
+
           {/* Actions dropdown */}
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
@@ -668,6 +682,10 @@ function FreeGrid({ layout, onCommit, children }: {
 }
 
 const IGNORE_SELECT = 'button, input, textarea, a, [role="menuitem"], [role="menu"], [data-pdf-hide]';
+/* A double-click that must not open the edit window: form controls and editors (the text card), the title
+   (double-click renames), and chart marks. A click on a mark toggles the cross-filter, so a double-click on
+   one has already toggled it twice; `.cursor-pointer` is the class DynamicChart puts on every clickable mark. */
+const IGNORE_DBLCLICK = `${IGNORE_SELECT}, select, label, [contenteditable], [role="combobox"], [role="checkbox"], [role="slider"], .cursor-pointer, .recharts-bar-rectangle, .recharts-sector, .recharts-dot, .recharts-active-dot, .recharts-rectangle, .recharts-symbols, .recharts-radar-dot`;
 
 export function DashboardGrid({ items, onLayoutCommit, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, onChartSelect, columns, pageFilters, onPageFilterChange, slicerValues, emptyAction }: DashboardGridProps) {
   const { t } = useI18n();
@@ -757,6 +775,9 @@ export function DashboardGrid({ items, onLayoutCommit, onRemove, onUpdateItem, o
         aria-current={selected || undefined}
         onClick={canSelect ? (e) => {
           if (!(e.target as HTMLElement).closest(IGNORE_SELECT)) handlers.select(item.id);
+        } : undefined}
+        onDoubleClick={canEdit && !isMobile && isEditable(item) ? (e) => {
+          if (!(e.target as HTMLElement).closest(IGNORE_DBLCLICK)) handlers.edit(item.id);
         } : undefined}
         // Grid mode: RGL positions and sizes this element itself (inline style).
         className={isMobile ? `relative group ${sizeClasses[size]}` : 'group'}

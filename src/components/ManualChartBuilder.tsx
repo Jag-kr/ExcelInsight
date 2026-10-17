@@ -35,6 +35,8 @@ interface ManualChartBuilderProps {
   onSave?: (updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => void;
   /** Live mode: fires on every edit (never on mount); hides the add/save button. */
   onChange?: (updates: Pick<DashboardItem, 'type' | 'spec' | 'title'>) => void;
+  /** Hide the embedded preview chart (the edit window shows a big one beside the controls). */
+  hidePreview?: boolean;
 }
 
 /**
@@ -42,7 +44,7 @@ interface ManualChartBuilderProps {
  * Power BI's visual pane or Looker Studio's chart setup. Produces a ChartSpec
  * recipe; the card's data is always re-derived from it, never stored.
  */
-export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, onSave, onChange }: ManualChartBuilderProps) {
+export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, onSave, onChange, hidePreview = false }: ManualChartBuilderProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [chartType, setChartType] = useState<ChartType>(initial?.type ?? 'bar');
@@ -256,14 +258,16 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
 
       {chartData.length > 0 && (
         <>
-          <DynamicChart
-            title={title}
-            type={chartType}
-            data={chartData}
-            dataKeys={dataKeys}
-            stacked={spec.stacked}
-            onChangeType={setChartType}
-          />
+          {!hidePreview && (
+            <DynamicChart
+              title={title}
+              type={chartType}
+              data={chartData}
+              dataKeys={dataKeys}
+              stacked={spec.stacked}
+              onChangeType={setChartType}
+            />
+          )}
           {!onChange && (
             <Button onClick={handleAdd} className="w-full" size="sm">
               {onSave ? d('saveChanges') : <><Plus className="h-4 w-4 mr-1" /> {t('addDashboard')}</>}

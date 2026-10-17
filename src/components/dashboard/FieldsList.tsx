@@ -16,10 +16,8 @@ export interface FieldsListProps {
   columns: ColumnMeta[];
   /** Names of calculated fields: they show the fx icon instead of their type icon. */
   calculated?: Set<string>;
-  /** A click on a field with nothing to change: the parent creates a card from specForField(col). */
+  /** A click on a field: the parent creates a card from specForField(col). */
   onAddField: (col: ColumnMeta) => void;
-  /** Replaces onAddField when a card is selected (fold the field into it); fields are then never disabled. */
-  onFieldClick?: (col: ColumnMeta) => void;
   /** Adds (or selects) a slicer card for the column; the per-field button is hidden when omitted. */
   onAddSlicer?: (col: ColumnMeta) => void;
   onNewField?: () => void;
@@ -28,7 +26,7 @@ export interface FieldsListProps {
 }
 
 /** Searchable field list with the New field / Merge columns / slicer actions. Owns its search text. */
-export function FieldsList({ columns, calculated, onAddField, onFieldClick, onAddSlicer, onNewField, onMergeColumns }: FieldsListProps) {
+export function FieldsList({ columns, calculated, onAddField, onAddSlicer, onNewField, onMergeColumns }: FieldsListProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [query, setQuery] = useState('');
@@ -63,14 +61,14 @@ export function FieldsList({ columns, calculated, onAddField, onFieldClick, onAd
       <ul className="space-y-0.5">
         {fields.map(col => {
           const Icon = calculated?.has(col.name) ? FunctionSquare : FIELD_ICONS[col.type];
-          const disabled = !onFieldClick && !specForField(col);
+          const disabled = !specForField(col);
           return (
             <li key={col.name} className="flex items-center gap-0.5">
               <button
                 type="button"
                 title={col.name}
                 disabled={disabled}
-                onClick={() => (onFieldClick ?? onAddField)(col)}
+                onClick={() => onAddField(col)}
                 className="flex min-h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 text-left text-xs text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:text-muted-foreground disabled:opacity-60 disabled:hover:bg-transparent"
               >
                 <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
