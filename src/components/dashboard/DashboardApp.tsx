@@ -111,7 +111,7 @@ const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m 
 const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
 const SmartInsights = dynamic(() => import('@/components/SmartInsights').then(m => m.SmartInsights), { ssr: false });
 const EditorPane = dynamic(() => import('@/components/dashboard/EditorPane').then(m => m.EditorPane), { ssr: false });
-const QuickAddPanel = dynamic(() => import('@/components/QuickAddPanel').then(m => m.QuickAddPanel), { ssr: false });
+const AddPanel = dynamic(() => import('@/components/dashboard/AddPanel').then(m => m.AddPanel), { ssr: false });
 
 /* ─── Sidebar nav items ─── */
 const SIDEBAR_ITEMS = [
@@ -198,7 +198,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const [exporting, setExporting] = useState(false);
   // A fresh upload arrives underived, so the overlay is up from the first paint.
   const [analyzing, setAnalyzing] = useState(() => Boolean(initialUpload));
-  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   // Not persisted: a reload starts with nothing selected.
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Transient cross-filter from a chart click: not persisted, not in undo history.
@@ -344,12 +344,12 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const hasScatterCard = useMemo(() => dashboardItems.some(i => i.sourceKey?.startsWith('scatter:')), [dashboardItems]);
   const filteredSuggestions = useMemo(() => {
     if (countActive(filters) === 0) return suggestions;
-    // Only the Explore tab, the Filter tab preview, Quick Add and scatter cards read these;
+    // Only the Explore tab, the Filter tab preview, the Add panel and scatter cards read these;
     // elsewhere the (stale) unfiltered list is never consumed, so skip the work.
-    if (!(activeTab === 'explore' || activeTab === 'filter' || quickAddOpen || hasScatterCard)) return suggestions;
+    if (!(activeTab === 'explore' || activeTab === 'filter' || addOpen || hasScatterCard)) return suggestions;
     // Depends on filteredColumns (which already includes filteredData) — no double-compute
     return generateChartSuggestions(filteredData, filteredColumns);
-  }, [filteredData, filteredColumns, suggestions, filters, activeTab, quickAddOpen, hasScatterCard]);
+  }, [filteredData, filteredColumns, suggestions, filters, activeTab, addOpen, hasScatterCard]);
 
   // ── PDF export (must come after filteredData is declared) ──
   const handleExportPdf = useCallback(async () => {
@@ -590,6 +590,16 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     trackEvent('chart_added', { source: 'field' });
     selectCard(id);
   }, [addKpiToDashboard, selectCard, t, setDashboardItems]);
+
+  /* The "Custom chart" action of the Add panel: a starter recipe from the first usable column,
+     created exactly like a click on that field. The docked editor holds the full builder. */
+  const handleCustomChart = useCallback(() => {
+    const col = filteredColumns.find(c => c.type === 'categorical' || c.type === 'text' || c.type === 'range')
+      ?? filteredColumns.find(c => c.type === 'date');
+    if (!col) { toast.info(d('noChartableField')); return; }
+    handleAddField(col);
+    toast.success(`${d('addedToBoard')}: ${col.name}`);
+  }, [filteredColumns, handleAddField, d]);
 
   /* A slicer edits the page filters (the same state as the Filter tab), so removing the
      card leaves its filter in place; the Filter tab still shows and clears it. */
@@ -856,11 +866,12 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
               {/* Action buttons */}
               <Button
                 size="sm"
-                onClick={() => setQuickAddOpen(true)}
+                onClick={() => setAddOpen(true)}
                 className="gap-1.5 text-xs h-8 shadow-sm font-medium"
+                aria-label={d('add')}
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{t('quickAdd')}</span>
+                <span className="hidden sm:inline">{d('add')}</span>
               </Button>
 
               <Button
@@ -1011,8 +1022,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     slicerValues={slicerValues}
                     emptyAction={
                       <div className="flex flex-wrap items-center justify-center gap-2">
-                        <Button size="sm" onClick={() => setQuickAddOpen(true)} className="gap-1.5 text-sm h-9">
-                          <Plus className="h-3.5 w-3.5" /> {t('quickAdd')}
+                        <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5 text-sm h-9">
+                          <Plus className="h-3.5 w-3.5" /> {d('add')}
                         </Button>
                         <Button size="sm" variant="outline" onClick={handleResetLayout} className="gap-1.5 text-sm h-9">
                           <Sparkles className="h-3.5 w-3.5" /> {t('autoGenerate')}
@@ -1180,21 +1191,26 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
         </SheetContent>
       </Sheet>
 
-      {/* ─── Quick Add Panel ─── */}
+      {/* ─── Add panel (fields, suggestions, metrics, insights, text) ─── */}
       <Suspense fallback={null}>
-        <QuickAddPanel
-          open={quickAddOpen}
-          onOpenChange={setQuickAddOpen}
+        <AddPanel
+          open={addOpen}
+          onOpenChange={setAddOpen}
           suggestions={filteredSuggestions}
           addedChartIds={addedChartIds}
           addedInsightIds={addedInsightIds}
           columns={filteredColumns}
           data={filteredData}
+          calculated={calculatedNames}
           onAddSuggestion={addSuggestionToDashboard}
-          onAddCustomChart={addToDashboard}
           onAddInsight={addInsightToDashboard}
           onAddKpi={addKpiToDashboard}
-          onAddTable={addTableToDashboard}
+          onAddField={handleAddField}
+          onAddSlicer={handleAddSlicer}
+          onNewField={() => setCalcOpen(true)}
+          onMergeColumns={() => setMergeOpen(true)}
+          onCustomChart={handleCustomChart}
+          onAddText={handleAddText}
         />
       </Suspense>
 

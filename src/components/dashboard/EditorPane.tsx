@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Calendar, FunctionSquare, Hash, KeyRound, Merge, SlidersHorizontal, Tag, Type, X, type LucideIcon } from 'lucide-react';
-import type { ColumnMeta, ColumnType } from '@/lib/data-analyzer';
-import { addFieldToSpec, aggKey, aggregateChart, aggsForColumn, normalizeAgg, repeatColumnOf, specForField, specTitle, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { X } from 'lucide-react';
+import type { ColumnMeta } from '@/lib/data-analyzer';
+import { addFieldToSpec, aggKey, aggregateChart, aggsForColumn, normalizeAgg, repeatColumnOf, specTitle, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { ChartFormat } from '@/lib/format';
@@ -11,13 +10,10 @@ import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { ManualChartBuilder } from '../ManualChartBuilder';
 import type { DashboardItem } from '../DashboardGrid';
-import { filterKindFor, type Filters } from '@/lib/filters';
+import type { Filters } from '@/lib/filters';
 import { FormatTab } from './FormatTab';
 import { VisualFilters } from './VisualFilters';
-
-const FIELD_ICONS: Record<ColumnType, LucideIcon> = {
-  date: Calendar, numeric: Hash, range: Hash, categorical: Tag, text: Type, id: KeyRound,
-};
+import { FieldsList } from './FieldsList';
 
 const ROWS = '__rows';
 const LABEL = 'mb-1 block text-xs text-muted-foreground';
@@ -55,13 +51,10 @@ export interface EditorPaneProps {
 export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onChangeFilters, onDeselect, onMergeColumns, onNewField, calculated, onAddSlicer }: EditorPaneProps) {
   const { t } = useI18n();
   const d = useDashboardT();
-  const [query, setQuery] = useState('');
   const [tab, setTab] = useState<'data' | 'format' | 'filters'>('data');
 
   const item = selected?.item;
   const spec = selected?.spec ?? null;
-  const q = query.trim().toLowerCase();
-  const fields = q ? columns.filter(c => c.name.toLowerCase().includes(q)) : columns;
 
   const kpi = item?.displayAs === 'kpi' ? item.kpiSpec : undefined;
   const repeatCol = item ? repeatColumnOf(item) : null;
@@ -162,63 +155,15 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
       )}
       {!item && <p className="text-xs text-muted-foreground">{d('clickFieldToAdd')}</p>}
 
-      <section className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{d('fields')}</h3>
-          <div className="flex min-w-0 items-center">
-            {onNewField && (
-              <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" title={d('newField')} aria-label={d('newField')} onClick={onNewField}>
-                <FunctionSquare className="h-3.5 w-3.5" /> {d('newField')}
-              </Button>
-            )}
-            {onMergeColumns && (
-              <Button variant="ghost" size="sm" className="h-7 w-7 shrink-0 p-0" title={t('mergeColumns')} aria-label={t('mergeColumns')} onClick={onMergeColumns}>
-                <Merge className="h-3.5 w-3.5" />
-              </Button>
-            )}
-          </div>
-        </div>
-        <Input
-          type="search"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder={d('searchFields')}
-          aria-label={d('searchFields')}
-          className="h-8 bg-secondary border-border text-xs"
-        />
-        <ul className="space-y-0.5">
-          {fields.map(col => {
-            const Icon = calculated?.has(col.name) ? FunctionSquare : FIELD_ICONS[col.type];
-            const disabled = !item && !specForField(col);
-            return (
-              <li key={col.name} className="flex items-center gap-0.5">
-                <button
-                  type="button"
-                  title={col.name}
-                  disabled={disabled}
-                  onClick={() => onField(col)}
-                  className="flex min-h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 text-left text-xs text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:text-muted-foreground disabled:opacity-60 disabled:hover:bg-transparent"
-                >
-                  <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <span className="truncate">{col.name}</span>
-                </button>
-                {onAddSlicer && filterKindFor(col) !== null && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 shrink-0 text-muted-foreground"
-                    aria-label={`${d('addSlicer')}: ${col.name}`}
-                    title={`${d('addSlicer')}: ${col.name}`}
-                    onClick={() => onAddSlicer(col)}
-                  >
-                    <SlidersHorizontal className="h-3.5 w-3.5" />
-                  </Button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+      <FieldsList
+        columns={columns}
+        calculated={calculated}
+        onAddField={onAddField}
+        onFieldClick={item ? onField : undefined}
+        onAddSlicer={onAddSlicer}
+        onNewField={onNewField}
+        onMergeColumns={onMergeColumns}
+      />
     </div>
   );
 }
