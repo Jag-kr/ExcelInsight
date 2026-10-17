@@ -107,6 +107,8 @@ const en = {
   textTabHint: 'Add a free-text block for notes, titles or explanations. Click the text on the card to edit it.',
   customChartHint: 'Starts a chart you can refine with every option in the editor',
   noChartableField: 'No suitable field to start a chart from',
+  datesFromSerial: 'Converted Excel date numbers to dates',
+  datesDayFirst: 'Read as day/month/year dates',
 } as const;
 
 export type DashboardKey = keyof typeof en;
@@ -211,6 +213,8 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     textTabHint: 'नोट्स, शीर्षक या स्पष्टीकरण के लिए टेक्स्ट ब्लॉक जोड़ें। संपादित करने के लिए कार्ड पर टेक्स्ट पर क्लिक करें।',
     customChartHint: 'एक शुरुआती चार्ट बनाता है जिसे आप एडिटर के सभी विकल्पों से बदल सकते हैं',
     noChartableField: 'चार्ट शुरू करने के लिए कोई उपयुक्त फ़ील्ड नहीं है',
+    datesFromSerial: 'Excel की तारीख़ वाली संख्याओं को तारीख़ों में बदला गया',
+    datesDayFirst: 'दिन/माह/वर्ष तारीख़ के रूप में पढ़ा गया',
   },
   es: {
     values: 'Valores',
@@ -310,6 +314,8 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     textTabHint: 'Añade un bloque de texto libre para notas, títulos o explicaciones. Haz clic en el texto de la tarjeta para editarlo.',
     customChartHint: 'Crea un gráfico inicial que puedes ajustar con todas las opciones del editor',
     noChartableField: 'No hay ningún campo adecuado para empezar un gráfico',
+    datesFromSerial: 'Números de fecha de Excel convertidos en fechas',
+    datesDayFirst: 'Leídas como fechas día/mes/año',
   },
   zh: {
     values: '数值',
@@ -409,6 +415,8 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     textTabHint: '添加自由文本块，用于备注、标题或说明。点击卡片上的文字即可编辑。',
     customChartHint: '创建一个初始图表，可在编辑器中使用全部选项进一步调整',
     noChartableField: '没有可用于创建图表的合适字段',
+    datesFromSerial: '已将 Excel 日期数字转换为日期',
+    datesDayFirst: '已按 日/月/年 读取为日期',
   },
   fr: {
     values: 'Valeurs',
@@ -508,6 +516,8 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     textTabHint: 'Ajoutez un bloc de texte libre pour des notes, des titres ou des explications. Cliquez sur le texte de la carte pour le modifier.',
     customChartHint: "Crée un graphique de départ à affiner avec toutes les options de l'éditeur",
     noChartableField: 'Aucun champ adapté pour démarrer un graphique',
+    datesFromSerial: 'Numéros de date Excel convertis en dates',
+    datesDayFirst: 'Lues comme des dates jour/mois/année',
   },
   de: {
     values: 'Werte',
@@ -607,6 +617,8 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     textTabHint: 'Fügen Sie einen freien Textblock für Notizen, Titel oder Erklärungen hinzu. Klicken Sie auf den Text der Karte, um ihn zu bearbeiten.',
     customChartHint: 'Erstellt ein Startdiagramm, das Sie mit allen Optionen des Editors verfeinern können',
     noChartableField: 'Kein geeignetes Feld, um ein Diagramm zu starten',
+    datesFromSerial: 'Excel-Datumszahlen in Datumswerte umgewandelt',
+    datesDayFirst: 'Als Datum im Format Tag/Monat/Jahr gelesen',
   },
 };
 
