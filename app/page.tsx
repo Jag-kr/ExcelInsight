@@ -9,6 +9,7 @@ import { AdsenseScript } from "@/components/AdsenseScript";
 import { useI18n } from "@/lib/i18n";
 import { hasStoredSession } from "@/lib/session-storage";
 import { trackEvent } from "@/lib/analytics";
+import type { DateNote } from "@/lib/date-columns";
 import { BarChart3, Database, LayoutDashboard, Sparkles } from "lucide-react";
 
 // Served from public/ so logo swaps don't need a rebuild (SiteHeader uses the same path).
@@ -72,6 +73,8 @@ export default function Index() {
     fileName: string;
     /** Demo data — must not be written to storage. See loadSample. */
     ephemeral?: boolean;
+    /** Date columns repaired at load; the dashboard announces them. */
+    notes?: DateNote[];
   } | null>(null);
 
   useEffect(() => {
@@ -90,8 +93,8 @@ export default function Index() {
    * DashboardApp derives the columns, suggestions and layout on mount.
    */
   const handleDataLoaded = useCallback(
-    (data: Record<string, any>[], fileName: string) =>
-      setUpload({ data, fileName }),
+    (data: Record<string, any>[], fileName: string, notes?: DateNote[]) =>
+      setUpload({ data, fileName, notes }),
     [],
   );
 
