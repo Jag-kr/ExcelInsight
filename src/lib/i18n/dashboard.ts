@@ -124,6 +124,7 @@ const en = {
   pivotTotal: 'Total',
   pivotTruncated: 'Showing {a} of {b} {c}',
   pivotHint: 'Summarize a value by one or two fields',
+  drillUp: 'Back up one level',
   staleChartsRemoved: 'Removed {n} chart(s) that no longer fit the data (column types were re-checked)',
 } as const;
 
@@ -246,6 +247,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     pivotTotal: 'कुल',
     pivotTruncated: '{b} {c} में से {a} दिखाए गए',
     pivotHint: 'एक या दो फ़ील्ड के आधार पर किसी मान का सारांश बनाएँ',
+    drillUp: 'एक स्तर ऊपर जाएँ',
     staleChartsRemoved: '{n} चार्ट हटाए गए जो अब डेटा से मेल नहीं खाते (कॉलम के प्रकार दोबारा जाँचे गए)',
   },
   es: {
@@ -363,6 +365,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     pivotTotal: 'Total',
     pivotTruncated: 'Mostrando {a} de {b} {c}',
     pivotHint: 'Resume un valor por uno o dos campos',
+    drillUp: 'Subir un nivel',
     staleChartsRemoved: 'Se quitaron {n} gráfico(s) que ya no encajan con los datos (se volvieron a comprobar los tipos de columna)',
   },
   zh: {
@@ -480,6 +483,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     pivotTotal: '总计',
     pivotTruncated: '显示 {a} / {b} {c}',
     pivotHint: '按一个或两个字段汇总某个值',
+    drillUp: '返回上一级',
     staleChartsRemoved: '已移除 {n} 个不再适用于数据的图表(已重新检查列类型)',
   },
   fr: {
@@ -597,6 +601,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     pivotTotal: 'Total',
     pivotTruncated: 'Affichage de {a} sur {b} {c}',
     pivotHint: 'Résume une valeur selon un ou deux champs',
+    drillUp: 'Remonter d’un niveau',
     staleChartsRemoved: '{n} graphique(s) supprimé(s) car ils ne correspondent plus aux données (types de colonnes revérifiés)',
   },
   de: {
@@ -714,6 +719,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     pivotTotal: 'Gesamt',
     pivotTruncated: '{a} von {b} {c} angezeigt',
     pivotHint: 'Fasst einen Wert nach einem oder zwei Feldern zusammen',
+    drillUp: 'Eine Ebene zurück',
     staleChartsRemoved: '{n} Diagramm(e) entfernt, die nicht mehr zu den Daten passen (Spaltentypen neu geprüft)',
   },
 };
