@@ -116,7 +116,7 @@ export function DynamicChart({
    *    grouping that does not exist. Past the cap, one colour is the honest
    *    answer.
    */
-  const colorByCategory = colorsByCategory(dataKeys.length, data.length);
+  const colorByCategory = colorsByCategory(dataKeys.length, data.length) && !format?.oneColor;
 
   /* Printed values only stay legible on a short, single-series bar chart —
      past that they collide with each other and with the axis. */
