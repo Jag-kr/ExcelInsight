@@ -1,4 +1,5 @@
 import type { WorkSheet, CellObject, SSF } from 'xlsx';
+import { parseDateStrict } from './dates';
 
 export type ColumnType = 'numeric' | 'categorical' | 'date' | 'text' | 'range' | 'id';
 
@@ -41,17 +42,11 @@ export interface ChartSuggestion {
 export type DateGrain = 'day' | 'week' | 'month' | 'quarter' | 'year';
 
 /**
- * Calendar parts of a date cell. ISO-style strings are read directly rather
- * than through `new Date()`, which parses "2025-01-15" as UTC midnight and so
- * lands on the previous day anywhere west of Greenwich.
+ * Calendar parts of a date cell, read as written (never through the local
+ * timezone, which would shift "2025-01-15" a day west of Greenwich). Strict:
+ * free text and plain numbers are not dates, see parseDateStrict.
  */
-function dateParts(v: unknown): [number, number, number] | null {
-  if (v == null || v === '') return null;
-  const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(String(v));
-  if (iso) return [+iso[1], +iso[2], +iso[3]];
-  const d = v instanceof Date ? v : new Date(v as string | number);
-  return isNaN(d.getTime()) ? null : [d.getFullYear(), d.getMonth() + 1, d.getDate()];
-}
+const dateParts = parseDateStrict;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -153,10 +148,7 @@ function detectColumnType(values: any[], colName: string): ColumnType {
   }
 
   // Date detection
-  const dateCount = nonNull.filter(v => {
-    const d = new Date(v);
-    return d instanceof Date && !isNaN(d.getTime()) && String(v).length > 5;
-  }).length;
+  const dateCount = nonNull.filter(v => parseDateStrict(v) !== null).length;
   if (dateCount / nonNull.length > 0.7) return 'date';
 
   // Categorical vs text
