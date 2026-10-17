@@ -6,7 +6,7 @@ import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { ChartThemeSwitcher } from '@/components/ChartThemeSwitcher';
 import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } from '@/lib/chart-themes';
 import { hslStringToRgb } from '@/lib/color-utils';
-import { analyzeColumns, generateChartSuggestions, mergeColumns, addCalculatedColumn, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
+import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
 import { sizeFromWidth, sortByLayout, type GridPos } from '@/lib/layout';
 import { crossDimensionOf, deriveDashboardItems, kpiCardId, kpiTitle, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
@@ -16,6 +16,7 @@ import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } f
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { useUndoableState } from '@/hooks/use-undoable-state';
+import { applyCalcFields, validateNewField, type CalcField } from '@/lib/calc-fields';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -145,6 +146,12 @@ export interface DashboardAppProps {
   onClearFile: () => void;
 }
 
+type Board = { items: DashboardItem[]; calc: CalcField[] };
+
+/** calcFields is absent in older sessions and untrusted in a hand-edited one: keep it only if well-formed. */
+const validCalcFields = (v: unknown): CalcField[] =>
+  Array.isArray(v) && v.every(f => f && typeof f.name === 'string' && typeof f.formula === 'string') ? v : [];
+
 export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) {
   const { t } = useI18n();
   const d = useDashboardT();
@@ -160,11 +167,29 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
    * `ssr: false`, so there is no server HTML to mismatch against.
    */
   const [initial] = useState<PersistedSession | null>(() => (initialUpload ? null : loadSession()));
-  const [data, setData] = useState<Record<string, any>[]>(() => initialUpload?.data ?? initial?.data ?? []);
+  // Uploaded/merged rows and their analysis. Calculated fields are layered on top below (never stored in these).
+  const [baseData, setBaseData] = useState<Record<string, any>[]>(() => initialUpload?.data ?? initial?.data ?? []);
   const [fileName, setFileName] = useState(() => initialUpload?.fileName ?? initial?.fileName ?? '');
-  const [columns, setColumns] = useState<ColumnMeta[]>(() => initial?.columns ?? []);
+  const [baseColumns, setBaseColumns] = useState<ColumnMeta[]>(() => initial?.columns ?? []);
   const [suggestions, setSuggestions] = useState<ChartSuggestion[]>(() => initial?.suggestions ?? []);
-  const [dashboardItems, setDashboardItems, { undo, redo, canUndo, canRedo }] = useUndoableState<DashboardItem[]>(() => initial?.dashboardItems ?? []);
+  // Cards and calculated-field definitions share one history, so a single Ctrl+Z walks back chronologically.
+  const [board, setBoard, { undo, redo, canUndo, canRedo }] = useUndoableState<Board>(
+    () => ({ items: initial?.dashboardItems ?? [], calc: validCalcFields(initial?.calcFields) })
+  );
+  const dashboardItems = board.items;
+  const calcFields = board.calc;
+  // Stable; same signature as the old items-only setter. Unchanged items keep the board identity (hook no-op check).
+  const setDashboardItems = useCallback(
+    (next: DashboardItem[] | ((prev: DashboardItem[]) => DashboardItem[]), opts?: { record?: boolean }) =>
+      setBoard(b => {
+        const items = typeof next === 'function' ? next(b.items) : next;
+        return items === b.items ? b : { ...b, items };
+      }, opts),
+    [setBoard]
+  );
+  // Derived, never stored: recomputed only when the rows or the field definitions change.
+  const data = useMemo(() => applyCalcFields(baseData, calcFields), [baseData, calcFields]);
+  const columns = useMemo(() => (calcFields.length === 0 ? baseColumns : analyzeColumns(data)), [calcFields, baseColumns, data]);
   const [filters, setFilters] = useState<Filters>(() => normalizeFilters(initial?.filters));
   const [activeTab, setActiveTab] = useState<string>(() => (SIDEBAR_ITEMS.find(i => i.value === initial?.activeTab)?.value ?? 'dashboard'));
   const [mergeOpen, setMergeOpen] = useState(false);
@@ -208,7 +233,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     // Yield to browser before running heavy synchronous analysis
     startTransition(() => {
       const cols = analyzeColumns(newData);
-      setColumns(cols);
+      setBaseColumns(cols);
       const charts = generateChartSuggestions(newData, cols);
       setSuggestions(charts);
       const { items } = buildDefaultDashboard(newData, cols, charts, t);
@@ -234,14 +259,14 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     // The sample dataset is a demo, not the visitor's file. Writing it would
     // make every subsequent visit restore a spreadsheet they never uploaded.
     if (initialUpload?.ephemeral) { localStorage.removeItem(STORAGE_KEY); return; }
-    if (!data.length) { localStorage.removeItem(STORAGE_KEY); return; }
+    if (!baseData.length) { localStorage.removeItem(STORAGE_KEY); return; }
     // Live pane edits fire per keystroke; debounce so a large dataset isn't
     // re-stringified each time. Unmount cancels the pending write, so clearing
     // the file can't resurrect it.
     const timer = setTimeout(() => {
       try {
         const payload: PersistedSession = {
-          data, fileName, columns, suggestions, dashboardItems, filters,
+          data: baseData, fileName, columns: baseColumns, suggestions, dashboardItems, calcFields, filters,
           addedChartIds: Array.from(addedChartIds),
           addedInsightIds: Array.from(addedInsightIds),
           activeTab, sidebarCollapsed, paneCollapsed,
@@ -252,7 +277,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [analyzing, initialUpload, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed, paneCollapsed]);
+  }, [analyzing, initialUpload, baseData, fileName, baseColumns, suggestions, dashboardItems, calcFields, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed, paneCollapsed]);
 
   const handleResetLayout = useCallback(() => {
     // Toast Undo restores this snapshot rather than calling global undo(): the toast can outlive other edits.
@@ -384,21 +409,25 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   );
 
   const handleMerge = useCallback((col1: string, col2: string, newName: string, separator: string) => {
-    const merged = mergeColumns(data, col1, col2, newName, separator);
-    setData(merged);
-    setColumns(analyzeColumns(merged));
-  }, [data]);
-
-  // Like handleMerge, adding a calculated field is not part of undo history.
-  const handleAddCalculated = useCallback((name: string, formula: string) => {
-    const r = addCalculatedColumn(data, columns.map(c => c.name), name, formula);
-    if ('data' in r) {
-      setData(r.data);
-      setColumns(analyzeColumns(r.data));
-      toast.success(`${d('fieldAdded')}: ${name}`);
+    // A calculated field of the same name would silently overwrite the merged column when values are derived.
+    if (calcFields.some(f => f.name.toLowerCase() === newName.trim().toLowerCase())) {
+      toast.error(`${newName.trim()}: a calculated field with this name already exists`);
+      return;
     }
-    return r;
-  }, [data, columns, d]);
+    const merged = mergeColumns(baseData, col1, col2, newName, separator);
+    setBaseData(merged);
+    setBaseColumns(analyzeColumns(merged));
+  }, [baseData, calcFields]);
+
+  // One undo entry; the values are derived from the stored definition.
+  const handleAddCalculated = useCallback((name: string, formula: string): { ok: true } | { ok: false; error: string } => {
+    const error = validateNewField(baseColumns.map(c => c.name), calcFields, name, formula);
+    if (error) return { ok: false, error };
+    const field = { name: name.trim(), formula };
+    setBoard(b => ({ ...b, calc: [...b.calc, field] }));
+    toast.success(`${d('fieldAdded')}: ${field.name}`);
+    return { ok: true };
+  }, [baseColumns, calcFields, setBoard, d]);
 
   const addToDashboard = useCallback((chart: DashboardItem) => {
     setDashboardItems(prev => [...prev, chart]);
@@ -1104,7 +1133,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
             <SheetDescription>{t('mergeColumns')}</SheetDescription>
           </SheetHeader>
           <Suspense fallback={<PanelFallback />}>
-            <ColumnMerger columns={columns} onMerge={handleMerge} />
+            <ColumnMerger columns={baseColumns} onMerge={handleMerge} />
           </Suspense>
         </SheetContent>
       </Sheet>
