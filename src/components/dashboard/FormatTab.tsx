@@ -128,7 +128,7 @@ export function FormatTab({ item, dataKeys = [], rowCount = 0, onChange }: Forma
   // Scatter and pie colour per point/slice, and a lone series on a short bar chart per category: no per-series colour there.
   const isBar = item.type === 'bar' || item.type === 'horizontalBar';
   const showSeriesColors = !kpi && dataKeys.length > 0
-    && (isBar || ['line', 'area', 'radar'].includes(item.type))
+    && (isBar || ['line', 'area', 'radar', 'combo'].includes(item.type))
     && !(isBar && colorsByCategory(dataKeys.length, rowCount));
   const setSeriesColor = (key: string, color?: string) => {
     const { [key]: _drop, ...rest } = f?.seriesColors ?? {};

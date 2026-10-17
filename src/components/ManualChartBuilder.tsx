@@ -10,7 +10,7 @@ import { DynamicChart } from './DynamicChart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AreaChart, BarChart3, BarChartHorizontal, Donut, LineChart, PieChart, Plus, Radar, ScatterChart, X, type LucideIcon } from 'lucide-react';
+import { AreaChart, BarChart3, BarChartHorizontal, ChartNoAxesCombined, Donut, LineChart, PieChart, Plus, Radar, ScatterChart, X, type LucideIcon } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import type { DashboardItem } from './DashboardGrid';
@@ -22,7 +22,7 @@ const GRAINS: DateGrain[] = ['day', 'week', 'month', 'quarter', 'year'];
 const GRAIN_KEYS = { day: 'grainDay', week: 'grainWeek', month: 'grainMonth', quarter: 'grainQuarter', year: 'grainYear' } as const;
 const TYPE_ICONS: Record<ChartType, LucideIcon> = {
   bar: BarChart3, horizontalBar: BarChartHorizontal, line: LineChart, area: AreaChart,
-  donut: Donut, pie: PieChart, scatter: ScatterChart, radar: Radar,
+  donut: Donut, pie: PieChart, scatter: ScatterChart, radar: Radar, combo: ChartNoAxesCombined,
 };
 
 interface ManualChartBuilderProps {
@@ -154,6 +154,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
               );
             })}
           </div>
+          {chartType === 'combo' && measures.length < 2 && <p className="mt-1 text-xs text-muted-foreground">{d('comboNeedsSecond')}</p>}
         </div>
 
         <div>
