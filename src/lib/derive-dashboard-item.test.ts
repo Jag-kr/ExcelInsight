@@ -591,6 +591,33 @@ describe('filters on a single visual', () => {
   });
 });
 
+describe('pivot cards', () => {
+  const columns = analyzeColumns(DATA);
+  const pivot = (extra: Partial<DashboardItem> = {}): DashboardItem => ({
+    id: 'p', title: 'Pivot', type: 'bar', data: [], dataKeys: [], displayAs: 'pivot',
+    pivotSpec: { rows: 'Region', cols: 'Rep', value: { column: 'Sales', agg: 'sum' } }, ...extra,
+  });
+  const kpi: DashboardItem = { id: 'k', title: 'k', type: 'bar', data: [], dataKeys: [], displayAs: 'kpi', kpiSpec: { column: 'Sales', agg: 'sum' } };
+
+  it('computes the pivot from the rows, honouring the visual\'s own filters', () => {
+    const [all, ann] = deriveDashboardItems([pivot(), pivot({ id: 'p2', filters: { Rep: { kind: 'in', values: ['Ann'] } } })], [], columns, DATA, t);
+    expect(all.pivot!.grand).toBe(850);
+    expect(all.pivot!.rowLabels).toEqual(['South', 'North', 'East']);
+    expect(ann.pivot!.grand).toBe(350);
+    expect(ann.pivot!.colLabels).toEqual(['Ann']);
+  });
+
+  it('leaves other cards, and a pivot without a recipe, without a pivot key', () => {
+    const out = deriveDashboardItems([kpi, pivot({ pivotSpec: undefined })], [], columns, DATA, t);
+    expect(out.every(i => !('pivot' in i))).toBe(true);
+  });
+
+  it('shows no pivot when its row column no longer exists', () => {
+    const [gone] = deriveDashboardItems([pivot({ pivotSpec: { rows: 'Deleted', value: { column: null, agg: 'count' } } })], [], columns, DATA, t);
+    expect('pivot' in gone).toBe(false);
+  });
+});
+
 describe('cross-filtering', () => {
   const columns = analyzeColumns(DATA);
   const chart = (id: string, extra: Partial<DashboardItem> = {}): DashboardItem => ({
