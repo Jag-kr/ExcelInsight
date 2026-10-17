@@ -114,6 +114,7 @@ const en = {
   noChartableField: 'No suitable field to start a chart from',
   datesFromSerial: 'Converted Excel date numbers to dates',
   datesDayFirst: 'Read as day/month/year dates',
+  colorEachBar: 'Color each bar differently',
   staleChartsRemoved: 'Removed {n} chart(s) that no longer fit the data (column types were re-checked)',
 } as const;
 
@@ -226,6 +227,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     noChartableField: 'चार्ट शुरू करने के लिए कोई उपयुक्त फ़ील्ड नहीं है',
     datesFromSerial: 'Excel की तारीख़ वाली संख्याओं को तारीख़ों में बदला गया',
     datesDayFirst: 'दिन/माह/वर्ष तारीख़ के रूप में पढ़ा गया',
+    colorEachBar: 'हर बार को अलग रंग दें',
     staleChartsRemoved: '{n} चार्ट हटाए गए जो अब डेटा से मेल नहीं खाते (कॉलम के प्रकार दोबारा जाँचे गए)',
   },
   es: {
@@ -333,6 +335,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     noChartableField: 'No hay ningún campo adecuado para empezar un gráfico',
     datesFromSerial: 'Números de fecha de Excel convertidos en fechas',
     datesDayFirst: 'Leídas como fechas día/mes/año',
+    colorEachBar: 'Colorear cada barra de forma distinta',
     staleChartsRemoved: 'Se quitaron {n} gráfico(s) que ya no encajan con los datos (se volvieron a comprobar los tipos de columna)',
   },
   zh: {
@@ -440,6 +443,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     noChartableField: '没有可用于创建图表的合适字段',
     datesFromSerial: '已将 Excel 日期数字转换为日期',
     datesDayFirst: '已按 日/月/年 读取为日期',
+    colorEachBar: '每根柱子使用不同颜色',
     staleChartsRemoved: '已移除 {n} 个不再适用于数据的图表(已重新检查列类型)',
   },
   fr: {
@@ -547,6 +551,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     noChartableField: 'Aucun champ adapté pour démarrer un graphique',
     datesFromSerial: 'Numéros de date Excel convertis en dates',
     datesDayFirst: 'Lues comme des dates jour/mois/année',
+    colorEachBar: 'Colorer chaque barre différemment',
     staleChartsRemoved: '{n} graphique(s) supprimé(s) car ils ne correspondent plus aux données (types de colonnes revérifiés)',
   },
   de: {
@@ -654,6 +659,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     noChartableField: 'Kein geeignetes Feld, um ein Diagramm zu starten',
     datesFromSerial: 'Excel-Datumszahlen in Datumswerte umgewandelt',
     datesDayFirst: 'Als Datum im Format Tag/Monat/Jahr gelesen',
+    colorEachBar: 'Jeden Balken anders färben',
     staleChartsRemoved: '{n} Diagramm(e) entfernt, die nicht mehr zu den Daten passen (Spaltentypen neu geprüft)',
   },
 };
