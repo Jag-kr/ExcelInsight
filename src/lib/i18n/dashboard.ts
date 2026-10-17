@@ -110,6 +110,7 @@ const en = {
   noChartableField: 'No suitable field to start a chart from',
   datesFromSerial: 'Converted Excel date numbers to dates',
   datesDayFirst: 'Read as day/month/year dates',
+  staleChartsRemoved: 'Removed {n} chart(s) that no longer fit the data (column types were re-checked)',
 } as const;
 
 export type DashboardKey = keyof typeof en;
@@ -217,6 +218,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     noChartableField: 'चार्ट शुरू करने के लिए कोई उपयुक्त फ़ील्ड नहीं है',
     datesFromSerial: 'Excel की तारीख़ वाली संख्याओं को तारीख़ों में बदला गया',
     datesDayFirst: 'दिन/माह/वर्ष तारीख़ के रूप में पढ़ा गया',
+    staleChartsRemoved: '{n} चार्ट हटाए गए जो अब डेटा से मेल नहीं खाते (कॉलम के प्रकार दोबारा जाँचे गए)',
   },
   es: {
     values: 'Valores',
@@ -319,6 +321,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     noChartableField: 'No hay ningún campo adecuado para empezar un gráfico',
     datesFromSerial: 'Números de fecha de Excel convertidos en fechas',
     datesDayFirst: 'Leídas como fechas día/mes/año',
+    staleChartsRemoved: 'Se quitaron {n} gráfico(s) que ya no encajan con los datos (se volvieron a comprobar los tipos de columna)',
   },
   zh: {
     values: '数值',
@@ -421,6 +424,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     noChartableField: '没有可用于创建图表的合适字段',
     datesFromSerial: '已将 Excel 日期数字转换为日期',
     datesDayFirst: '已按 日/月/年 读取为日期',
+    staleChartsRemoved: '已移除 {n} 个不再适用于数据的图表(已重新检查列类型)',
   },
   fr: {
     values: 'Valeurs',
@@ -523,6 +527,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     noChartableField: 'Aucun champ adapté pour démarrer un graphique',
     datesFromSerial: 'Numéros de date Excel convertis en dates',
     datesDayFirst: 'Lues comme des dates jour/mois/année',
+    staleChartsRemoved: '{n} graphique(s) supprimé(s) car ils ne correspondent plus aux données (types de colonnes revérifiés)',
   },
   de: {
     values: 'Werte',
@@ -625,6 +630,7 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     noChartableField: 'Kein geeignetes Feld, um ein Diagramm zu starten',
     datesFromSerial: 'Excel-Datumszahlen in Datumswerte umgewandelt',
     datesDayFirst: 'Als Datum im Format Tag/Monat/Jahr gelesen',
+    staleChartsRemoved: '{n} Diagramm(e) entfernt, die nicht mehr zu den Daten passen (Spaltentypen neu geprüft)',
   },
 };
 
