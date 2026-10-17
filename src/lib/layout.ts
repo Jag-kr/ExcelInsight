@@ -10,7 +10,11 @@ const bottom = (l: Record<string, GridPos>) => Math.max(0, ...Object.values(l).m
 export const widthForSize = (size: CardSize): number => WIDTHS[size];
 export const sizeFromWidth = (w: number): CardSize => (w <= 3 ? 'xs' : w <= 4 ? 'sm' : w <= 6 ? 'md' : 'lg');
 export const defaultHeight = (displayAs?: string): number =>
-  displayAs === 'kpi' ? 2 : displayAs === 'slicer' || displayAs === 'text' ? 3 : 6;
+  displayAs === 'kpi' || displayAs === 'text' ? 2 : displayAs === 'slicer' ? 3 : 6;
+
+/** Smallest a card may be resized to: tiles and notes are small by nature, everything else keeps room for its chrome. */
+export const minSize = (displayAs?: string): { minW: number; minH: number } =>
+  displayAs === 'kpi' || displayAs === 'slicer' ? { minW: 2, minH: 2 } : displayAs === 'text' ? { minW: 2, minH: 1 } : { minW: 3, minH: 3 };
 
 /** Integer-snap and clamp into the grid; null when any field is not a finite number. */
 function repair(p?: GridPos): GridPos | null {
