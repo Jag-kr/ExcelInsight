@@ -28,6 +28,8 @@ export type PersistedSession = {
   addedInsightIds: string[];
   activeTab: string;
   sidebarCollapsed: boolean;
+  /** Typing rules the columns were analysed under (see heal-session.ts); absent = 1. */
+  analysisVersion?: number;
   /** Absent in sessions saved before the editor pane existed. */
   paneCollapsed?: boolean;
 };
