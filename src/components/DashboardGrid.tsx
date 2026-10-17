@@ -19,9 +19,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
-import { crossDimensionOf, repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { crossDimensionOf, kpiTitle, repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import type { PivotResult, PivotSpec } from '@/lib/pivot';
 import type { ColumnMeta } from '@/lib/data-analyzer';
-import type { ChartFormat } from '@/lib/format';
+import { numberFormatter, type ChartFormat } from '@/lib/format';
 import { countActive, type Filter, type Filters } from '@/lib/filters';
 import { FilterControl } from './dashboard/FilterControl';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -42,9 +43,9 @@ export interface DashboardItem {
   spec?: ManualChartSpec | ChartSpec;
   /** Per-card display options; absent = render exactly as before. */
   format?: ChartFormat;
-  /** Filters on this visual only, applied on top of the page filters (chart recipes and KPI cards). */
+  /** Filters on this visual only, applied on top of the page filters (chart recipes, KPI and pivot cards). */
   filters?: Filters;
-  displayAs?: 'chart' | 'table' | 'insight' | 'kpi' | 'slicer' | 'text';
+  displayAs?: 'chart' | 'table' | 'insight' | 'kpi' | 'slicer' | 'text' | 'pivot';
   /** Slicer cards: the column whose page filter this card edits. */
   slicerColumn?: string;
   /** Text cards: plain text, at most TEXT_MAX characters. */
@@ -57,6 +58,9 @@ export interface DashboardItem {
   kpiValue?: string;
   /** Change vs the previous period when the KPI compares; derived with kpiValue, never stored. */
   kpiDelta?: { pct: number; label: string };
+  pivotSpec?: PivotSpec;
+  /** Derived from pivotSpec + the filtered rows on each render, like kpiValue; never stored. */
+  pivot?: PivotResult;
   insightType?: 'repeating' | 'stats' | 'quality';
   insightContent?: any;
 }
@@ -294,6 +298,78 @@ function DashboardKpiCard({ item, index, onRename, fill }: { item: DashboardItem
   );
 }
 
+const pivotDefault = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
+
+/* Plain table DOM (no canvas, no portals) so the PDF capture sees what the screen shows. `onRename` absent =
+   the edit window's preview, which has its own title field. */
+export function DashboardPivotCard({ item, onRename, fill }: { item: DashboardItem; onRename?: (v: string) => void; fill?: boolean }) {
+  const { t } = useI18n();
+  const d = useDashboardT();
+  const { pivot, pivotSpec: spec } = item;
+  const fmt = item.format?.number || item.format?.decimals !== undefined ? numberFormatter(item.format) : (n: number) => pivotDefault.format(n);
+  const hasCols = !!spec?.cols;
+  const nBody = hasCols ? pivot?.colLabels.length ?? 0 : 1;
+  const cell = (v: number | null) => (v === null ? '' : fmt(v));
+  // Heat scale over the body cells only: totals would dominate it.
+  const body = pivot ? pivot.cells.flatMap(r => r.slice(0, nBody)).filter((v): v is number => v !== null) : [];
+  const min = Math.min(...body), max = Math.max(...body);
+  const heat = (v: number | null) => (!spec?.heat || v === null ? undefined
+    : { background: `hsl(${getChartColorVar(0)} / ${(0.08 + (max > min ? 0.5 * (v - min) / (max - min) : 0)).toFixed(3)})` });
+  const num = 'px-2 sm:px-4 py-1 sm:py-2 text-right tabular-nums whitespace-nowrap';
+  const cut = pivot && [
+    pivot.rowCount > pivot.rowLabels.length && d('pivotTruncated').replace('{a}', String(pivot.rowLabels.length)).replace('{b}', String(pivot.rowCount)).replace('{c}', t('rows')),
+    pivot.colCount > pivot.colLabels.length && d('pivotTruncated').replace('{a}', String(pivot.colLabels.length)).replace('{b}', String(pivot.colCount)).replace('{c}', t('columns').toLowerCase()),
+  ].filter(Boolean).join(' · ');
+  return (
+    <Card className="dashboard-panel animate-fade-in h-full flex flex-col">
+      <CardHeader className="p-3 sm:p-4 pb-0">
+        <CardTitle className="text-xs sm:text-sm font-semibold truncate">
+          {onRename ? <EditableTitle value={item.title} onChange={onRename} /> : item.title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className={`p-3 sm:p-4 pt-2 ${scrollBody(fill)}`}>
+        {!pivot || !spec || pivot.rowLabels.length === 0 ? (
+          <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+            {t('noDataToDisplay')}
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto w-full">
+              <Table className="text-xs sm:text-sm">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{spec.rows}</TableHead>
+                    {hasCols
+                      ? [...pivot.colLabels, d('pivotTotal')].map((l, i) => <TableHead key={i} className="text-right whitespace-nowrap">{l}</TableHead>)
+                      : <TableHead className="text-right whitespace-nowrap">{kpiTitle(spec.value, t)}</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pivot.rowLabels.map((label, r) => (
+                    <TableRow key={label}>
+                      <TableCell className="px-2 sm:px-4 py-1 sm:py-2 font-medium">{label}</TableCell>
+                      {(hasCols ? [...pivot.cells[r], pivot.rowTotals[r]] : pivot.cells[r]).map((v, c) => (
+                        <TableCell key={c} className={`${num}${c >= nBody ? ' font-semibold' : ''}`} style={c < nBody ? heat(v) : undefined}>{cell(v)}</TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                  <TableRow className="font-semibold">
+                    <TableCell className="px-2 sm:px-4 py-1 sm:py-2">{d('pivotTotal')}</TableCell>
+                    {(hasCols ? [...pivot.colTotals, pivot.grand] : [pivot.grand]).map((v, c) => (
+                      <TableCell key={c} className={num}>{cell(v)}</TableCell>
+                    ))}
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+            {cut && <p className="mt-2 text-[11px] text-muted-foreground">{cut}</p>}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 /* ─── Responsive size classes ─── */
 /* Base is a 2-column grid so KPI tiles sit two-up on a phone; every other
    tier spans both, which is the full width they had before. */
@@ -388,8 +464,9 @@ const isEditableChart = (item: DashboardItem) =>
   (!item.displayAs || item.displayAs === 'chart') &&
   (!!item.spec || (!!item.sourceKey && !item.sourceKey.startsWith('scatter:')));
 
-/* The pane also edits KPI and repeating-value cards. */
-const isEditable = (item: DashboardItem) => isEditableChart(item) || item.displayAs === 'kpi' || repeatColumnOf(item) !== null;
+/* The pane also edits KPI, pivot and repeating-value cards. */
+const isEditable = (item: DashboardItem) =>
+  isEditableChart(item) || item.displayAs === 'kpi' || (item.displayAs === 'pivot' && !!item.pivotSpec) || repeatColumnOf(item) !== null;
 
 /** Stable, id-taking handlers (see DashboardGrid): cards are memoised on these, so they must never change identity. */
 interface CardHandlers {
@@ -534,7 +611,7 @@ const DashboardCard = memo(function DashboardCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {/* Chart and KPI cards only: other cards never read item.filters. */}
+        {/* Chart, KPI and pivot cards only: other cards never read item.filters. */}
         {filterCount > 0 && (
           <span
             role="img"
@@ -565,6 +642,10 @@ const DashboardCard = memo(function DashboardCard({
       ) : item.displayAs === 'kpi' ? (
         <ChartErrorBoundary title={item.title}>
           <DashboardKpiCard item={item} index={index} onRename={renameTitle} fill={fill} />
+        </ChartErrorBoundary>
+      ) : item.displayAs === 'pivot' ? (
+        <ChartErrorBoundary title={item.title}>
+          <DashboardPivotCard item={item} onRename={renameTitle} fill={fill} />
         </ChartErrorBoundary>
       ) : item.displayAs === 'insight' ? (
         <ChartErrorBoundary title={item.title}>

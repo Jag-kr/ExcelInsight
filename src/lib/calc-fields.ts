@@ -68,7 +68,7 @@ export function dependentsOf(baseColumns: string[], fields: CalcField[], name: s
 /**
  * Items without the deleted field `name`: its slicer cards are dropped and it is stripped from every
  * item's own filters (the `filters` key goes when it empties). Returns `items` itself when nothing changes.
- * Chart/KPI cards whose recipe references the column are intentionally left alone: like any stale
+ * Chart, KPI and pivot cards whose recipe references the column are intentionally left alone: like any stale
  * recipe they render "no data" and the user decides whether to remove them.
  */
 export function removeFieldFromItems(items: DashboardItem[], name: string): DashboardItem[] {

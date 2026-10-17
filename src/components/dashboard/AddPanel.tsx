@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
-import { Search, BarChart3, Lightbulb, Wrench, Plus, Check, Sparkles, Type } from 'lucide-react';
+import { Search, BarChart3, Lightbulb, Wrench, Plus, Check, Sparkles, Table2, Type } from 'lucide-react';
 import type { ChartSuggestion, ColumnMeta } from '@/lib/data-analyzer';
 import type { ChartType } from '@/lib/chart-themes';
 import { computeRepeatingColumns, computeDataQuality, kpiCardId, NUMERIC_KPI_AGGS, aggKey, type KpiSpec, type KpiAgg } from '@/lib/derive-dashboard-item';
@@ -50,6 +50,7 @@ export interface AddPanelProps {
   onMergeColumns: () => void;
   onCustomChart: () => void;
   onAddText: () => void;
+  onAddPivot: () => void;
 }
 
 function SuggestionCard({
@@ -413,6 +414,7 @@ export function AddPanel({
   onMergeColumns,
   onCustomChart,
   onAddText,
+  onAddPivot,
 }: AddPanelProps) {
   const { t } = useI18n();
   const d = useDashboardT();
@@ -468,6 +470,12 @@ export function AddPanel({
                 <Wrench className="h-4 w-4" /> {t('customChart')}
               </Button>
               <p className="text-[11px] text-muted-foreground">{d('customChartHint')}</p>
+            </div>
+            <div className="space-y-1">
+              <Button variant="secondary" className="h-9 w-full gap-1.5 text-sm" onClick={onAddPivot}>
+                <Table2 className="h-4 w-4" /> {d('addPivot')}
+              </Button>
+              <p className="text-[11px] text-muted-foreground">{d('pivotHint')}</p>
             </div>
             <FieldsList
               columns={columns}
