@@ -4,7 +4,7 @@ import { buildDefaultDashboard } from './build-default-dashboard';
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartFormat } from './format';
 import {
-  deriveDashboardItems, crossDimensionOf, computeKpiValue, computeKpiCompare, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
+  deriveDashboardItems, crossDimensionOf, drillBaseOf, computeKpiValue, computeKpiCompare, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
   specForField, addFieldToSpec, specTitle, kpiTitle, kpiCardId, aggsForColumn, normalizeAgg,
   retargetKpi, retargetRepeat, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg, type KpiSpec,
 } from './derive-dashboard-item';
@@ -720,5 +720,73 @@ describe('computeKpiCompare', () => {
   });
   it('does not change the card id', () => {
     expect(kpiCardId(sum)).toBe(kpiCardId({ column: 'v', agg: 'sum' }));
+  });
+});
+
+describe('drill-down on date-grain charts', () => {
+  const ROWS = [
+    { Date: '2024-12-20', Region: 'N', Sales: 10 },
+    { Date: '2025-01-05', Region: 'N', Sales: 20 },
+    { Date: '2025-01-06', Region: 'S', Sales: 30 },
+    { Date: '2025-02-10', Region: 'S', Sales: 40 },
+    { Date: '2025-05-01', Region: 'N', Sales: 50 },
+    { Date: '2026-03-03', Region: 'S', Sales: 60 },
+    { Date: '', Region: 'S', Sales: 70 },
+  ];
+  const columns = analyzeColumns(ROWS);
+  const chart = (grain: DateGrain, extra: Partial<DashboardItem> = {}): DashboardItem => ({
+    id: 'c', title: 'c', type: 'bar', data: [], dataKeys: ['value'],
+    spec: { v: 2, dimension: 'Date', grain, measures: [{ column: 'Sales', agg: 'sum' }] }, ...extra,
+  });
+  const derive = (items: DashboardItem[], drill?: Record<string, { base: DateGrain; path: string[] }>) =>
+    deriveDashboardItems(items, [], columns, ROWS, t, undefined, drill);
+  const names = (i: DashboardItem) => i.data.map((r: { name: string }) => r.name);
+
+  it('a year chart drilled into a year shows that year by quarter', () => {
+    const [plain] = derive([chart('year')]);
+    expect(names(plain)).toEqual(['2024', '2025', '2026']);
+    expect(plain).not.toHaveProperty('drilled');
+    const [c] = derive([chart('year')], { c: { base: 'year', path: ['2025'] } });
+    expect(names(c)).toEqual(['2025-Q1', '2025-Q2']);
+    expect(c.data[0].value).toBe(90);
+    expect(c.drilled).toEqual({ path: ['2025'], label: '2025' });
+  });
+
+  it('two steps down reach the month, then the day', () => {
+    const [m] = derive([chart('year')], { c: { base: 'year', path: ['2025', '2025-Q1'] } });
+    expect(names(m)).toEqual(['2025-01', '2025-02']);
+    expect(m.drilled?.label).toBe('2025 › 2025-Q1');
+    const [d] = derive([chart('year')], { c: { base: 'year', path: ['2025', '2025-Q1', '2025-01'] } });
+    expect(names(d)).toEqual(['2025-01-05', '2025-01-06']);
+  });
+
+  it('a sourceKey trend card (month) drilled into a month shows days', () => {
+    const trend: DashboardItem = { id: 't', title: 't', type: 'line', data: [], dataKeys: ['total'], sourceKey: 'trend:Date:Sales' };
+    expect(drillBaseOf(trend, columns)).toBe('month');
+    const [t0] = deriveDashboardItems([trend], [], columns, ROWS, t, undefined, { t: { base: 'month', path: ['2025-01'] } });
+    expect(names(t0)).toEqual(['2025-01-05', '2025-01-06']);
+    expect(t0.drilled?.label).toBe('2025-01');
+  });
+
+  it('a stale drill (grain edited since) is ignored', () => {
+    const [c] = derive([chart('month')], { c: { base: 'year', path: ['2025'] } });
+    expect(names(c)).toContain('2024-12');
+    expect(c).not.toHaveProperty('drilled');
+  });
+
+  it('a drill that has run past the chain end is ignored', () => {
+    const [c] = derive([chart('day')], { c: { base: 'day', path: ['2025-01-05'] } });
+    expect(c).not.toHaveProperty('drilled');
+  });
+
+  it('per-visual filters still apply inside the drill', () => {
+    const [c] = derive([chart('year', { filters: { Region: { kind: 'in', values: ['N'] } } })], { c: { base: 'year', path: ['2025'] } });
+    expect(c.data).toEqual([{ name: '2025-Q1', value: 20 }, { name: '2025-Q2', value: 50 }]);
+  });
+
+  it('drillBaseOf: the grain for a date chart, null for ungrained charts and other cards', () => {
+    expect(drillBaseOf(chart('quarter'), columns)).toBe('quarter');
+    expect(drillBaseOf({ ...chart('year'), spec: { v: 2, dimension: 'Region', measures: [{ column: null, agg: 'count' }] } }, columns)).toBeNull();
+    expect(drillBaseOf({ ...chart('year'), displayAs: 'kpi' }, columns)).toBeNull();
   });
 });

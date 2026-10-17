@@ -9,13 +9,14 @@ import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
 import { GRID_COLS, presetLayout, sizeFromWidth, sortByLayout, widthForSize, type CardSize, type GridPos } from '@/lib/layout';
-import { crossDimensionOf, deriveDashboardItems, kpiCardId, kpiTitle, repeatColumnOf, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { crossDimensionOf, drillBaseOf, deriveDashboardItems, kpiCardId, kpiTitle, repeatColumnOf, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 import type { PivotSpec } from '@/lib/pivot';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { applyFilters, countActive, distinctValues, filterKindFor, normalizeFilters, setFilter, type Filters } from '@/lib/filters';
 import { healSession, ANALYSIS_VERSION } from '@/lib/heal-session';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
+import { canDrill, type DrillState } from '@/lib/drill';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import type { DateNote } from '@/lib/date-columns';
 import { useUndoableState } from '@/hooks/use-undoable-state';
@@ -218,6 +219,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const [editId, setEditId] = useState<string | null>(null);
   // Transient cross-filter from a chart click: not persisted, not in undo history.
   const [cross, setCross] = useState<{ itemId: string; column: string; value: string } | null>(null);
+  // Per-card drill into a date bucket (year -> quarter -> month -> day): same lifetime as cross. Stale entries (card removed, grain edited) are ignored by derive.
+  const [drill, setDrill] = useState<Record<string, DrillState>>({});
   const [mobileClearConfirmOpen, setMobileClearConfirmOpen] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
 
@@ -306,6 +309,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     setSelectedId(null);
     setEditId(null);
     setCross(null);
+    setDrill({});
     toast.success(t('resetLayout'), { action: { label: t('undo'), onClick: () => setDashboardItems(() => before) } });
   }, [dashboardItems, data, columns, suggestions, t, setDashboardItems]);
 
@@ -314,6 +318,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     setSelectedId(null);
     setEditId(null);
     setCross(null);
+    setDrill({});
     setDashboardItems([]);
     toast.success(t('clearAll'), { action: { label: t('undo'), onClick: () => setDashboardItems(() => before) } });
   }, [dashboardItems, t, setDashboardItems]);
@@ -411,10 +416,22 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const handleChartSelect = useCallback((itemId: string, label: string) => {
     const item = dashboardItems.find(i => i.id === itemId);
     const column = item && crossDimensionOf(item, columns);
+    if (item && !column) {
+      // A date-grain chart: zoom into the clicked bucket. No-op at the finest grain and on the blank ('Unknown') bucket.
+      const base = drillBaseOf(item, columns);
+      const cur = drill[itemId]?.base === base ? drill[itemId].path : [];
+      if (base && label !== 'Unknown' && canDrill(base, cur)) setDrill(dr => ({ ...dr, [itemId]: { base, path: [...cur, label] } }));
+      return;
+    }
     // 'Unknown' is the blank bucket, which an `in` filter can never match.
     if (!column || label === 'Unknown') return;
     setCross(c => (c?.itemId === itemId && c.value === label ? null : { itemId, column, value: label }));
-  }, [dashboardItems, columns]);
+  }, [dashboardItems, columns, drill]);
+
+  const handleDrillUp = useCallback((itemId: string) => setDrill(dr => {
+    const { [itemId]: cur, ...rest } = dr;
+    return cur && cur.path.length > 1 ? { ...rest, [itemId]: { ...cur, path: cur.path.slice(0, -1) } } : rest;
+  }), []);
 
   // Dropped automatically once its source card is removed or re-pointed at another axis.
   const activeCross = useMemo(() => {
@@ -425,8 +442,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const liveItems = useMemo(
     () => deriveDashboardItems(dashboardItems, filteredSuggestions, filteredColumns, filteredData, t, activeCross
       ? { itemId: activeCross.itemId, filters: { [activeCross.column]: { kind: 'in', values: [activeCross.value] } } }
-      : undefined),
-    [dashboardItems, filteredSuggestions, filteredColumns, filteredData, t, activeCross]
+      : undefined, drill),
+    [dashboardItems, filteredSuggestions, filteredColumns, filteredData, t, activeCross, drill]
   );
 
   const handleMerge = useCallback((col1: string, col2: string, newName: string, separator: string) => {
@@ -1061,6 +1078,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     onSelect={isDesktop ? selectCard : undefined}
                     onEdit={openEdit}
                     onChartSelect={handleChartSelect}
+                    onDrillUp={handleDrillUp}
                     columns={columns}
                     pageFilters={filters}
                     onPageFilterChange={(c, f) => setFilters(prev => setFilter(prev, c, f))}
