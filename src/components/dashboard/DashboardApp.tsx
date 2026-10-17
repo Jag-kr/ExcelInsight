@@ -12,6 +12,7 @@ import { GRID_COLS, presetLayout, sizeFromWidth, sortByLayout, widthForSize, typ
 import { crossDimensionOf, deriveDashboardItems, kpiCardId, kpiTitle, repeatColumnOf, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { applyFilters, countActive, distinctValues, filterKindFor, normalizeFilters, setFilter, type Filters } from '@/lib/filters';
+import { healSession, ANALYSIS_VERSION } from '@/lib/heal-session';
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
@@ -169,7 +170,15 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
    * in a server-rendered component: the landing page loads this with
    * `ssr: false`, so there is no server HTML to mismatch against.
    */
-  const [initial] = useState<PersistedSession | null>(() => (initialUpload ? null : loadSession()));
+  const [{ initial, healed }] = useState<{ initial: PersistedSession | null; healed: number }>(() => {
+    const saved = initialUpload ? null : loadSession();
+    if (!saved) return { initial: null, healed: 0 };
+    const { session, removed } = healSession(saved);
+    return { initial: session, healed: removed };
+  });
+  useEffect(() => {
+    if (healed) toast.info(d('staleChartsRemoved').replace('{n}', String(healed)));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- once, on restore
   // Uploaded/merged rows and their analysis. Calculated fields are layered on top below (never stored in these).
   const [baseData, setBaseData] = useState<Record<string, any>[]>(() => initialUpload?.data ?? initial?.data ?? []);
   const [fileName, setFileName] = useState(() => initialUpload?.fileName ?? initial?.fileName ?? '');
@@ -278,7 +287,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
           data: baseData, fileName, columns: baseColumns, suggestions, dashboardItems, calcFields, filters,
           addedChartIds: Array.from(addedChartIds),
           addedInsightIds: Array.from(addedInsightIds),
-          activeTab, sidebarCollapsed,
+          activeTab, sidebarCollapsed, analysisVersion: ANALYSIS_VERSION,
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       } catch (e) {
