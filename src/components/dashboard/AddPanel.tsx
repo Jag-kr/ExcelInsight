@@ -16,6 +16,7 @@ import type { ChartType } from '@/lib/chart-themes';
 import { computeRepeatingColumns, computeDataQuality, kpiCardId, NUMERIC_KPI_AGGS, aggKey, type KpiSpec, type KpiAgg } from '@/lib/derive-dashboard-item';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FieldsList } from './FieldsList';
+import { TEMPLATE_IDS, templateIssue, type TemplateId } from '@/lib/templates';
 
 const DynamicChart = dynamic(() => import('../DynamicChart').then(m => m.DynamicChart), {
   ssr: false,
@@ -27,7 +28,7 @@ const DynamicChart = dynamic(() => import('../DynamicChart').then(m => m.Dynamic
   ),
 });
 
-type AddTab = 'fields' | 'suggestions' | 'metrics' | 'insights' | 'text';
+type AddTab = 'fields' | 'suggestions' | 'metrics' | 'insights' | 'text' | 'templates';
 /** Tabs whose cards the search box filters; Fields has its own search. */
 const SEARCHABLE: AddTab[] = ['suggestions', 'metrics', 'insights'];
 
@@ -51,6 +52,7 @@ export interface AddPanelProps {
   onCustomChart: () => void;
   onAddText: () => void;
   onAddPivot: () => void;
+  onApplyTemplate: (id: TemplateId) => void;
 }
 
 function SuggestionCard({
@@ -415,6 +417,7 @@ export function AddPanel({
   onCustomChart,
   onAddText,
   onAddPivot,
+  onApplyTemplate,
 }: AddPanelProps) {
   const { t } = useI18n();
   const d = useDashboardT();
@@ -443,9 +446,9 @@ export function AddPanel({
               {d('addPanelTitle')}
             </h2>
             <TabsList className="flex h-9 w-full justify-start overflow-x-auto">
-              {(['fields', 'suggestions', 'metrics', 'insights', 'text'] as const).map(value => (
+              {(['fields', 'suggestions', 'metrics', 'insights', 'text', 'templates'] as const).map(value => (
                 <TabsTrigger key={value} value={value} className="shrink-0 px-2.5 py-1 text-xs">
-                  {value === 'fields' ? d('fields') : value === 'suggestions' ? d('suggestionsTab') : t(value)}
+                  {value === 'fields' ? d('fields') : value === 'suggestions' ? d('suggestionsTab') : value === 'templates' ? d('templatesTab') : t(value)}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -504,6 +507,25 @@ export function AddPanel({
             <Button className="h-9 w-full gap-1.5 text-sm" onClick={() => { onAddText(); toast.success(d('addedToBoard')); }}>
               <Type className="h-4 w-4" /> {d('addText')}
             </Button>
+          </TabsContent>
+
+          <TabsContent value="templates" className="mt-0 space-y-2 p-4">
+            <p className="text-[11px] text-muted-foreground">{d('templatesHint')}</p>
+            {TEMPLATE_IDS.map(id => {
+              const issue = templateIssue(id, columns);
+              const key = `template${id[0].toUpperCase()}${id.slice(1)}` as 'templateSales';
+              return (
+                <div key={id} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-secondary/30">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">{d(key)}</p>
+                    <p className="text-[11px] text-muted-foreground">{issue ? d(issue === 'needsDate' ? 'templateNeedsDate' : 'templateNeedsMeasure') : d(`${key}Desc`)}</p>
+                  </div>
+                  <Button size="sm" className="h-8 shrink-0 text-xs" disabled={!!issue} onClick={() => onApplyTemplate(id)}>
+                    {d('applyTemplate')}
+                  </Button>
+                </div>
+              );
+            })}
           </TabsContent>
         </Tabs>
       </SheetContent>
