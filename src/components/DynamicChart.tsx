@@ -41,6 +41,8 @@ interface DynamicChartProps {
    * Pointer-only: keyboard users have page filters and per-visual filters.
    */
   onSelect?: (label: string) => void;
+  /** Fill the height of the parent (grid cell) instead of using `size`. Default: content-sized. */
+  fill?: boolean;
 }
 
 const SIZE_CLASSES: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
@@ -76,7 +78,7 @@ const OVERFLOW_CHART_TYPES: ChartType[] = ['horizontalBar', 'pie', 'scatter', 'r
 
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
-  onChangeType, onRenameTitle, showControls = true, size = 'md', stacked = false, format, onSelect,
+  onChangeType, onRenameTitle, showControls = true, size = 'md', stacked = false, format, onSelect, fill = false,
 }: DynamicChartProps) {
   const { t } = useI18n();
   const chartRef = useRef<HTMLDivElement>(null);
@@ -337,7 +339,7 @@ export function DynamicChart({
   };
 
   return (
-    <Card ref={chartRef} className="bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full flex flex-col">
+    <Card ref={chartRef} className={`bg-card/80 backdrop-blur-xl border-border/50 shadow-lg animate-fade-in h-full flex flex-col${fill ? ' min-h-0' : ''}`}>
       <CardHeader className="p-2 sm:p-3 lg:p-4 pb-0">
         <div className="flex flex-col xs:flex-row items-start justify-between gap-1.5 xs:gap-2">
           <div className="min-w-0 flex-1">
@@ -505,17 +507,17 @@ export function DynamicChart({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-3 sm:p-4 pt-2 flex-1">
+      <CardContent className={`p-3 sm:p-4 pt-2 flex-1${fill ? ' min-h-[120px] flex flex-col' : ''}`}>
         {data.length === 0 ? (
-          <div className={`flex items-center justify-center text-sm text-muted-foreground ${SIZE_CLASSES[size]}`}>
+          <div className={`flex items-center justify-center text-sm text-muted-foreground ${fill ? 'flex-1' : SIZE_CLASSES[size]}`}>
             {t('noDataToDisplay')}
           </div>
         ) : (
           <div
-            className="transition-opacity duration-200"
+            className={`transition-opacity duration-200${fill ? ' flex-1 min-h-0' : ''}`}
             style={{ opacity: transitioning ? 0 : 1 }}
           >
-            <ChartContainer config={chartConfig} className={`w-full ${SIZE_CLASSES[size]}`}>
+            <ChartContainer config={chartConfig} className={`w-full ${fill ? 'h-full' : SIZE_CLASSES[size]}`}>
               {renderChart() || <div />}
             </ChartContainer>
           </div>
