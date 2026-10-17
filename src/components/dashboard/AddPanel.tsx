@@ -493,7 +493,7 @@ export function AddPanel({
 
           <TabsContent value="text" className="mt-0 space-y-3 p-4">
             <p className="text-sm text-muted-foreground">{d('textTabHint')}</p>
-            <Button className="h-9 w-full gap-1.5 text-sm" onClick={() => { onAddText(); confirm(d('addText')); }}>
+            <Button className="h-9 w-full gap-1.5 text-sm" onClick={() => { onAddText(); toast.success(d('addedToBoard')); }}>
               <Type className="h-4 w-4" /> {d('addText')}
             </Button>
           </TabsContent>

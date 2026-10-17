@@ -30,6 +30,8 @@ interface DynamicChartProps {
   onChangeType?: (type: ChartType) => void;
   onRenameTitle?: (title: string) => void;
   showControls?: boolean;
+  /** Header chart-type switcher; the title, description and download button are unaffected. */
+  showTypeSwitcher?: boolean;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   /** Stack series on one bar/area instead of grouping them side by side. */
   stacked?: boolean;
@@ -78,7 +80,7 @@ const OVERFLOW_CHART_TYPES: ChartType[] = ['horizontalBar', 'pie', 'scatter', 'r
 
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
-  onChangeType, onRenameTitle, showControls = true, size = 'md', stacked = false, format, onSelect, fill = false,
+  onChangeType, onRenameTitle, showControls = true, showTypeSwitcher = true, size = 'md', stacked = false, format, onSelect, fill = false,
 }: DynamicChartProps) {
   const { t } = useI18n();
   const chartRef = useRef<HTMLDivElement>(null);
@@ -380,7 +382,7 @@ export function DynamicChart({
             )}
           </div>
           <div className="flex items-center gap-0.5 shrink-0" data-export-hide data-pdf-hide>
-            {showControls && onChangeType && (
+            {showControls && showTypeSwitcher && onChangeType && (
               <TooltipProvider delayDuration={300}>
                 {/* Primary chart type pills */}
                 <div className="hidden sm:flex items-center gap-0.5 bg-secondary/50 rounded-md p-0.5">
