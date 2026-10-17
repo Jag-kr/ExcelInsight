@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n';
 import { toast } from 'sonner';
 import { trackEvent, getFileExt } from '@/lib/analytics';
+import type { DateNote } from '@/lib/date-columns';
 
 const ACCEPTED_EXTENSIONS = ['.xlsx', '.xls', '.csv'];
 const ACCEPTED_MIME_TYPES = new Set([
@@ -26,7 +27,7 @@ function prefetchDashboard(): void {
 }
 
 interface FileUploadProps {
-  onDataLoaded: (data: Record<string, any>[], fileName: string) => void;
+  onDataLoaded: (data: Record<string, any>[], fileName: string, notes?: DateNote[]) => void;
   onClear?: () => void;
 }
 
@@ -74,7 +75,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
       try {
         const [XLSX, { readFirstSheet }] = await Promise.all([import('xlsx'), import('@/lib/data-analyzer')]);
         const isText = !['.xlsx', '.xls'].includes(getFileExt(file.name));
-        const { rows: jsonData, sheetName, skipped } = readFirstSheet(XLSX, new Uint8Array(e.target?.result as ArrayBuffer), isText);
+        const { rows: jsonData, sheetName, skipped, notes } = readFirstSheet(XLSX, new Uint8Array(e.target?.result as ArrayBuffer), isText);
         // Only the first sheet is parsed. Dropping the rest without a word read
         // as data loss on multi-sheet workbooks, so name what was and wasn't read.
         if (skipped.length > 0) {
@@ -82,7 +83,7 @@ export function FileUpload({ onDataLoaded, onClear }: FileUploadProps) {
             `Loaded sheet "${sheetName}" — ${skipped.length} other sheet${skipped.length > 1 ? 's were' : ' was'} not imported.`,
           );
         }
-        onDataLoaded(jsonData, file.name);
+        onDataLoaded(jsonData, file.name, notes);
         setLoading(false);
       } catch (err: any) {
         console.error('Failed to parse file:', err);

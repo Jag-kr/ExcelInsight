@@ -1,5 +1,6 @@
 import type { WorkSheet, CellObject, SSF } from 'xlsx';
 import { parseDateStrict } from './dates';
+import { normalizeDateColumns } from './date-columns';
 
 export type ColumnType = 'numeric' | 'categorical' | 'date' | 'text' | 'range' | 'id';
 
@@ -116,7 +117,10 @@ export function readFirstSheet(XLSX: typeof import('xlsx'), data: Uint8Array, is
   const sheet = workbook.Sheets[sheetName];
   const rawSheet = isText ? XLSX.read(data, { type: 'array', raw: true }).Sheets[sheetName] : undefined;
   normalizeDateCells(sheet, XLSX.SSF, rawSheet);
-  return { rows: XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet), sheetName, skipped };
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
+  // Column-level repairs (Excel serial numbers, day-first text); `notes` says what changed.
+  const notes = normalizeDateColumns(rows, { date1904: !!workbook.Workbook?.WBProps?.date1904 });
+  return { rows, sheetName, skipped, notes };
 }
 
 function detectColumnType(values: any[], colName: string): ColumnType {
