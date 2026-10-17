@@ -78,6 +78,9 @@ const en = {
   addSlicer: 'Add slicer',
   slicerColumnMissing: 'Column not found',
   slicerHint: 'This slicer edits the page filters; changes also show in the Filter tab.',
+  addText: 'Add text',
+  textPlaceholder: 'Click to add text',
+  textHint: 'Click the text on the card to edit it',
 } as const;
 
 export type DashboardKey = keyof typeof en;
@@ -153,6 +156,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     addSlicer: 'स्लाइसर जोड़ें',
     slicerColumnMissing: 'कॉलम नहीं मिला',
     slicerHint: 'यह स्लाइसर पेज फ़िल्टर बदलता है; बदलाव फ़िल्टर टैब में भी दिखते हैं।',
+    addText: 'टेक्स्ट जोड़ें',
+    textPlaceholder: 'टेक्स्ट जोड़ने के लिए क्लिक करें',
+    textHint: 'संपादित करने के लिए कार्ड पर टेक्स्ट पर क्लिक करें',
   },
   es: {
     values: 'Valores',
@@ -223,6 +229,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     addSlicer: 'Añadir segmentación',
     slicerColumnMissing: 'Columna no encontrada',
     slicerHint: 'Esta segmentación edita los filtros de la página; los cambios también aparecen en la pestaña Filtros.',
+    addText: 'Añadir texto',
+    textPlaceholder: 'Haz clic para añadir texto',
+    textHint: 'Haz clic en el texto de la tarjeta para editarlo',
   },
   zh: {
     values: '数值',
@@ -293,6 +302,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     addSlicer: '添加切片器',
     slicerColumnMissing: '未找到该列',
     slicerHint: '此切片器编辑页面筛选；更改也会显示在“筛选”选项卡中。',
+    addText: '添加文本',
+    textPlaceholder: '点击添加文本',
+    textHint: '点击卡片上的文字即可编辑',
   },
   fr: {
     values: 'Valeurs',
@@ -363,6 +375,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     addSlicer: 'Ajouter un segment',
     slicerColumnMissing: 'Colonne introuvable',
     slicerHint: 'Ce segment modifie les filtres de la page ; les changements apparaissent aussi dans l’onglet Filtres.',
+    addText: 'Ajouter du texte',
+    textPlaceholder: 'Cliquez pour ajouter du texte',
+    textHint: 'Cliquez sur le texte de la carte pour le modifier',
   },
   de: {
     values: 'Werte',
@@ -433,6 +448,9 @@ const dictionaries: Record<Language, Record<DashboardKey, string>> = {
     addSlicer: 'Datenschnitt hinzufügen',
     slicerColumnMissing: 'Spalte nicht gefunden',
     slicerHint: 'Dieser Datenschnitt bearbeitet die Seitenfilter; Änderungen erscheinen auch im Tab Filter.',
+    addText: 'Text hinzufügen',
+    textPlaceholder: 'Zum Hinzufügen von Text klicken',
+    textHint: 'Klicken Sie auf den Text der Karte, um ihn zu bearbeiten',
   },
 };
 

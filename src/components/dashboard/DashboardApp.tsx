@@ -22,7 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   BarChart3, Merge, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
   Sparkles, RotateCcw, Trash2, X, MoreHorizontal, ChevronRight,
-  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Undo2, Redo2,
+  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Undo2, Redo2, Type,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -539,6 +539,16 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     selectCard(id);
   }, [dashboardItems, selectCard, setDashboardItems]);
 
+  const handleAddText = useCallback(() => {
+    const id = `text:${Date.now()}`;
+    setDashboardItems(prev => [...prev, {
+      id, title: d('addText'), type: 'bar' as const, data: [], dataKeys: [], xKey: '',
+      displayAs: 'text' as const, text: '', size: 'md' as const,
+    }]);
+    trackEvent('chart_added', { source: 'text' });
+    selectCard(id);
+  }, [d, selectCard, setDashboardItems]);
+
   // Candidates for `in` slicers, from the unfiltered rows (like DataFilter) so a pick never hides its siblings.
   const slicerValues = useMemo(() => {
     const out: Record<string, string[]> = {};
@@ -879,6 +889,12 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                         </button>
                       </Badge>
                     )}
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7" onClick={handleAddText}
+                      aria-label={d('addText')} title={d('addText')}
+                    >
+                      <Type className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost" size="icon" className="h-7 w-7" disabled={!canUndo} onClick={undo}
                       aria-label={t('undo')} title={`${t('undo')} (Ctrl+Z)`}

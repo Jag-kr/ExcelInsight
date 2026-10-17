@@ -6,7 +6,7 @@ type AnalyticsEvent =
   | { name: 'file_parse_failed'; props: { fileExt: string } }
   | { name: 'file_analysis_empty'; props: { fileExt: string; colCount: number } }
   | { name: 'sample_data_loaded'; props: { source: 'hero' | 'query' } }
-  | { name: 'chart_added'; props: { source: 'suggestion' | 'manual' | 'insight' | 'table' | 'kpi' | 'field' | 'slicer' } }
+  | { name: 'chart_added'; props: { source: 'suggestion' | 'manual' | 'insight' | 'table' | 'kpi' | 'field' | 'slicer' | 'text' } }
   | { name: 'export_pdf'; props: { status: 'success' | 'failed'; chartCount: number; tableCount: number; insightCount: number } }
   | { name: 'export_png'; props: { status: 'success' | 'failed'; chartType: string } };
 
