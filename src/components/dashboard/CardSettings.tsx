@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import type { ColumnMeta } from '@/lib/data-analyzer';
-import { aggKey, aggregateChart, aggsForColumn, normalizeAgg, repeatColumnOf, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { aggKey, aggregateChart, aggsForColumn, normalizeAgg, repeatColumnOf, type ChartSpec, type DateGrain, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { ChartFormat } from '@/lib/format';
@@ -16,6 +16,8 @@ import type { CardSize } from '@/lib/layout';
 const ROWS = '__rows';
 const LABEL = 'mb-1 block text-xs text-muted-foreground';
 const TRIGGER = 'bg-secondary border-border';
+const GRAINS = ['week', 'month', 'quarter', 'year'] as const;
+const GRAIN_KEY = { week: 'grainWeek', month: 'grainMonth', quarter: 'grainQuarter', year: 'grainYear' } as const;
 
 export interface CardSettingsProps {
   /** Filtered columns, for the builder and the pickers. */
@@ -51,6 +53,8 @@ export function CardSettings({ columns, data, selected, size, onChange, onChange
   const { item, spec } = selected;
 
   const kpi = item.displayAs === 'kpi' ? item.kpiSpec : undefined;
+  const compareId = useId();
+  const dateCols = columns.filter(c => c.type === 'date');
   const repeatCol = repeatColumnOf(item);
   // Only chart recipes and KPI cards have formatting; any other card falls back to Data.
   // The stored item has no series list: re-derive it from the spec, as the chart does.
@@ -115,7 +119,7 @@ export function CardSettings({ columns, data, selected, size, onChange, onChange
             <label className={LABEL}>{d('column')}</label>
             <Select value={kpi.column ?? ROWS} onValueChange={v => {
               const column = v === ROWS ? null : v;
-              onChangeKpi({ column, agg: normalizeAgg(columns, column, kpi.agg, true) });
+              onChangeKpi({ ...kpi, column, agg: normalizeAgg(columns, column, kpi.agg, true) });
             }}>
               <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -133,6 +137,45 @@ export function CardSettings({ columns, data, selected, size, onChange, onChange
               </SelectContent>
             </Select>
           </div>
+          {dateCols.length > 0 && (
+            <>
+              <div className="flex items-center gap-2">
+                <input
+                  id={compareId}
+                  type="checkbox"
+                  checked={!!kpi.compare}
+                  onChange={e => {
+                    const { compare: _, ...rest } = kpi;
+                    onChangeKpi(e.target.checked ? { ...rest, compare: { column: dateCols[0].name, grain: 'month' } } : rest);
+                  }}
+                  className="h-4 w-4 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <label htmlFor={compareId} className="text-xs text-foreground">{d('compareLabel')}</label>
+              </div>
+              {kpi.compare && (
+                <>
+                  <div>
+                    <label className={LABEL}>{d('compareDateColumn')}</label>
+                    <Select value={kpi.compare.column} onValueChange={v => onChangeKpi({ ...kpi, compare: { ...kpi.compare!, column: v } })}>
+                      <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {dateCols.map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className={LABEL}>{d('comparePeriod')}</label>
+                    <Select value={kpi.compare.grain} onValueChange={v => onChangeKpi({ ...kpi, compare: { ...kpi.compare!, grain: v as DateGrain } })}>
+                      <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {GRAINS.map(g => <SelectItem key={g} value={g}>{d(GRAIN_KEY[g])}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+            </>
+          )}
         </div>
       )}
       {showData && repeatCol && onChangeRepeatColumn && (
