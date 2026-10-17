@@ -4,7 +4,7 @@ import { getChartColor, getChartColorVar } from '@/lib/chart-themes';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { DynamicChart } from '../DynamicChart';
 import { ChartErrorBoundary } from '../ChartErrorBoundary';
-import { kpiDeltaText, type DashboardItem } from '../DashboardGrid';
+import { DashboardPivotCard, kpiDeltaText, type DashboardItem } from '../DashboardGrid';
 import { CardSettings, type CardSettingsProps } from './CardSettings';
 
 export interface EditCardDialogProps extends CardSettingsProps {
@@ -16,7 +16,7 @@ export interface EditCardDialogProps extends CardSettingsProps {
   previewIndex: number;
 }
 
-/* What the left side shows: a chart for chart cards, a big tile for KPI cards, nothing for the rest
+/* What the left side shows: a chart for chart cards, a big tile for KPI cards, the table for pivots, nothing for the rest
    (repeating-values cards have no stand-alone rendering worth a preview: the settings take the window). */
 function Preview({ item, index }: { item: DashboardItem; index: number }) {
   const d = useDashboardT();
@@ -29,6 +29,13 @@ function Preview({ item, index }: { item: DashboardItem; index: number }) {
           {item.kpiDelta && <p className="mt-2 truncate text-sm tabular-nums text-muted-foreground">{kpiDeltaText(item.kpiDelta, d('vsPrevious'))}</p>}
         </div>
       </div>
+    );
+  }
+  if (item.displayAs === 'pivot') {
+    return (
+      <ChartErrorBoundary title={item.title}>
+        <DashboardPivotCard item={item} fill />
+      </ChartErrorBoundary>
     );
   }
   return (
@@ -53,7 +60,7 @@ function Preview({ item, index }: { item: DashboardItem; index: number }) {
 export function EditCardDialog({ open, onOpenChange, previewItem, previewIndex, ...settings }: EditCardDialogProps) {
   const d = useDashboardT();
   const { item } = settings.selected;
-  const hasPreview = !!previewItem && (previewItem.displayAs === 'kpi' || !previewItem.displayAs || previewItem.displayAs === 'chart');
+  const hasPreview = !!previewItem && (previewItem.displayAs === 'kpi' || previewItem.displayAs === 'pivot' || !previewItem.displayAs || previewItem.displayAs === 'chart');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

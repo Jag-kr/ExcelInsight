@@ -10,6 +10,7 @@ import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, Cha
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
 import { GRID_COLS, presetLayout, sizeFromWidth, sortByLayout, widthForSize, type CardSize, type GridPos } from '@/lib/layout';
 import { crossDimensionOf, deriveDashboardItems, kpiCardId, kpiTitle, repeatColumnOf, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
+import type { PivotSpec } from '@/lib/pivot';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { applyFilters, countActive, distinctValues, filterKindFor, normalizeFilters, setFilter, type Filters } from '@/lib/filters';
 import { healSession, ANALYSIS_VERSION } from '@/lib/heal-session';
@@ -534,8 +535,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     return { item, spec };
   }, [editId, dashboardItems, columns]);
 
-  // Chart recipes, KPI cards and repeating-value cards have settings; slicers, text, tables, scatter plots do not.
-  const editing = selected && (selected.spec || (selected.item.displayAs === 'kpi' && selected.item.kpiSpec) || repeatColumnOf(selected.item)) ? selected : null;
+  // Chart recipes, KPI, pivot and repeating-value cards have settings; slicers, text, tables, scatter plots do not.
+  const editing = selected && (selected.spec || (selected.item.displayAs === 'kpi' && selected.item.kpiSpec) || (selected.item.displayAs === 'pivot' && selected.item.pivotSpec) || repeatColumnOf(selected.item)) ? selected : null;
   // Undo of a card's creation (or its removal) drops the id, so a redo or an Undo toast cannot re-open the window by itself.
   useEffect(() => { if (editId && !editing) setEditId(null); }, [editId, editing]);
 
@@ -575,6 +576,12 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     const r = retargetKpi(selected.item, spec, dashboardItems.map(i => i.id), t);
     retargetCard(selected.item.id, r.patch, r.newId);
   }, [selected, dashboardItems, retargetCard, t]);
+
+  const handleChangePivot = useCallback((pivotSpec: PivotSpec) => {
+    if (!selected) return;
+    const id = selected.item.id;
+    setDashboardItems(prev => prev.map(i => (i.id === id ? { ...i, pivotSpec } : i)));
+  }, [selected, setDashboardItems]);
 
   const handleChangeFormat = useCallback((format: ChartFormat | undefined) => {
     if (!selected) return;
@@ -647,6 +654,21 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     }
     selectCard(id);
   }, [dashboardItems, selectCard, setDashboardItems]);
+
+  /* A starter pivot: row counts per first category (or first non-id column), refined in the edit window. */
+  const handleAddPivot = useCallback(() => {
+    const col = filteredColumns.find(c => c.type === 'categorical') ?? filteredColumns.find(c => c.type !== 'id');
+    if (!col) { toast.info(d('noChartableField')); return; }
+    const id = `pivot:${Date.now()}`;
+    setDashboardItems(prev => [...prev, {
+      id, title: d('pivotTitle'), type: 'bar' as const, data: [], dataKeys: [], xKey: '',
+      displayAs: 'pivot' as const, size: 'md' as const,
+      pivotSpec: { rows: col.name, value: { column: null, agg: 'count' as const }, ...(col.type === 'date' && { rowGrain: 'month' as const }) },
+    }]);
+    trackEvent('chart_added', { source: 'pivot' });
+    selectCard(id);
+    toast.success(`${d('addedToBoard')}: ${d('pivotTitle')}`);
+  }, [filteredColumns, d, selectCard, setDashboardItems]);
 
   const handleAddText = useCallback(() => {
     const id = `text:${Date.now()}`;
@@ -1185,6 +1207,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
             onChangeTitle={handleChangeTitle}
             onChangeSize={size => resizeCard(editing.item.id, size)}
             onChangeKpi={handleChangeKpi}
+            onChangePivot={handleChangePivot}
             onChangeRepeatColumn={handleChangeRepeat}
             onChangeFormat={handleChangeFormat}
             onChangeFilters={handleChangeFilters}
@@ -1239,6 +1262,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
           onMergeColumns={() => setMergeOpen(true)}
           onCustomChart={handleCustomChart}
           onAddText={handleAddText}
+          onAddPivot={handleAddPivot}
         />
       </Suspense>
 

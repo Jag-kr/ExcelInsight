@@ -1,6 +1,6 @@
 import { useId, useMemo, useState } from 'react';
 import type { ColumnMeta } from '@/lib/data-analyzer';
-import { aggKey, aggregateChart, aggsForColumn, normalizeAgg, repeatColumnOf, type ChartSpec, type DateGrain, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { aggKey, aggregateChart, aggsForColumn, normalizeAgg, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { ChartFormat } from '@/lib/format';
@@ -9,11 +9,13 @@ import { useDashboardT } from '@/lib/i18n/dashboard';
 import { ManualChartBuilder } from '../ManualChartBuilder';
 import type { DashboardItem } from '../DashboardGrid';
 import type { Filters } from '@/lib/filters';
+import type { PivotSpec } from '@/lib/pivot';
 import { CommitInput, FormatTab, Pick as PickField } from './FormatTab';
 import { VisualFilters } from './VisualFilters';
 import type { CardSize } from '@/lib/layout';
 
 const ROWS = '__rows';
+const NONE = '__none';
 const LABEL = 'mb-1 block text-xs text-muted-foreground';
 const TRIGGER = 'bg-secondary border-border';
 const GRAINS = ['week', 'month', 'quarter', 'year'] as const;
@@ -36,6 +38,8 @@ export interface CardSettingsProps {
   onChangeSize: (size: CardSize) => void;
   /** Live edits for a KPI card. */
   onChangeKpi?: (spec: KpiSpec) => void;
+  /** Live edits for a pivot table. */
+  onChangePivot?: (spec: PivotSpec) => void;
   /** Live edits for a repeating-values card: the column to tally. */
   onChangeRepeatColumn?: (column: string) => void;
   /** Live edits to the chart or KPI card's formatting; undefined clears it. */
@@ -45,7 +49,7 @@ export interface CardSettingsProps {
 }
 
 /** Every setting of one card (title, size, data, format, filters), without chrome: the edit window supplies that. */
-export function CardSettings({ columns, data, selected, size, onChange, onChangeTitle, onChangeSize, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onChangeFilters }: CardSettingsProps) {
+export function CardSettings({ columns, data, selected, size, onChange, onChangeTitle, onChangeSize, onChangeKpi, onChangePivot, onChangeRepeatColumn, onChangeFormat, onChangeFilters }: CardSettingsProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [tab, setTab] = useState<'data' | 'format' | 'filters'>('data');
@@ -53,18 +57,45 @@ export function CardSettings({ columns, data, selected, size, onChange, onChange
   const { item, spec } = selected;
 
   const kpi = item.displayAs === 'kpi' ? item.kpiSpec : undefined;
+  const pivot = item.displayAs === 'pivot' ? item.pivotSpec : undefined;
   const compareId = useId();
+  const heatId = useId();
   const dateCols = columns.filter(c => c.type === 'date');
   const repeatCol = repeatColumnOf(item);
-  // Only chart recipes and KPI cards have formatting; any other card falls back to Data.
+  // Only chart recipes and KPI cards have formatting (ponytail: pivots take item.format as-is, no tab); any other card falls back to Data.
   // The stored item has no series list: re-derive it from the spec, as the chart does.
   const agg = useMemo(() => (spec ? aggregateChart(data, spec) : undefined), [data, spec]);
   const editable = !!spec || !!kpi;
   const canFormat = editable && !!onChangeFormat;
-  const canFilter = editable && !!onChangeFilters;
+  const canFilter = (editable || !!pivot) && !!onChangeFilters;
   const showFormat = canFormat && tab === 'format';
   const showFilters = canFilter && tab === 'filters';
   const showData = !showFormat && !showFilters;
+
+  const dimCols = columns.filter(c => c.type !== 'id');
+  // Switching dimension: a date column gets a grain (kept if it already had one), any other drops it.
+  const setDim = (key: 'rows' | 'cols', name: string | undefined) => {
+    if (!pivot || !onChangePivot) return;
+    const grain = key === 'rows' ? 'rowGrain' : 'colGrain';
+    const next: PivotSpec = { ...pivot };
+    delete next[grain];
+    if (name) next[key] = name; else delete next.cols;
+    if (key === 'rows' && next.cols === name) { delete next.cols; delete next.colGrain; }
+    if (name && columns.find(c => c.name === name)?.type === 'date') next[grain] = pivot[grain] ?? 'month';
+    onChangePivot(next);
+  };
+  const grainSelect = (key: 'rowGrain' | 'colGrain', column: string | undefined) =>
+    pivot && onChangePivot && columns.find(c => c.name === column)?.type === 'date' && (
+      <div>
+        <label className={LABEL}>{d('groupDatesBy')}</label>
+        <Select value={pivot[key] ?? 'month'} onValueChange={v => onChangePivot({ ...pivot, [key]: v as DateGrain })}>
+          <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {GRAINS.map(g => <SelectItem key={g} value={g}>{d(GRAIN_KEY[g])}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+    );
 
   const sizeOptions: [CardSize, string][] = [
     ['xs', `${t('tile')} (¼)`],
@@ -178,6 +209,63 @@ export function CardSettings({ columns, data, selected, size, onChange, onChange
           )}
         </div>
       )}
+      {showData && pivot && onChangePivot && (
+        <div className="space-y-3">
+          <div>
+            <label className={LABEL}>{d('pivotRows')}</label>
+            <Select value={pivot.rows} onValueChange={v => setDim('rows', v)}>
+              <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {dimCols.map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          {grainSelect('rowGrain', pivot.rows)}
+          <div>
+            <label className={LABEL}>{d('pivotColumns')}</label>
+            <Select value={pivot.cols ?? NONE} onValueChange={v => setDim('cols', v === NONE ? undefined : v)}>
+              <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>{d('none')}</SelectItem>
+                {dimCols.filter(c => c.name !== pivot.rows).map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          {grainSelect('colGrain', pivot.cols)}
+          <div>
+            <label className={LABEL}>{d('pivotValue')}</label>
+            <Select value={pivot.value.column ?? ROWS} onValueChange={v => {
+              const column = v === ROWS ? null : v;
+              onChangePivot({ ...pivot, value: { column, agg: normalizeAgg(columns, column, pivot.value.agg, true) } });
+            }}>
+              <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ROWS}>{t('rowCount')}</SelectItem>
+                {columns.map(c => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className={LABEL}>{t('aggregation')}</label>
+            <Select value={pivot.value.agg} disabled={!pivot.value.column} onValueChange={v => onChangePivot({ ...pivot, value: { ...pivot.value, agg: v as KpiAgg } })}>
+              <SelectTrigger className={TRIGGER}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {aggsForColumn(columns, pivot.value.column).map(a => <SelectItem key={a} value={a}>{t(aggKey(a))}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              id={heatId}
+              type="checkbox"
+              checked={!!pivot.heat}
+              onChange={e => onChangePivot({ ...pivot, heat: e.target.checked || undefined })}
+              className="h-4 w-4 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <label htmlFor={heatId} className="text-xs text-foreground">{d('pivotHeat')}</label>
+          </div>
+        </div>
+      )}
       {showData && repeatCol && onChangeRepeatColumn && (
         <div>
           <label className={LABEL}>{d('column')}</label>
@@ -189,7 +277,7 @@ export function CardSettings({ columns, data, selected, size, onChange, onChange
           </Select>
         </div>
       )}
-      {!spec && !(kpi && onChangeKpi) && !(repeatCol && onChangeRepeatColumn) && (
+      {!spec && !(kpi && onChangeKpi) && !(pivot && onChangePivot) && !(repeatCol && onChangeRepeatColumn) && (
         <p className="text-xs text-muted-foreground">{item.displayAs === 'slicer' ? d('slicerHint') : item.displayAs === 'text' ? d('textHint') : d('noEditableSettings')}</p>
       )}
     </div>
