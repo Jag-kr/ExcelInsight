@@ -8,6 +8,7 @@ import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } fro
 import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
+import { buildTemplate, type TemplateId } from '@/lib/templates';
 import { GRID_COLS, presetLayout, sizeFromWidth, sortByLayout, widthForSize, type CardSize, type GridPos } from '@/lib/layout';
 import { crossDimensionOf, drillBaseOf, deriveDashboardItems, kpiCardId, kpiTitle, repeatColumnOf, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 import type { PivotSpec } from '@/lib/pivot';
@@ -312,6 +313,20 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     setDrill({});
     toast.success(t('resetLayout'), { action: { label: t('undo'), onClick: () => setDashboardItems(() => before) } });
   }, [dashboardItems, data, columns, suggestions, t, setDashboardItems]);
+
+  const handleApplyTemplate = useCallback((id: TemplateId) => {
+    const before = dashboardItems;
+    const name = d(`template${id[0].toUpperCase()}${id.slice(1)}` as 'templateSales');
+    setDashboardItems(buildTemplate(id, columns, data, name, t));
+    setSelectedId(null);
+    setEditId(null);
+    setCross(null);
+    setDrill({});
+    setAddOpen(false);
+    setActiveTab('dashboard');
+    trackEvent('chart_added', { source: 'template' });
+    toast.success(name, { action: { label: t('undo'), onClick: () => setDashboardItems(() => before) } });
+  }, [dashboardItems, columns, data, d, t, setDashboardItems]);
 
   const handleClearAll = useCallback(() => {
     const before = dashboardItems;
@@ -1281,6 +1296,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
           onCustomChart={handleCustomChart}
           onAddText={handleAddText}
           onAddPivot={handleAddPivot}
+          onApplyTemplate={handleApplyTemplate}
         />
       </Suspense>
 
