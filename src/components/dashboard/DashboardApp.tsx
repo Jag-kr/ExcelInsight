@@ -8,6 +8,7 @@ import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } fro
 import { hslStringToRgb } from '@/lib/color-utils';
 import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
+import { sizeFromWidth, sortByLayout, type GridPos } from '@/lib/layout';
 import { crossDimensionOf, deriveDashboardItems, kpiCardId, kpiTitle, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { applyFilters, countActive, distinctValues, filterKindFor, normalizeFilters, setFilter, type Filters } from '@/lib/filters';
@@ -21,7 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   BarChart3, Merge, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
   Sparkles, RotateCcw, Trash2, X, MoreHorizontal, ChevronRight,
-  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Undo2, Redo2,
+  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Undo2, Redo2, Type,
 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -90,7 +91,7 @@ const PanelFallback = () => (
  * A second tier of splitting, inside the already-lazy dashboard.
  *
  * The heavy leaves — recharts (via DynamicChart), html2canvas (via
- * DynamicChart's PNG export) and @dnd-kit (via DashboardGrid) — stay behind
+ * DynamicChart's PNG export) and react-grid-layout (via DashboardGrid) — stay behind
  * their own boundaries so that mounting the shell doesn't drag in every panel
  * at once; a user who never opens the merge dialog never pays for ColumnMerger.
  *
@@ -283,11 +284,24 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       const idx = prev.findIndex(i => i.id === id);
       if (idx < 0) return prev;
       const original = prev[idx];
-      const copy: DashboardItem = { ...original, id: `${original.id}-copy-${Date.now()}`, title: `${original.title} (copy)` };
+      // No layout on the copy: it is placed at the bottom of the board (presetLayout) instead of
+      // stacking on the original's cell, where the grid would have to shove the original aside.
+      const copy: DashboardItem = { ...original, id: `${original.id}-copy-${Date.now()}`, title: `${original.title} (copy)`, layout: undefined };
       const next = [...prev];
       next.splice(idx + 1, 0, copy);
       return next;
     });
+  }, [setDashboardItems]);
+
+  /* A drag or resize (or the Resize menu) finished: one undo entry. Items stay sorted by (y, x) so PDF
+     export, Quick Add and the mobile list follow reading order. `size` follows the width so the badge,
+     the menu check mark and the mobile list agree with the grid. A layout left stale by a removal is
+     fine: the grid re-compacts it on render, and the next commit stores the compacted one. */
+  const handleLayoutCommit = useCallback((layouts: Record<string, GridPos>) => {
+    setDashboardItems(prev => sortByLayout(
+      prev.map(i => (layouts[i.id] ? { ...i, layout: layouts[i.id], size: sizeFromWidth(layouts[i.id].w) } : i)),
+      layouts,
+    ));
   }, [setDashboardItems]);
 
   // ── Derived filtered data (declared before any callbacks that use it) ──
@@ -524,6 +538,16 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     }
     selectCard(id);
   }, [dashboardItems, selectCard, setDashboardItems]);
+
+  const handleAddText = useCallback(() => {
+    const id = `text:${Date.now()}`;
+    setDashboardItems(prev => [...prev, {
+      id, title: d('addText'), type: 'bar' as const, data: [], dataKeys: [], xKey: '',
+      displayAs: 'text' as const, text: '', size: 'md' as const,
+    }]);
+    trackEvent('chart_added', { source: 'text' });
+    selectCard(id);
+  }, [d, selectCard, setDashboardItems]);
 
   // Candidates for `in` slicers, from the unfiltered rows (like DataFilter) so a pick never hides its siblings.
   const slicerValues = useMemo(() => {
@@ -866,6 +890,12 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                       </Badge>
                     )}
                     <Button
+                      variant="ghost" size="icon" className="h-7 w-7" onClick={handleAddText}
+                      aria-label={d('addText')} title={d('addText')}
+                    >
+                      <Type className="h-4 w-4" />
+                    </Button>
+                    <Button
                       variant="ghost" size="icon" className="h-7 w-7" disabled={!canUndo} onClick={undo}
                       aria-label={t('undo')} title={`${t('undo')} (Ctrl+Z)`}
                     >
@@ -893,10 +923,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                 <Suspense fallback={<ChartFallback />}>
                   <DashboardGrid
                     items={liveItems}
-                    onReorder={(reordered) => setDashboardItems(prev => {
-                      const byId = new Map(prev.map(i => [i.id, i]));
-                      return reordered.map(i => byId.get(i.id) ?? i);
-                    })}
+                    onLayoutCommit={handleLayoutCommit}
                     onRemove={handleRemoveFromDashboard}
                     onUpdateItem={(id, updates) => setDashboardItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))}
                     onDuplicate={handleDuplicate}
