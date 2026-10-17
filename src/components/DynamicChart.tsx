@@ -128,7 +128,11 @@ export function DynamicChart({
   );
   const labelFmt = fmt && ((v: unknown) => fmt(Number(v)));
   const tooltip = <ChartTooltip content={<ChartTooltipContent valueFormatter={fmt} />} />;
-  const legend = format?.legend === 'none' ? null : (
+  /* A lone series named by an internal key ("value", "count") makes a legend that just says "value":
+     noise. Pie/donut legends name the slices, so they stay; an explicit legend choice always wins. */
+  const hideGenericLegend = !format?.legend && type !== 'pie' && type !== 'donut'
+    && dataKeys.length === 1 && (dataKeys[0] === 'value' || dataKeys[0] === 'count');
+  const legend = format?.legend === 'none' || hideGenericLegend ? null : (
     <ChartLegend {...(format?.legend === 'top' ? { verticalAlign: 'top' as const } : {})} content={<ChartLegendContent />} />
   );
   const xLabel = axisTitle(format?.xTitle);
