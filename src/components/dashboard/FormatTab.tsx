@@ -118,6 +118,7 @@ export interface FormatTabProps {
 export function FormatTab({ item, dataKeys = [], rowCount = 0, onChange }: FormatTabProps) {
   const d = useDashboardT();
   const gridId = useId();
+  const barsId = useId();
   const f = item.format;
   const kpi = item.displayAs === 'kpi';
   const set = (patch: Partial<ChartFormat>) => onChange(patchFormat(f, patch));
@@ -127,9 +128,11 @@ export function FormatTab({ item, dataKeys = [], rowCount = 0, onChange }: Forma
   const defaults = useMemo(() => dataKeys.map((_, i) => paintedHex(i)), [dataKeys, theme, paletteId]); // eslint-disable-line react-hooks/exhaustive-deps
   // Scatter and pie colour per point/slice, and a lone series on a short bar chart per category: no per-series colour there.
   const isBar = item.type === 'bar' || item.type === 'horizontalBar';
+  // A short single-series bar chart paints each bar differently unless the user asks for one colour.
+  const perBar = isBar && colorsByCategory(dataKeys.length, rowCount);
   const showSeriesColors = !kpi && dataKeys.length > 0
     && (isBar || ['line', 'area', 'radar', 'combo'].includes(item.type))
-    && !(isBar && colorsByCategory(dataKeys.length, rowCount));
+    && !(perBar && !f?.oneColor);
   const setSeriesColor = (key: string, color?: string) => {
     const { [key]: _drop, ...rest } = f?.seriesColors ?? {};
     const next = color ? { ...rest, [key]: color } : rest;
@@ -150,6 +153,19 @@ export function FormatTab({ item, dataKeys = [], rowCount = 0, onChange }: Forma
 
   return (
     <div className="space-y-3">
+      {!kpi && perBar && (
+        <div className="flex items-center gap-2">
+          <input
+            id={barsId}
+            type="checkbox"
+            checked={!f?.oneColor}
+            onChange={e => set({ oneColor: e.target.checked ? undefined : true })}
+            className="h-4 w-4 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <label htmlFor={barsId} className="text-xs text-foreground">{d('colorEachBar')}</label>
+        </div>
+      )}
+
       {showSeriesColors && (
         <fieldset className="space-y-1.5">
           <legend className={LABEL}>{d('seriesColors')}</legend>

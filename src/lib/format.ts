@@ -8,6 +8,8 @@ export interface ChartFormat {
   yTitle?: string;
   gridlines?: boolean;
   seriesColors?: Record<string, string>;
+  /** A short single-series bar chart colours each bar by default; true = one colour (the series colour) instead. */
+  oneColor?: boolean;
 }
 
 /** True when nothing is set, so callers can skip formatting and keep today's output. */
