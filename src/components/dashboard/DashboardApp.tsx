@@ -16,7 +16,7 @@ import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } f
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { useUndoableState } from '@/hooks/use-undoable-state';
-import { applyCalcFields, validateNewField, type CalcField } from '@/lib/calc-fields';
+import { applyCalcFields, dependentsOf, removeFieldFromItems, validateEditedField, validateNewField, type CalcField } from '@/lib/calc-fields';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -429,6 +429,28 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     return { ok: true };
   }, [baseColumns, calcFields, setBoard, d]);
 
+  // The name is fixed (renaming would break references), only the formula changes. One undo entry.
+  const handleEditCalculated = useCallback((name: string, formula: string): { ok: true } | { ok: false; error: string } => {
+    const error = validateEditedField(baseColumns.map(c => c.name), calcFields, name, formula);
+    if (error) return { ok: false, error };
+    setBoard(b => ({ ...b, calc: b.calc.map(f => (f.name === name ? { ...f, formula } : f)) }));
+    toast.success(`${d('fieldUpdated')}: ${name}`);
+    return { ok: true };
+  }, [baseColumns, calcFields, setBoard, d]);
+
+  const handleDeleteCalculated = useCallback((name: string): { ok: true } | { ok: false; error: string } => {
+    const used = dependentsOf(baseColumns.map(c => c.name), calcFields, name);
+    if (used.length > 0) return { ok: false, error: `${d('usedBy')}: ${used.join(', ')}` };
+    // Toast Undo restores this snapshot (field, slicers and card filters in one step), like Reset layout.
+    const before = board;
+    setBoard(b => ({ calc: b.calc.filter(f => f.name !== name), items: removeFieldFromItems(b.items, name) }));
+    // Outside the history: the page filter on the column is dropped and is not restored by Undo.
+    setFilters(prev => setFilter(prev, name, null));
+    setCross(c => (c?.column === name ? null : c));
+    toast.success(`${d('fieldDeleted')}: ${name}`, { action: { label: t('undo'), onClick: () => setBoard(() => before) } });
+    return { ok: true };
+  }, [baseColumns, calcFields, board, setBoard, d, t]);
+
   const addToDashboard = useCallback((chart: DashboardItem) => {
     setDashboardItems(prev => [...prev, chart]);
     trackEvent('chart_added', { source: 'manual' });
@@ -646,6 +668,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
   const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
 
+  const calculatedNames = useMemo(() => new Set(calcFields.map(f => f.name)), [calcFields]);
+
   const editorPane = (
     <EditorPane
       columns={filteredColumns}
@@ -661,6 +685,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       onDeselect={() => selectCard(null)}
       onMergeColumns={() => setMergeOpen(true)}
       onNewField={() => setCalcOpen(true)}
+      calculated={calculatedNames}
     />
   );
 
@@ -1145,7 +1170,10 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
             <SheetDescription>{d('formulaHint')}</SheetDescription>
           </SheetHeader>
           <Suspense fallback={<PanelFallback />}>
-            <CalcFieldDialog columns={columns} data={data} onAdd={handleAddCalculated} onDone={() => setCalcOpen(false)} />
+            <CalcFieldDialog
+              columns={columns} data={data} fields={calcFields}
+              onAdd={handleAddCalculated} onEdit={handleEditCalculated} onDelete={handleDeleteCalculated}
+              onDone={() => setCalcOpen(false)} />
           </Suspense>
         </SheetContent>
       </Sheet>

@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { applyCalcFields, dependentsOf, validateEditedField, validateNewField, type CalcField } from './calc-fields';
+import type { DashboardItem } from '@/components/DashboardGrid';
+import type { Filter } from './filters';
+import { applyCalcFields, dependentsOf, removeFieldFromItems, validateEditedField, validateNewField, type CalcField } from './calc-fields';
 
 const rows: Record<string, unknown>[] = [{ Sales: 10, Qty: 2 }, { Sales: 5, Qty: 0 }, { Sales: null, Qty: 1 }];
 const base = ['Sales', 'Qty'];
@@ -88,5 +90,37 @@ describe('dependentsOf', () => {
     expect(dependentsOf(base, [unit, other, dbl], 'Unit')).toEqual(['Double']);
     expect(dependentsOf(base, [unit, dbl, quad], 'Quad')).toEqual([]);
     expect(dependentsOf(base, [unit], 'Nope')).toEqual([]);
+  });
+});
+
+describe('removeFieldFromItems', () => {
+  const card = (id: string, extra: Partial<DashboardItem> = {}) => ({ id, type: 'bar', title: id, ...extra }) as DashboardItem;
+  const f: Filter = { kind: 'in', values: ['a'] };
+
+  it('drops the slicer of the field but keeps other slicers', () => {
+    const items = [card('s1', { displayAs: 'slicer', slicerColumn: 'Unit' }), card('s2', { displayAs: 'slicer', slicerColumn: 'Sales' })];
+    expect(removeFieldFromItems(items, 'Unit').map(i => i.id)).toEqual(['s2']);
+  });
+
+  it('strips the field from item filters, deleting the key when empty', () => {
+    const items = [
+      card('a', { filters: { Unit: f } }),
+      card('b', { filters: { Unit: f, Sales: f } }),
+    ];
+    const out = removeFieldFromItems(items, 'Unit');
+    expect('filters' in out[0]).toBe(false);
+    expect(out[1].filters).toEqual({ Sales: f });
+  });
+
+  it('returns the same array when nothing references the field', () => {
+    const items = [card('a', { filters: { Sales: f } }), card('b'), card('s', { displayAs: 'slicer', slicerColumn: 'Sales' })];
+    expect(removeFieldFromItems(items, 'Unit')).toBe(items);
+  });
+
+  it('does not mutate its input', () => {
+    const items = [card('a', { filters: { Unit: f } }), card('s', { displayAs: 'slicer', slicerColumn: 'Unit' })];
+    const snapshot = JSON.parse(JSON.stringify(items));
+    removeFieldFromItems(items, 'Unit');
+    expect(items).toEqual(snapshot);
   });
 });

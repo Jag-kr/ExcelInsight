@@ -46,11 +46,13 @@ export interface EditorPaneProps {
   /** Opens the column merger; the button is hidden when omitted. */
   onMergeColumns?: () => void;
   onNewField?: () => void;
+  /** Names of calculated fields: they show the fx icon instead of their type icon. */
+  calculated?: Set<string>;
   /** Adds (or selects) a slicer card for the column; the per-field button is hidden when omitted. */
   onAddSlicer?: (col: ColumnMeta) => void;
 }
 
-export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onChangeFilters, onDeselect, onMergeColumns, onNewField, onAddSlicer }: EditorPaneProps) {
+export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onChangeFilters, onDeselect, onMergeColumns, onNewField, calculated, onAddSlicer }: EditorPaneProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [query, setQuery] = useState('');
@@ -186,7 +188,7 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
         />
         <ul className="space-y-0.5">
           {fields.map(col => {
-            const Icon = FIELD_ICONS[col.type];
+            const Icon = calculated?.has(col.name) ? FunctionSquare : FIELD_ICONS[col.type];
             const disabled = !item && !specForField(col);
             return (
               <li key={col.name} className="flex items-center gap-0.5">

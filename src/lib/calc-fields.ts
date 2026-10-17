@@ -1,5 +1,7 @@
 import { validateFieldName } from './data-analyzer';
 import { compileFormula } from './formula';
+import { setFilter } from './filters';
+import type { DashboardItem } from '@/components/DashboardGrid';
 
 /** A calculated column stored as its definition; values are derived by applyCalcFields. */
 export type CalcField = { name: string; formula: string };
@@ -61,4 +63,25 @@ export function dependentsOf(baseColumns: string[], fields: CalcField[], name: s
     avail.push(f.name);
   }
   return out;
+}
+
+/**
+ * Items without the deleted field `name`: its slicer cards are dropped and it is stripped from every
+ * item's own filters (the `filters` key goes when it empties). Returns `items` itself when nothing changes.
+ * Chart/KPI cards whose recipe references the column are intentionally left alone: like any stale
+ * recipe they render "no data" and the user decides whether to remove them.
+ */
+export function removeFieldFromItems(items: DashboardItem[], name: string): DashboardItem[] {
+  let changed = false;
+  const out: DashboardItem[] = [];
+  for (const item of items) {
+    if (item.displayAs === 'slicer' && item.slicerColumn === name) { changed = true; continue; }
+    if (item.filters && name in item.filters) {
+      changed = true;
+      const filters = setFilter(item.filters, name, null);
+      const { filters: _old, ...rest } = item;
+      out.push(Object.keys(filters).length ? { ...rest, filters } : rest);
+    } else out.push(item);
+  }
+  return changed ? out : items;
 }
