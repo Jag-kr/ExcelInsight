@@ -16,11 +16,12 @@ import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } f
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { useUndoableState } from '@/hooks/use-undoable-state';
+import { applyCalcFields, dependentsOf, removeFieldFromItems, validateEditedField, validateNewField, type CalcField } from '@/lib/calc-fields';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  BarChart3, Merge, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
+  BarChart3, Merge, FunctionSquare, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
   Sparkles, RotateCcw, Trash2, X, MoreHorizontal, ChevronRight,
   PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Undo2, Redo2, Type,
 } from 'lucide-react';
@@ -104,6 +105,7 @@ const PanelFallback = () => (
  */
 const DataSummary = dynamic(() => import('@/components/DataSummary').then(m => m.DataSummary), { ssr: false });
 const DynamicChart = dynamic(() => import('@/components/DynamicChart').then(m => m.DynamicChart), { ssr: false });
+const CalcFieldDialog = dynamic(() => import('@/components/dashboard/CalcFieldDialog').then(m => m.CalcFieldDialog), { ssr: false });
 const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m => m.ColumnMerger), { ssr: false });
 const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false });
 const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
@@ -144,6 +146,12 @@ export interface DashboardAppProps {
   onClearFile: () => void;
 }
 
+type Board = { items: DashboardItem[]; calc: CalcField[] };
+
+/** calcFields is absent in older sessions and untrusted in a hand-edited one: keep it only if well-formed. */
+const validCalcFields = (v: unknown): CalcField[] =>
+  Array.isArray(v) && v.every(f => f && typeof f.name === 'string' && typeof f.formula === 'string') ? v : [];
+
 export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) {
   const { t } = useI18n();
   const d = useDashboardT();
@@ -159,14 +167,33 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
    * `ssr: false`, so there is no server HTML to mismatch against.
    */
   const [initial] = useState<PersistedSession | null>(() => (initialUpload ? null : loadSession()));
-  const [data, setData] = useState<Record<string, any>[]>(() => initialUpload?.data ?? initial?.data ?? []);
+  // Uploaded/merged rows and their analysis. Calculated fields are layered on top below (never stored in these).
+  const [baseData, setBaseData] = useState<Record<string, any>[]>(() => initialUpload?.data ?? initial?.data ?? []);
   const [fileName, setFileName] = useState(() => initialUpload?.fileName ?? initial?.fileName ?? '');
-  const [columns, setColumns] = useState<ColumnMeta[]>(() => initial?.columns ?? []);
+  const [baseColumns, setBaseColumns] = useState<ColumnMeta[]>(() => initial?.columns ?? []);
   const [suggestions, setSuggestions] = useState<ChartSuggestion[]>(() => initial?.suggestions ?? []);
-  const [dashboardItems, setDashboardItems, { undo, redo, canUndo, canRedo }] = useUndoableState<DashboardItem[]>(() => initial?.dashboardItems ?? []);
+  // Cards and calculated-field definitions share one history, so a single Ctrl+Z walks back chronologically.
+  const [board, setBoard, { undo, redo, canUndo, canRedo }] = useUndoableState<Board>(
+    () => ({ items: initial?.dashboardItems ?? [], calc: validCalcFields(initial?.calcFields) })
+  );
+  const dashboardItems = board.items;
+  const calcFields = board.calc;
+  // Stable; same signature as the old items-only setter. Unchanged items keep the board identity (hook no-op check).
+  const setDashboardItems = useCallback(
+    (next: DashboardItem[] | ((prev: DashboardItem[]) => DashboardItem[]), opts?: { record?: boolean }) =>
+      setBoard(b => {
+        const items = typeof next === 'function' ? next(b.items) : next;
+        return items === b.items ? b : { ...b, items };
+      }, opts),
+    [setBoard]
+  );
+  // Derived, never stored: recomputed only when the rows or the field definitions change.
+  const data = useMemo(() => applyCalcFields(baseData, calcFields), [baseData, calcFields]);
+  const columns = useMemo(() => (calcFields.length === 0 ? baseColumns : analyzeColumns(data)), [calcFields, baseColumns, data]);
   const [filters, setFilters] = useState<Filters>(() => normalizeFilters(initial?.filters));
   const [activeTab, setActiveTab] = useState<string>(() => (SIDEBAR_ITEMS.find(i => i.value === initial?.activeTab)?.value ?? 'dashboard'));
   const [mergeOpen, setMergeOpen] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => initial?.sidebarCollapsed ?? false);
   const [exporting, setExporting] = useState(false);
   // A fresh upload arrives underived, so the overlay is up from the first paint.
@@ -206,7 +233,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     // Yield to browser before running heavy synchronous analysis
     startTransition(() => {
       const cols = analyzeColumns(newData);
-      setColumns(cols);
+      setBaseColumns(cols);
       const charts = generateChartSuggestions(newData, cols);
       setSuggestions(charts);
       const { items } = buildDefaultDashboard(newData, cols, charts, t);
@@ -232,14 +259,14 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     // The sample dataset is a demo, not the visitor's file. Writing it would
     // make every subsequent visit restore a spreadsheet they never uploaded.
     if (initialUpload?.ephemeral) { localStorage.removeItem(STORAGE_KEY); return; }
-    if (!data.length) { localStorage.removeItem(STORAGE_KEY); return; }
+    if (!baseData.length) { localStorage.removeItem(STORAGE_KEY); return; }
     // Live pane edits fire per keystroke; debounce so a large dataset isn't
     // re-stringified each time. Unmount cancels the pending write, so clearing
     // the file can't resurrect it.
     const timer = setTimeout(() => {
       try {
         const payload: PersistedSession = {
-          data, fileName, columns, suggestions, dashboardItems, filters,
+          data: baseData, fileName, columns: baseColumns, suggestions, dashboardItems, calcFields, filters,
           addedChartIds: Array.from(addedChartIds),
           addedInsightIds: Array.from(addedInsightIds),
           activeTab, sidebarCollapsed, paneCollapsed,
@@ -250,7 +277,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [analyzing, initialUpload, data, fileName, columns, suggestions, dashboardItems, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed, paneCollapsed]);
+  }, [analyzing, initialUpload, baseData, fileName, baseColumns, suggestions, dashboardItems, calcFields, filters, addedChartIds, addedInsightIds, activeTab, sidebarCollapsed, paneCollapsed]);
 
   const handleResetLayout = useCallback(() => {
     // Toast Undo restores this snapshot rather than calling global undo(): the toast can outlive other edits.
@@ -382,10 +409,49 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   );
 
   const handleMerge = useCallback((col1: string, col2: string, newName: string, separator: string) => {
-    const merged = mergeColumns(data, col1, col2, newName, separator);
-    setData(merged);
-    setColumns(analyzeColumns(merged));
-  }, [data]);
+    // A calculated field of the same name would silently overwrite the merged column when values are derived.
+    if (calcFields.some(f => f.name.toLowerCase() === newName.trim().toLowerCase())) {
+      toast.error(`${newName.trim()}: a calculated field with this name already exists`);
+      return;
+    }
+    const merged = mergeColumns(baseData, col1, col2, newName, separator);
+    setBaseData(merged);
+    setBaseColumns(analyzeColumns(merged));
+    setMergeOpen(false);
+    toast.success(`${d('fieldAdded')}: ${newName.trim()}`);
+  }, [baseData, calcFields, d]);
+
+  // One undo entry; the values are derived from the stored definition.
+  const handleAddCalculated = useCallback((name: string, formula: string): { ok: true } | { ok: false; error: string } => {
+    const error = validateNewField(baseColumns.map(c => c.name), calcFields, name, formula);
+    if (error) return { ok: false, error };
+    const field = { name: name.trim(), formula };
+    setBoard(b => ({ ...b, calc: [...b.calc, field] }));
+    toast.success(`${d('fieldAdded')}: ${field.name}`);
+    return { ok: true };
+  }, [baseColumns, calcFields, setBoard, d]);
+
+  // The name is fixed (renaming would break references), only the formula changes. One undo entry.
+  const handleEditCalculated = useCallback((name: string, formula: string): { ok: true } | { ok: false; error: string } => {
+    const error = validateEditedField(baseColumns.map(c => c.name), calcFields, name, formula);
+    if (error) return { ok: false, error };
+    setBoard(b => ({ ...b, calc: b.calc.map(f => (f.name === name ? { ...f, formula } : f)) }));
+    toast.success(`${d('fieldUpdated')}: ${name}`);
+    return { ok: true };
+  }, [baseColumns, calcFields, setBoard, d]);
+
+  const handleDeleteCalculated = useCallback((name: string): { ok: true } | { ok: false; error: string } => {
+    const used = dependentsOf(baseColumns.map(c => c.name), calcFields, name);
+    if (used.length > 0) return { ok: false, error: `${d('usedBy')}: ${used.join(', ')}` };
+    // Toast Undo restores this snapshot (field, slicers and card filters in one step), like Reset layout.
+    const before = board;
+    setBoard(b => ({ calc: b.calc.filter(f => f.name !== name), items: removeFieldFromItems(b.items, name) }));
+    // Outside the history: the page filter on the column is dropped and is not restored by Undo.
+    setFilters(prev => setFilter(prev, name, null));
+    setCross(c => (c?.column === name ? null : c));
+    toast.success(`${d('fieldDeleted')}: ${name}`, { action: { label: t('undo'), onClick: () => setBoard(() => before) } });
+    return { ok: true };
+  }, [baseColumns, calcFields, board, setBoard, d, t]);
 
   const addToDashboard = useCallback((chart: DashboardItem) => {
     setDashboardItems(prev => [...prev, chart]);
@@ -604,6 +670,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const tableCount = dashboardItems.filter(i => i.displayAs === 'table').length;
   const insightCount = dashboardItems.filter(i => i.displayAs === 'insight').length;
 
+  const calculatedNames = useMemo(() => new Set(calcFields.map(f => f.name)), [calcFields]);
+
   const editorPane = (
     <EditorPane
       columns={filteredColumns}
@@ -618,6 +686,8 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       onChangeFilters={handleChangeFilters}
       onDeselect={() => selectCard(null)}
       onMergeColumns={() => setMergeOpen(true)}
+      onNewField={() => setCalcOpen(true)}
+      calculated={calculatedNames}
     />
   );
 
@@ -809,7 +879,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
 
               {/* Dashboard overflow menu */}
               {activeTab === 'dashboard' && (
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label={t('moreActions')}>
                       <MoreHorizontal className="h-4 w-4" />
@@ -821,6 +891,9 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setMergeOpen(true)} className="text-xs">
                       <Merge className="h-3.5 w-3.5 mr-2" /> {t('mergeColumns')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCalcOpen(true)} className="text-xs">
+                      <FunctionSquare className="h-3.5 w-3.5 mr-2" /> {d('newField')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setActiveTab('insights')} className="text-xs">
                       <Lightbulb className="h-3.5 w-3.5 mr-2" /> {t('insights')}
@@ -1087,7 +1160,22 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
             <SheetDescription>{t('mergeColumns')}</SheetDescription>
           </SheetHeader>
           <Suspense fallback={<PanelFallback />}>
-            <ColumnMerger columns={columns} onMerge={handleMerge} />
+            <ColumnMerger columns={baseColumns} onMerge={handleMerge} />
+          </Suspense>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={calcOpen} onOpenChange={setCalcOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader className="sr-only">
+            <SheetTitle>{d('newField')}</SheetTitle>
+            <SheetDescription>{d('formulaHint')}</SheetDescription>
+          </SheetHeader>
+          <Suspense fallback={<PanelFallback />}>
+            <CalcFieldDialog
+              columns={columns} data={data} fields={calcFields}
+              onAdd={handleAddCalculated} onEdit={handleEditCalculated} onDelete={handleDeleteCalculated}
+              onDone={() => setCalcOpen(false)} />
           </Suspense>
         </SheetContent>
       </Sheet>
@@ -1134,7 +1222,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
             ))}
 
             {/* More: Merge columns + Filter + Clear file */}
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
@@ -1152,6 +1240,9 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
               <DropdownMenuContent side="top" align="end" className="w-44 mb-1">
                 <DropdownMenuItem onClick={() => setMergeOpen(true)} className="text-xs gap-2">
                   <Merge className="h-3.5 w-3.5" /> {t('mergeColumns')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setCalcOpen(true)} className="text-xs gap-2">
+                  <FunctionSquare className="h-3.5 w-3.5" /> {d('newField')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setActiveTab('filter')} className="text-xs gap-2">
                   <Filter className="h-3.5 w-3.5" /> {t('filter')}

@@ -461,7 +461,7 @@ const DashboardCard = memo(function DashboardCard({
           </span>
 
           {/* Actions dropdown */}
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"

@@ -431,3 +431,14 @@ export function mergeColumns(
     [newName]: `${row[col1] ?? ''}${separator}${row[col2] ?? ''}`,
   }));
 }
+
+/** Why `name` cannot be a new column (null = fine). Shared by the dialog and calc-fields. */
+export function validateFieldName(name: string, columns: string[]): string | null {
+  const n = name.trim();
+  if (!n) return 'Enter a name';
+  if (n.length > 80) return 'Name is too long (80 characters max)';
+  if (/[[\]]/.test(n) || n === '__proto__') return 'Name cannot contain [ or ]';
+  const lower = n.toLowerCase();
+  if (columns.some(c => c.toLowerCase() === lower)) return 'A column with this name already exists';
+  return null;
+}
