@@ -1,4 +1,5 @@
 import type { WorkSheet, CellObject, SSF } from 'xlsx';
+import { compileFormula } from './formula';
 
 export type ColumnType = 'numeric' | 'categorical' | 'date' | 'text' | 'range' | 'id';
 
@@ -430,4 +431,30 @@ export function mergeColumns(
     ...row,
     [newName]: `${row[col1] ?? ''}${separator}${row[col2] ?? ''}`,
   }));
+}
+
+/** Why `name` cannot be a new column (null = fine). Shared by the dialog and addCalculatedColumn. */
+export function validateFieldName(name: string, columns: string[]): string | null {
+  const n = name.trim();
+  if (!n) return 'Enter a name';
+  if (n.length > 80) return 'Name is too long (80 characters max)';
+  if (/[[\]]/.test(n) || n === '__proto__') return 'Name cannot contain [ or ]';
+  const lower = n.toLowerCase();
+  if (columns.some(c => c.toLowerCase() === lower)) return 'A column with this name already exists';
+  return null;
+}
+
+/** Adds a column computed from a formula (see formula.ts). Rows are copied, never mutated. */
+export function addCalculatedColumn(
+  data: Record<string, unknown>[],
+  columns: string[],
+  name: string,
+  formula: string
+): { ok: true; data: Record<string, unknown>[] } | { ok: false; error: string } {
+  const bad = validateFieldName(name, columns);
+  if (bad) return { ok: false, error: bad };
+  const c = compileFormula(formula, columns);
+  if ('error' in c) return { ok: false, error: `${c.error.message} (at character ${c.error.pos + 1})` };
+  const key = name.trim();
+  return { ok: true, data: data.map(row => ({ ...row, [key]: c.evaluate(row) })) };
 }
