@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { canonSig, decideSync, normalizeSpec } from './canon';
+import { chartTypeOptions } from './chart-themes';
 import type { ChartSpec } from './derive-dashboard-item';
 
 describe('canonSig', () => {
@@ -19,10 +20,15 @@ describe('normalizeSpec', () => {
   it('drops what the builder cannot express', () => {
     const s = { ...base, grain: 'month' as const, series: 's', stacked: true, limit: 5.7 };
     expect(normalizeSpec(s, 'line', false)).toEqual({ ...base, series: 's', limit: 5 });
+    expect(normalizeSpec(s, 'combo', false).series).toBeUndefined();
     expect(normalizeSpec({ ...s, measures: [...base.measures, ...base.measures] }, 'bar', true).series).toBeUndefined();
   });
   it('keeps grain on dates and stacked on stackable types', () =>
     expect(normalizeSpec({ ...base, grain: 'month', stacked: true }, 'bar', true)).toEqual({ ...base, grain: 'month', stacked: true }));
+  it('combo is offered but never stacked', () => {
+    expect(chartTypeOptions.map(o => o.value)).toContain('combo');
+    expect(normalizeSpec({ ...base, stacked: true }, 'combo', false).stacked).toBeUndefined();
+  });
   it('is idempotent', () => {
     const once = normalizeSpec({ ...base, stacked: true, limit: 3 }, 'pie', false);
     expect(canonSig(normalizeSpec(once, 'pie', false))).toBe(canonSig(once));
