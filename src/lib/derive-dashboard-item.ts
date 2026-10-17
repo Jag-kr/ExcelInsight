@@ -5,6 +5,7 @@ import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
 import { numberFormatter, type ChartFormat } from '@/lib/format';
 import { applyFilters, type Filters } from '@/lib/filters';
+import { computePivot } from '@/lib/pivot';
 
 /**
  * Card data is derived from a recipe + the currently filtered dataset, never
@@ -357,6 +358,12 @@ function deriveDashboardItem(
     return { ...item, kpiValue, ...(delta && { kpiDelta: delta }) };
   }
 
+  if (item.displayAs === 'pivot') {
+    // A row column that no longer exists (deleted calculated field) would render one '(blank)' row: show "no data" instead.
+    const ps = item.pivotSpec;
+    return ps && columns.some(c => c.name === ps.rows) ? { ...item, pivot: computePivot(applyFilters(data, item.filters ?? {}), ps) } : item;
+  }
+
   if (item.displayAs === 'insight') {
     if (item.insightType === 'stats') return { ...item, insightContent: computeNumericInsights(columns) };
     if (item.insightType === 'quality') return { ...item, insightContent: computeDataQuality(columns) };
@@ -375,7 +382,7 @@ function deriveDashboardItem(
     return rebuilt ? { ...item, data: rebuilt.data, tableColumns: rebuilt.columns } : item;
   }
 
-  /* Filters on this visual: KPI, spec and recipe cards only. Insight and table
+  /* Filters on this visual: KPI, pivot, spec and recipe cards only. Insight and table
      cards are not filterable, and a scatter sourceKey (no recipe) reads its
      precomputed suggestion, so none of those honour item.filters. */
   const scoped = applyFilters(data, item.filters ?? {});
