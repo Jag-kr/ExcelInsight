@@ -15,7 +15,7 @@ const INPUT = 'h-9 bg-secondary border-border text-sm';
 const DEFAULT = '__default';
 
 /** Text-like input that edits locally and commits on blur/Enter, so typing is one history entry. */
-function CommitInput({ label, value, normalize = s => s.trim(), onCommit, className, ...rest }: {
+export function CommitInput({ label, value, normalize = s => s.trim(), onCommit, className, ...rest }: {
   label: string;
   /** The committed value; edits are shown locally until blur/Enter. */
   value: string;
@@ -48,7 +48,7 @@ function CommitInput({ label, value, normalize = s => s.trim(), onCommit, classN
   );
 }
 
-function Pick<V extends string>({ label, value, options, onChange }: {
+export function Pick<V extends string>({ label, value, options, onChange }: {
   label: string;
   value: V;
   options: [V, string][];
