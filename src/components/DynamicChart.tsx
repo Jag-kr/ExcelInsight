@@ -1,6 +1,6 @@
 import { useRef, useMemo, useState } from 'react';
 import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  BarChart, Bar, ComposedChart, LineChart, Line, PieChart, Pie, Cell,
   AreaChart, Area, ScatterChart, Scatter, RadarChart, Radar,
   PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   XAxis, YAxis, CartesianGrid, LabelList,
@@ -9,7 +9,7 @@ import type { LabelProps } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import html2canvas from 'html2canvas';
-import { Download, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIcon, AreaChart as AreaChartIcon, ScatterChart as ScatterChartIcon, Radar as RadarIcon, MoreHorizontal, AlignLeft, Donut as DonutIcon } from 'lucide-react';
+import { Download, BarChart3, LineChart as LineChartIcon, PieChart as PieChartIcon, AreaChart as AreaChartIcon, ScatterChart as ScatterChartIcon, Radar as RadarIcon, ChartNoAxesCombined, MoreHorizontal, AlignLeft, Donut as DonutIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -64,6 +64,7 @@ const CHART_TYPE_ICONS: Record<ChartType, React.ElementType> = {
   donut: DonutIcon,
   scatter: ScatterChartIcon,
   radar: RadarIcon,
+  combo: ChartNoAxesCombined,
 };
 
 /* Series keys can be any column value ("Sales (sum)", "North / East"), which
@@ -76,7 +77,7 @@ const axisTitle = (value?: string, vertical = false): LabelProps | undefined => 
   : undefined;
 
 const PRIMARY_CHART_TYPES: ChartType[] = ['bar', 'line', 'area', 'donut'];
-const OVERFLOW_CHART_TYPES: ChartType[] = ['horizontalBar', 'pie', 'scatter', 'radar'];
+const OVERFLOW_CHART_TYPES: ChartType[] = ['horizontalBar', 'pie', 'scatter', 'radar', 'combo'];
 
 export function DynamicChart({
   title, description, type, data, dataKeys, xKey = 'name',
@@ -283,6 +284,26 @@ export function DynamicChart({
               </Area>
             ))}
           </AreaChart>
+        );
+      case 'combo': // first measure = bars on the left axis, the rest = lines on the right axis; `stacked` is ignored
+        return (
+          <ComposedChart data={data} accessibilityLayer {...plotProps}>
+            {grid && <CartesianGrid vertical={false} />}
+            <XAxis dataKey={xKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...xTitleProps(50)} />
+            <YAxis yAxisId="left" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...valueAxisProps()} />
+            {dataKeys.length > 1 && <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} {...(fmt ? { tickFormatter: fmt, width: Math.max(60, tickWidth) } : {})} />}
+            {tooltip}
+            {legend}
+            {dataKeys.map((key, i) => i === 0 ? (
+              <Bar key={key} yAxisId="left" dataKey={key} fill={getChartVarColor(key)} radius={[4, 4, 0, 0]} {...markProps}>
+                {format?.dataLabels && <LabelList dataKey={key} position="top" fontSize={10} className="fill-muted-foreground" formatter={labelFmt} />}
+              </Bar>
+            ) : (
+              <Line key={key} yAxisId="right" type="monotone" dataKey={key} stroke={getChartVarColor(key)} strokeWidth={2} dot={{ fill: getChartVarColor(key), r: 3 }}>
+                {format?.dataLabels && <LabelList dataKey={key} position="top" fontSize={10} className="fill-muted-foreground" formatter={labelFmt} />}
+              </Line>
+            ))}
+          </ComposedChart>
         );
       case 'pie':
       case 'donut':
