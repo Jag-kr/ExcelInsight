@@ -20,6 +20,7 @@ describe('normalizeSpec', () => {
   it('drops what the builder cannot express', () => {
     const s = { ...base, grain: 'month' as const, series: 's', stacked: true, limit: 5.7 };
     expect(normalizeSpec(s, 'line', false)).toEqual({ ...base, series: 's', limit: 5 });
+    expect(normalizeSpec(s, 'combo', false).series).toBeUndefined();
     expect(normalizeSpec({ ...s, measures: [...base.measures, ...base.measures] }, 'bar', true).series).toBeUndefined();
   });
   it('keeps grain on dates and stacked on stackable types', () =>
