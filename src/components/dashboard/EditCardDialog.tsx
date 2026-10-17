@@ -4,7 +4,7 @@ import { getChartColor, getChartColorVar } from '@/lib/chart-themes';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import { DynamicChart } from '../DynamicChart';
 import { ChartErrorBoundary } from '../ChartErrorBoundary';
-import type { DashboardItem } from '../DashboardGrid';
+import { kpiDeltaText, type DashboardItem } from '../DashboardGrid';
 import { CardSettings, type CardSettingsProps } from './CardSettings';
 
 export interface EditCardDialogProps extends CardSettingsProps {
@@ -19,12 +19,14 @@ export interface EditCardDialogProps extends CardSettingsProps {
 /* What the left side shows: a chart for chart cards, a big tile for KPI cards, nothing for the rest
    (repeating-values cards have no stand-alone rendering worth a preview: the settings take the window). */
 function Preview({ item, index }: { item: DashboardItem; index: number }) {
+  const d = useDashboardT();
   if (item.displayAs === 'kpi') {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="w-full max-w-md rounded-xl p-6" style={{ background: `hsl(${getChartColorVar(index)} / 0.12)` }}>
           <p className="truncate text-sm font-medium" style={{ color: getChartColor(index) }}>{item.title}</p>
           <p className="mt-2 truncate text-4xl font-bold leading-none tabular-nums text-foreground" title={item.kpiValue}>{item.kpiValue ?? '—'}</p>
+          {item.kpiDelta && <p className="mt-2 truncate text-sm tabular-nums text-muted-foreground">{kpiDeltaText(item.kpiDelta, d('vsPrevious'))}</p>}
         </div>
       </div>
     );

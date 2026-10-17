@@ -55,6 +55,8 @@ export interface DashboardItem {
   layout?: GridPos;
   kpiSpec?: KpiSpec;
   kpiValue?: string;
+  /** Change vs the previous period when the KPI compares; derived with kpiValue, never stored. */
+  kpiDelta?: { pct: number; label: string };
   insightType?: 'repeating' | 'stats' | 'quality';
   insightContent?: any;
 }
@@ -264,7 +266,13 @@ function DashboardInsightCard({ item, onRename, fill }: { item: DashboardItem; o
   return null;
 }
 
+/** "▲ 12.3% vs 2025-08" (neutral text: up is not always good). */
+export function kpiDeltaText(delta: NonNullable<DashboardItem['kpiDelta']>, vs: string): string {
+  return `${delta.pct === 0 ? '▬' : delta.pct > 0 ? '▲' : '▼'} ${Math.abs(delta.pct).toFixed(1)}% ${vs} ${delta.label}`;
+}
+
 function DashboardKpiCard({ item, index, onRename, fill }: { item: DashboardItem; index: number; onRename: (v: string) => void; fill?: boolean }) {
+  const d = useDashboardT();
   return (
     <Card
       className={`dashboard-panel animate-fade-in h-full flex flex-col justify-center gap-1 p-3 sm:p-4 border-0${fill ? ' overflow-hidden' : ''}`}
@@ -277,6 +285,11 @@ function DashboardKpiCard({ item, index, onRename, fill }: { item: DashboardItem
       <p className="truncate text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none" title={item.kpiValue}>
         {item.kpiValue ?? '—'}
       </p>
+      {item.kpiDelta && (
+        <p className="truncate text-[11px] text-muted-foreground tabular-nums">
+          {kpiDeltaText(item.kpiDelta, d('vsPrevious'))}
+        </p>
+      )}
     </Card>
   );
 }
