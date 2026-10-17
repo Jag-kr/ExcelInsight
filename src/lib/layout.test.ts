@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  GridPos, CardSize, widthForSize, sizeFromWidth, defaultHeight,
+  GridPos, CardSize, widthForSize, sizeFromWidth, defaultHeight, minSize,
   presetLayout, sortByLayout, placeAtBottom, layoutChanged,
 } from './layout';
 
@@ -16,7 +16,12 @@ describe('size <-> width', () => {
     expect([1, 3, 4, 5, 6, 7, 12].map(sizeFromWidth)).toEqual(['xs', 'xs', 'sm', 'md', 'md', 'lg', 'lg']);
   });
   it('picks default heights', () => {
-    expect(['kpi', 'slicer', 'text', 'chart', 'table', undefined].map(defaultHeight)).toEqual([2, 3, 3, 6, 6, 6]);
+    expect(['kpi', 'slicer', 'text', 'chart', 'table', undefined].map(defaultHeight)).toEqual([2, 3, 2, 6, 6, 6]);
+  });
+  it('lets notes and tiles shrink further than charts', () => {
+    expect(minSize('text')).toEqual({ minW: 2, minH: 1 });
+    expect(minSize('kpi')).toEqual(minSize('slicer'));
+    expect(minSize('chart')).toEqual({ minW: 3, minH: 3 });
   });
 });
 
