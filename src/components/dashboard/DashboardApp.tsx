@@ -6,7 +6,7 @@ import { ThemeLangSwitcher } from '@/components/ThemeLangSwitcher';
 import { ChartThemeSwitcher } from '@/components/ChartThemeSwitcher';
 import { useChartPalette, getChartPalette, getChartColor, getChartColorVar } from '@/lib/chart-themes';
 import { hslStringToRgb } from '@/lib/color-utils';
-import { analyzeColumns, generateChartSuggestions, mergeColumns, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
+import { analyzeColumns, generateChartSuggestions, mergeColumns, addCalculatedColumn, ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import { buildDefaultDashboard } from '@/lib/build-default-dashboard';
 import { sizeFromWidth, sortByLayout, type GridPos } from '@/lib/layout';
 import { crossDimensionOf, deriveDashboardItems, kpiCardId, kpiTitle, retargetKpi, retargetRepeat, toChartSpec, specFromSourceKey, specForField, specTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
@@ -20,7 +20,7 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  BarChart3, Merge, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
+  BarChart3, Merge, FunctionSquare, LayoutDashboard, Database, Filter, Lightbulb, FileDown, Plus,
   Sparkles, RotateCcw, Trash2, X, MoreHorizontal, ChevronRight,
   PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Undo2, Redo2, Type,
 } from 'lucide-react';
@@ -104,6 +104,7 @@ const PanelFallback = () => (
  */
 const DataSummary = dynamic(() => import('@/components/DataSummary').then(m => m.DataSummary), { ssr: false });
 const DynamicChart = dynamic(() => import('@/components/DynamicChart').then(m => m.DynamicChart), { ssr: false });
+const CalcFieldDialog = dynamic(() => import('@/components/dashboard/CalcFieldDialog').then(m => m.CalcFieldDialog), { ssr: false });
 const ColumnMerger = dynamic(() => import('@/components/ColumnMerger').then(m => m.ColumnMerger), { ssr: false });
 const DashboardGrid = dynamic(() => import('@/components/DashboardGrid').then(m => m.DashboardGrid), { ssr: false });
 const DataFilter = dynamic(() => import('@/components/DataFilter').then(m => m.DataFilter), { ssr: false });
@@ -167,6 +168,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
   const [filters, setFilters] = useState<Filters>(() => normalizeFilters(initial?.filters));
   const [activeTab, setActiveTab] = useState<string>(() => (SIDEBAR_ITEMS.find(i => i.value === initial?.activeTab)?.value ?? 'dashboard'));
   const [mergeOpen, setMergeOpen] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => initial?.sidebarCollapsed ?? false);
   const [exporting, setExporting] = useState(false);
   // A fresh upload arrives underived, so the overlay is up from the first paint.
@@ -386,6 +388,17 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     setData(merged);
     setColumns(analyzeColumns(merged));
   }, [data]);
+
+  // Like handleMerge, adding a calculated field is not part of undo history.
+  const handleAddCalculated = useCallback((name: string, formula: string) => {
+    const r = addCalculatedColumn(data, columns.map(c => c.name), name, formula);
+    if ('data' in r) {
+      setData(r.data);
+      setColumns(analyzeColumns(r.data));
+      toast.success(`${d('fieldAdded')}: ${name}`);
+    }
+    return r;
+  }, [data, columns, d]);
 
   const addToDashboard = useCallback((chart: DashboardItem) => {
     setDashboardItems(prev => [...prev, chart]);
@@ -618,6 +631,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       onChangeFilters={handleChangeFilters}
       onDeselect={() => selectCard(null)}
       onMergeColumns={() => setMergeOpen(true)}
+      onNewField={() => setCalcOpen(true)}
     />
   );
 
@@ -821,6 +835,9 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setMergeOpen(true)} className="text-xs">
                       <Merge className="h-3.5 w-3.5 mr-2" /> {t('mergeColumns')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCalcOpen(true)} className="text-xs">
+                      <FunctionSquare className="h-3.5 w-3.5 mr-2" /> {d('newField')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setActiveTab('insights')} className="text-xs">
                       <Lightbulb className="h-3.5 w-3.5 mr-2" /> {t('insights')}
@@ -1092,6 +1109,18 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
         </SheetContent>
       </Sheet>
 
+      <Sheet open={calcOpen} onOpenChange={setCalcOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader className="sr-only">
+            <SheetTitle>{d('newField')}</SheetTitle>
+            <SheetDescription>{d('formulaHint')}</SheetDescription>
+          </SheetHeader>
+          <Suspense fallback={<PanelFallback />}>
+            <CalcFieldDialog columns={columns} data={data} onAdd={handleAddCalculated} onDone={() => setCalcOpen(false)} />
+          </Suspense>
+        </SheetContent>
+      </Sheet>
+
       {/* ─── Quick Add Panel ─── */}
       <Suspense fallback={null}>
         <QuickAddPanel
@@ -1152,6 +1181,9 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
               <DropdownMenuContent side="top" align="end" className="w-44 mb-1">
                 <DropdownMenuItem onClick={() => setMergeOpen(true)} className="text-xs gap-2">
                   <Merge className="h-3.5 w-3.5" /> {t('mergeColumns')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setCalcOpen(true)} className="text-xs gap-2">
+                  <FunctionSquare className="h-3.5 w-3.5" /> {d('newField')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setActiveTab('filter')} className="text-xs gap-2">
                   <Filter className="h-3.5 w-3.5" /> {t('filter')}
