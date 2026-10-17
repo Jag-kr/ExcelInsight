@@ -28,7 +28,7 @@ import { FilterControl } from './dashboard/FilterControl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
-  GRID_COLS, layoutChanged, presetLayout, sizeFromWidth, sortByLayout, widthForSize, type CardSize, type GridPos,
+  GRID_COLS, layoutChanged, minSize, presetLayout, sizeFromWidth, sortByLayout, widthForSize, type CardSize, type GridPos,
 } from '@/lib/layout';
 
 export interface DashboardItem {
@@ -769,8 +769,7 @@ export function DashboardGrid({ items, onLayoutCommit, onRemove, onUpdateItem, o
     const effective = presetLayout(items);
     const rglLayout: LayoutItem[] = items.map(i => ({
       i: i.id, ...effective[i.id],
-      // KPI tiles may shrink to 2x2; everything else keeps room for its chrome.
-      ...(i.displayAs === 'kpi' ? { minW: 2, minH: 2 } : { minW: 3, minH: 3 }),
+      ...minSize(i.displayAs),
     }));
     return { effective, rglLayout };
     // eslint-disable-next-line react-hooks/exhaustive-deps
