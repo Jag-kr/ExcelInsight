@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Calendar, Hash, KeyRound, Merge, SlidersHorizontal, Tag, Type, X, type LucideIcon } from 'lucide-react';
+import { Calendar, FunctionSquare, Hash, KeyRound, Merge, SlidersHorizontal, Tag, Type, X, type LucideIcon } from 'lucide-react';
 import type { ColumnMeta, ColumnType } from '@/lib/data-analyzer';
 import { addFieldToSpec, aggKey, aggregateChart, aggsForColumn, normalizeAgg, repeatColumnOf, specForField, specTitle, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Button } from '@/components/ui/button';
@@ -45,11 +45,14 @@ export interface EditorPaneProps {
   onDeselect: () => void;
   /** Opens the column merger; the button is hidden when omitted. */
   onMergeColumns?: () => void;
+  onNewField?: () => void;
+  /** Names of calculated fields: they show the fx icon instead of their type icon. */
+  calculated?: Set<string>;
   /** Adds (or selects) a slicer card for the column; the per-field button is hidden when omitted. */
   onAddSlicer?: (col: ColumnMeta) => void;
 }
 
-export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onChangeFilters, onDeselect, onMergeColumns, onAddSlicer }: EditorPaneProps) {
+export function EditorPane({ columns, data, selected, onChange, onAddField, onChangeKpi, onChangeRepeatColumn, onChangeFormat, onChangeFilters, onDeselect, onMergeColumns, onNewField, calculated, onAddSlicer }: EditorPaneProps) {
   const { t } = useI18n();
   const d = useDashboardT();
   const [query, setQuery] = useState('');
@@ -162,11 +165,18 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
       <section className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{d('fields')}</h3>
-          {onMergeColumns && (
-            <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" aria-label={t('mergeColumns')} onClick={onMergeColumns}>
-              <Merge className="h-3.5 w-3.5" /> {t('mergeColumns')}
-            </Button>
-          )}
+          <div className="flex min-w-0 items-center">
+            {onNewField && (
+              <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" title={d('newField')} aria-label={d('newField')} onClick={onNewField}>
+                <FunctionSquare className="h-3.5 w-3.5" /> {d('newField')}
+              </Button>
+            )}
+            {onMergeColumns && (
+              <Button variant="ghost" size="sm" className="h-7 w-7 shrink-0 p-0" title={t('mergeColumns')} aria-label={t('mergeColumns')} onClick={onMergeColumns}>
+                <Merge className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
         </div>
         <Input
           type="search"
@@ -178,7 +188,7 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
         />
         <ul className="space-y-0.5">
           {fields.map(col => {
-            const Icon = FIELD_ICONS[col.type];
+            const Icon = calculated?.has(col.name) ? FunctionSquare : FIELD_ICONS[col.type];
             const disabled = !item && !specForField(col);
             return (
               <li key={col.name} className="flex items-center gap-0.5">
