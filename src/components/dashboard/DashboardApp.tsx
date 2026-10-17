@@ -15,6 +15,7 @@ import { applyFilters, countActive, distinctValues, filterKindFor, normalizeFilt
 import { loadSession, clearStoredSession, STORAGE_KEY, type PersistedSession } from '@/lib/session-storage';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
+import type { DateNote } from '@/lib/date-columns';
 import { useUndoableState } from '@/hooks/use-undoable-state';
 import { applyCalcFields, dependentsOf, removeFieldFromItems, validateEditedField, validateNewField, type CalcField } from '@/lib/calc-fields';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -141,6 +142,8 @@ export interface DashboardAppProps {
     fileName: string;
     /** Demo data: render it, never persist it. */
     ephemeral?: boolean;
+    /** Date columns repaired while reading the file: announced once, below. */
+    notes?: DateNote[];
   } | null;
   /** Tears down this tree and returns the user to the landing page. */
   onClearFile: () => void;
@@ -240,6 +243,11 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
       const { items } = buildDefaultDashboard(newData, cols, charts, t);
       setDashboardItems(items, { record: false }); // starter board is not undoable
       setAnalyzing(false);
+
+      for (const note of initialUpload.notes ?? []) {
+        const names = [...note.columns.slice(0, 3), ...(note.columns.length > 3 ? ['…'] : [])].join(', ');
+        toast.info(`${d(note.kind === 'serial' ? 'datesFromSerial' : 'datesDayFirst')}: ${names}`);
+      }
 
       const fileExt = getFileExt(name);
       trackEvent('file_parsed', { fileExt, rowCount: newData.length, colCount: cols.length });
