@@ -10,7 +10,7 @@ import { DynamicChart } from './DynamicChart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AreaChart, BarChart3, BarChartHorizontal, Donut, LineChart, PieChart, Plus, Radar, ScatterChart, X, type LucideIcon } from 'lucide-react';
+import { AreaChart, BarChart3, BarChartHorizontal, ChartNoAxesCombined, Donut, LineChart, PieChart, Plus, Radar, ScatterChart, X, type LucideIcon } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import { useDashboardT } from '@/lib/i18n/dashboard';
 import type { DashboardItem } from './DashboardGrid';
@@ -22,7 +22,7 @@ const GRAINS: DateGrain[] = ['day', 'week', 'month', 'quarter', 'year'];
 const GRAIN_KEYS = { day: 'grainDay', week: 'grainWeek', month: 'grainMonth', quarter: 'grainQuarter', year: 'grainYear' } as const;
 const TYPE_ICONS: Record<ChartType, LucideIcon> = {
   bar: BarChart3, horizontalBar: BarChartHorizontal, line: LineChart, area: AreaChart,
-  donut: Donut, pie: PieChart, scatter: ScatterChart, radar: Radar,
+  donut: Donut, pie: PieChart, scatter: ScatterChart, radar: Radar, combo: ChartNoAxesCombined,
 };
 
 interface ManualChartBuilderProps {
@@ -124,6 +124,13 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
       return next;
     }));
 
+  // A new value starts as an unused numeric column, else Row count; null when both are taken (a repeat would share a series key).
+  const used = new Set(measures.map(m => m.column));
+  const freeCol = columns.find(c => c.type === 'numeric' && !used.has(c.name));
+  const nextMeasure: ChartMeasure | null = freeCol
+    ? { column: freeCol.name, agg: normalizeAgg(columns, freeCol.name, 'sum', true) }
+    : used.has(null) ? null : { column: null, agg: 'count' };
+
   const handleAdd = () => {
     if (!chartData.length) return;
     if (onSave) return onSave({ type: chartType, spec, title });
@@ -154,6 +161,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
               );
             })}
           </div>
+          {chartType === 'combo' && measures.length < 2 && <p className="mt-1 text-xs text-muted-foreground">{d('comboNeedsSecond')}</p>}
         </div>
 
         <div>
@@ -206,9 +214,9 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
               )}
             </div>
           ))}
-          {measures.length < MAX_MEASURES && (
+          {measures.length < MAX_MEASURES && nextMeasure && (
             <Button variant="outline" size="sm" className="h-8 text-xs"
-              onClick={() => setMeasures(ms => [...ms, { column: null, agg: 'count' }])}>
+              onClick={() => setMeasures(ms => [...ms, nextMeasure])}>
               <Plus className="h-3 w-3 mr-1" /> {d('addValue')}
             </Button>
           )}
@@ -216,7 +224,7 @@ export function ManualChartBuilder({ data, columns, onAddToDashboard, initial, o
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {measures.length === 1 && (
+        {measures.length === 1 && chartType !== 'combo' && (
           <div>
             <label className={label}>{d('legendSplit')}</label>
             <Select value={series || NONE} onValueChange={v => setSeries(v === NONE ? '' : v)}>

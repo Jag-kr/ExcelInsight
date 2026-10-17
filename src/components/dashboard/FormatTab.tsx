@@ -128,7 +128,7 @@ export function FormatTab({ item, dataKeys = [], rowCount = 0, onChange }: Forma
   // Scatter and pie colour per point/slice, and a lone series on a short bar chart per category: no per-series colour there.
   const isBar = item.type === 'bar' || item.type === 'horizontalBar';
   const showSeriesColors = !kpi && dataKeys.length > 0
-    && (isBar || ['line', 'area', 'radar'].includes(item.type))
+    && (isBar || ['line', 'area', 'radar', 'combo'].includes(item.type))
     && !(isBar && colorsByCategory(dataKeys.length, rowCount));
   const setSeriesColor = (key: string, color?: string) => {
     const { [key]: _drop, ...rest } = f?.seriesColors ?? {};
@@ -150,6 +150,35 @@ export function FormatTab({ item, dataKeys = [], rowCount = 0, onChange }: Forma
 
   return (
     <div className="space-y-3">
+      {showSeriesColors && (
+        <fieldset className="space-y-1.5">
+          <legend className={LABEL}>{d('seriesColors')}</legend>
+          {dataKeys.map((key, i) => {
+            const custom = f?.seriesColors?.[key];
+            return (
+              <div key={key} className="flex items-center gap-2">
+                <span className="min-w-0 flex-1 truncate text-xs text-foreground" title={key}>{key}</span>
+                <ColorInput
+                  label={`${d('seriesColor')}: ${key}`}
+                  value={custom ?? defaults[i]}
+                  onCommit={c => setSeriesColor(key, c)}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  aria-label={`${d('resetColor')}: ${key}`}
+                  disabled={!custom}
+                  onClick={() => setSeriesColor(key)}
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            );
+          })}
+        </fieldset>
+      )}
+
       <Pick
         label={d('numberFormat')}
         value={f?.number ?? DEFAULT}
@@ -220,35 +249,6 @@ export function FormatTab({ item, dataKeys = [], rowCount = 0, onChange }: Forma
             </>
           )}
         </>
-      )}
-
-      {showSeriesColors && (
-        <fieldset className="space-y-1.5">
-          <legend className={LABEL}>{d('seriesColors')}</legend>
-          {dataKeys.map((key, i) => {
-            const custom = f?.seriesColors?.[key];
-            return (
-              <div key={key} className="flex items-center gap-2">
-                <span className="min-w-0 flex-1 truncate text-xs text-foreground" title={key}>{key}</span>
-                <ColorInput
-                  label={`${d('seriesColor')}: ${key}`}
-                  value={custom ?? defaults[i]}
-                  onCommit={c => setSeriesColor(key, c)}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 shrink-0"
-                  aria-label={`${d('resetColor')}: ${key}`}
-                  disabled={!custom}
-                  onClick={() => setSeriesColor(key)}
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            );
-          })}
-        </fieldset>
       )}
 
       <Button variant="ghost" size="sm" className="h-8 w-full text-xs" disabled={isDefaultFormat(f)} onClick={() => onChange(undefined)}>
