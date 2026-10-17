@@ -155,7 +155,7 @@ export function EditorPane({ columns, data, selected, onChange, onAddField, onCh
         </div>
       )}
       {item && !spec && !(kpi && onChangeKpi) && !(repeatCol && onChangeRepeatColumn) && (
-        <p className="text-xs text-muted-foreground">{item.displayAs === 'slicer' ? d('slicerHint') : d('noEditableSettings')}</p>
+        <p className="text-xs text-muted-foreground">{item.displayAs === 'slicer' ? d('slicerHint') : item.displayAs === 'text' ? d('textHint') : d('noEditableSettings')}</p>
       )}
       {!item && <p className="text-xs text-muted-foreground">{d('clickFieldToAdd')}</p>}
 

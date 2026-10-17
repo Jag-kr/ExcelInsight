@@ -44,9 +44,11 @@ export interface DashboardItem {
   format?: ChartFormat;
   /** Filters on this visual only, applied on top of the page filters (chart recipes and KPI cards). */
   filters?: Filters;
-  displayAs?: 'chart' | 'table' | 'insight' | 'kpi' | 'slicer';
+  displayAs?: 'chart' | 'table' | 'insight' | 'kpi' | 'slicer' | 'text';
   /** Slicer cards: the column whose page filter this card edits. */
   slicerColumn?: string;
+  /** Text cards: plain text, at most TEXT_MAX characters. */
+  text?: string;
   tableColumns?: string[];
   size?: CardSize;
   /** Free-form grid position. Absent on legacy/new cards: presetLayout packs those from `size` / the bottom. */
@@ -332,6 +334,56 @@ function DashboardSlicerCard({ item, column, values, filter, onChange, fill }: {
   );
 }
 
+const TEXT_MAX = 2000;
+
+/* Plain text only (never HTML), so the PDF capture sees ordinary text. Click or Enter/Space edits;
+   blur commits once if the text changed (one undo entry per session), Escape reverts. */
+function DashboardTextCard({ item, fill, onChange }: { item: DashboardItem; fill?: boolean; onChange: (text: string) => void }) {
+  const d = useDashboardT();
+  const text = typeof item.text === 'string' ? item.text.slice(0, TEXT_MAX) : '';
+  const [editing, setEditing] = useState(false);
+  const cancelled = useRef(false);
+  const refocus = useRef(false);
+  const viewRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!editing && refocus.current) { refocus.current = false; viewRef.current?.focus(); }
+  }, [editing]);
+  const edit = () => { cancelled.current = false; setEditing(true); };
+  return (
+    <Card className={`dashboard-panel animate-fade-in h-full overflow-auto p-3 sm:p-4${fill ? '' : ' min-h-[72px]'}`}>
+      {editing ? (
+        <textarea
+          autoFocus
+          rows={3}
+          defaultValue={text}
+          maxLength={TEXT_MAX}
+          aria-label={d('addText')}
+          onClick={e => e.stopPropagation()}
+          onBlur={e => {
+            setEditing(false);
+            if (!cancelled.current && e.currentTarget.value !== text) onChange(e.currentTarget.value);
+          }}
+          onKeyDown={e => {
+            if (e.key === 'Escape') { cancelled.current = true; refocus.current = true; setEditing(false); }
+          }}
+          className="h-full w-full resize-none bg-transparent text-sm leading-relaxed text-foreground outline-none"
+        />
+      ) : (
+        <div
+          ref={viewRef}
+          role="button"
+          tabIndex={0}
+          onClick={e => { e.stopPropagation(); edit(); }}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); edit(); } }}
+          className="min-h-full cursor-text whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          {text || <span className="text-muted-foreground">{d('textPlaceholder')}</span>}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 /* Scatter suggestions plot raw points, so there is no field-well recipe to edit. */
 const isEditableChart = (item: DashboardItem) =>
   (!item.displayAs || item.displayAs === 'chart') &&
@@ -510,7 +562,11 @@ const DashboardCard = memo(function DashboardCard({
         )}
       </div>
 
-      {item.displayAs === 'slicer' ? (
+      {item.displayAs === 'text' ? (
+        <ChartErrorBoundary title={item.title}>
+          <DashboardTextCard item={item} fill={fill} onChange={text => h.update(item.id, { text })} />
+        </ChartErrorBoundary>
+      ) : item.displayAs === 'slicer' ? (
         <ChartErrorBoundary title={item.title}>
           <DashboardSlicerCard
             item={item}
