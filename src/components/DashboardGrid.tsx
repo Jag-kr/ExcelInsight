@@ -8,7 +8,7 @@ import { ChartType, getChartColor, getChartColorVar } from '@/lib/chart-themes';
 import { TopValueBar } from './TopValueBar';
 import {
   Trash2, Maximize2, Minimize2, Square, Repeat2, BarChart3, AlertTriangle,
-  Copy, Filter as FilterIcon, MoreHorizontal, RectangleHorizontal, Rows3, Pencil,
+  Copy, Filter as FilterIcon, MoreHorizontal, RectangleHorizontal, Rows3, Pencil, CornerLeftUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n';
@@ -19,7 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ChartErrorBoundary } from './ChartErrorBoundary';
-import { crossDimensionOf, kpiTitle, repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { crossDimensionOf, drillBaseOf, kpiTitle, repeatColumnOf, type ManualChartSpec, type ChartSpec, type KpiSpec } from '@/lib/derive-dashboard-item';
 import type { PivotResult, PivotSpec } from '@/lib/pivot';
 import type { ColumnMeta } from '@/lib/data-analyzer';
 import { numberFormatter, type ChartFormat } from '@/lib/format';
@@ -61,6 +61,8 @@ export interface DashboardItem {
   pivotSpec?: PivotSpec;
   /** Derived from pivotSpec + the filtered rows on each render, like kpiValue; never stored. */
   pivot?: PivotResult;
+  /** Set while a date-grain chart is zoomed into a bucket (path of clicked labels); derived, never stored. */
+  drilled?: { path: string[]; label: string };
   insightType?: 'repeating' | 'stats' | 'quality';
   insightContent?: any;
 }
@@ -77,6 +79,8 @@ interface DashboardGridProps {
   onSelect?: (id: string | null) => void;
   /** Cross-filtering: a bar/slice of a card with a cross dimension was clicked. `columns` resolves two-column sourceKeys. */
   onChartSelect?: (itemId: string, label: string) => void;
+  /** Step a drilled date-grain card back out one level. */
+  onDrillUp?: (itemId: string) => void;
   columns?: ColumnMeta[];
   /** Slicer cards read and edit these page filters. Removing a slicer does not clear its filter: the Filter tab still shows it. */
   pageFilters?: Filters;
@@ -476,6 +480,7 @@ interface CardHandlers {
   edit: (id: string) => void;
   resize: (id: string, size: CardSize) => void;
   chartSelect: (id: string, label: string) => void;
+  drillUp: (id: string) => void;
   pageFilter: (column: string, filter: Filter | null) => void;
 }
 
@@ -487,6 +492,7 @@ interface CardProps {
   fill: boolean;
   canDuplicate: boolean;
   canEdit: boolean;
+  /** A click on a mark does something: cross-filters the board, or drills a date-grain chart. */
   canCross: boolean;
   /** Slicer cards only. */
   slicerColumn?: ColumnMeta;
@@ -528,6 +534,18 @@ const DashboardCard = memo(function DashboardCard({
 
       {/* ─── Top-right: filter indicator (always visible) beside the action pill (appears on hover) ─── */}
       <div data-pdf-hide className="absolute top-2 right-2 z-10 flex items-center gap-1 pointer-events-none">
+        {item.drilled && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="pointer-events-auto h-6 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border/60 hover:bg-secondary shadow-sm rounded-lg text-primary"
+            aria-label={d('drillUp')}
+            title={d('drillUp')}
+            onClick={() => h.drillUp(item.id)}
+          >
+            <CornerLeftUp className="h-3.5 w-3.5" />
+          </Button>
+        )}
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity duration-150">
           {/* Edit: opens the edit window (same action as the menu item below). */}
           {canEdit && isEditable(item) && (
@@ -659,7 +677,7 @@ const DashboardCard = memo(function DashboardCard({
         <ChartErrorBoundary title={item.title}>
           <DynamicChart
             title={item.title}
-            description={item.description}
+            description={item.drilled?.label ?? item.description}
             type={item.type}
             data={item.data}
             dataKeys={item.dataKeys}
@@ -740,7 +758,7 @@ const IGNORE_SELECT = 'button, input, textarea, a, [role="menuitem"], [role="men
    one has already toggled it twice; `.cursor-pointer` is the class DynamicChart puts on every clickable mark. */
 const IGNORE_DBLCLICK = `${IGNORE_SELECT}, select, label, [contenteditable], [role="combobox"], [role="checkbox"], [role="slider"], .cursor-pointer, .recharts-bar-rectangle, .recharts-sector, .recharts-dot, .recharts-active-dot, .recharts-rectangle, .recharts-symbols, .recharts-radar-dot`;
 
-export function DashboardGrid({ items, onLayoutCommit, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, onChartSelect, columns, pageFilters, onPageFilterChange, slicerValues, emptyAction }: DashboardGridProps) {
+export function DashboardGrid({ items, onLayoutCommit, onRemove, onUpdateItem, onDuplicate, onEdit, selectedId, onSelect, onChartSelect, onDrillUp, columns, pageFilters, onPageFilterChange, slicerValues, emptyAction }: DashboardGridProps) {
   const { t } = useI18n();
   const isMobile = useIsMobile();
 
@@ -780,8 +798,8 @@ export function DashboardGrid({ items, onLayoutCommit, onRemove, onUpdateItem, o
 
   /* Handlers that take an id and read the latest props through a ref, so their identity never changes
      and parents may pass inline closures freely. */
-  const latest = useRef({ onRemove, onUpdateItem, onDuplicate, onEdit, onSelect, onChartSelect, onPageFilterChange, onLayoutCommit, effective });
-  latest.current = { onRemove, onUpdateItem, onDuplicate, onEdit, onSelect, onChartSelect, onPageFilterChange, onLayoutCommit, effective };
+  const latest = useRef({ onRemove, onUpdateItem, onDuplicate, onEdit, onSelect, onChartSelect, onDrillUp, onPageFilterChange, onLayoutCommit, effective });
+  latest.current = { onRemove, onUpdateItem, onDuplicate, onEdit, onSelect, onChartSelect, onDrillUp, onPageFilterChange, onLayoutCommit, effective };
   const handlers = useMemo<CardHandlers & { select: (id: string) => void }>(() => ({
     remove: id => latest.current.onRemove(id),
     update: (id, updates) => latest.current.onUpdateItem(id, updates),
@@ -789,6 +807,7 @@ export function DashboardGrid({ items, onLayoutCommit, onRemove, onUpdateItem, o
     edit: id => latest.current.onEdit?.(id),
     select: id => latest.current.onSelect?.(id),
     chartSelect: (id, label) => latest.current.onChartSelect?.(id, label),
+    drillUp: id => latest.current.onDrillUp?.(id),
     pageFilter: (column, f) => latest.current.onPageFilterChange?.(column, f),
     // Resize menu preset: commit the whole effective layout, not just this card. A lone layout on a
     // board of layout-less cards would make presetLayout repack all the others below it.
@@ -841,7 +860,7 @@ export function DashboardGrid({ items, onLayoutCommit, onRemove, onUpdateItem, o
           fill={!isMobile}
           canDuplicate={canDuplicate}
           canEdit={canEdit}
-          canCross={hasChartSelect && !!crossDimensionOf(item, columns)}
+          canCross={hasChartSelect && !!(crossDimensionOf(item, columns) || drillBaseOf(item, columns))}
           slicerColumn={item.displayAs === 'slicer' ? columns?.find(c => c.name === name) : undefined}
           slicerValues={item.displayAs === 'slicer' ? slicerValues?.[name] : undefined}
           slicerFilter={item.displayAs === 'slicer' ? pageFilters?.[name] : undefined}

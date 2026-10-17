@@ -6,6 +6,7 @@ import type { ChartType } from '@/lib/chart-themes';
 import { numberFormatter, type ChartFormat } from '@/lib/format';
 import { applyFilters, type Filters } from '@/lib/filters';
 import { computePivot } from '@/lib/pivot';
+import { drillLabel, drillRows, grainAt, type DrillState } from '@/lib/drill';
 
 /**
  * Card data is derived from a recipe + the currently filtered dataset, never
@@ -334,6 +335,17 @@ function rebuildTable(cardId: string, columns: ColumnMeta[], data: Record<string
   return null;
 }
 
+/** A recipe zoomed into its drill bucket: the rows inside it, the next finer grain, and the derived `drilled` badge. A stale drill (grain edited since) is ignored. */
+function drillView(spec: ChartSpec, rows: Row[], drill?: DrillState) {
+  const grain = drill && drill.path.length && drill.base === spec.grain ? grainAt(drill.base, drill.path.length) : null;
+  if (!drill || !grain) return { spec, rows, extra: undefined };
+  return {
+    spec: { ...spec, grain },
+    rows: drillRows(rows, spec.dimension, drill.base, drill.path),
+    extra: { drilled: { path: drill.path, label: drillLabel(drill.path) } },
+  };
+}
+
 /**
  * Rebuild one card against the filtered dataset. No recipe (a session saved
  * before recipes existed) → keep the stored snapshot. A chart with a `spec`, or
@@ -348,7 +360,8 @@ function deriveDashboardItem(
   suggestions: ChartSuggestion[],
   columns: ColumnMeta[],
   data: Record<string, any>[],
-  t: TFn
+  t: TFn,
+  drill?: DrillState
 ): DashboardItem {
   if (item.displayAs === 'kpi') {
     const rows = applyFilters(data, item.filters ?? {});
@@ -388,8 +401,9 @@ function deriveDashboardItem(
   const scoped = applyFilters(data, item.filters ?? {});
 
   if (item.spec) {
-    const { data: d, dataKeys } = aggregateChart(scoped, toChartSpec(item.spec, item.type));
-    return { ...item, data: d, dataKeys };
+    const v = drillView(toChartSpec(item.spec, item.type), scoped, drill);
+    const { data: d, dataKeys } = aggregateChart(v.rows, v.spec);
+    return { ...item, data: d, dataKeys, ...v.extra };
   }
 
   if (item.sourceKey) {
@@ -399,14 +413,15 @@ function deriveDashboardItem(
          aggregateChart would add an "Unknown" bar: keep the charts as they were. */
       const skipBlanks = /^(dist|pie|rdist|top):/.test(item.sourceKey);
       const rows = skipBlanks ? scoped.filter(r => { const v = r[recipe.dimension]; return v !== null && v !== undefined && v !== ''; }) : scoped;
-      const { data: d, dataKeys } = aggregateChart(rows, recipe);
+      const v = drillView(recipe, rows, drill);
+      const { data: d, dataKeys } = aggregateChart(v.rows, v.spec);
       /* Keep the card's own value key (agg suggestions use total/average, the
          recipe says value) so saved series colours and formats still match. */
       const [from] = dataKeys, [to] = item.dataKeys;
       const rename = dataKeys.length === 1 && item.dataKeys.length === 1 && from !== to;
       return rename
-        ? { ...item, data: d.map(r => ({ name: r.name, [to]: r[from] })), dataKeys: item.dataKeys }
-        : { ...item, data: d, dataKeys };
+        ? { ...item, data: d.map(r => ({ name: r.name, [to]: r[from] })), dataKeys: item.dataKeys, ...v.extra }
+        : { ...item, data: d, dataKeys, ...v.extra };
     }
     const match = suggestions.find(s => s.key === item.sourceKey);
     if (!match) return { ...item, data: [] };
@@ -429,17 +444,25 @@ export function crossDimensionOf(item: DashboardItem, columns: ColumnMeta[] = []
   return recipe && !recipe.grain && recipe.dimension ? recipe.dimension : null;
 }
 
-/** Map a whole dashboard onto the filtered dataset, preserving order. `cross`: every card but its source reads the rows narrowed by that selection. */
+/** The date grain a chart card's axis is bucketed by, i.e. what a click can drill into; null when it has none (those cross-filter instead, see crossDimensionOf). */
+export function drillBaseOf(item: DashboardItem, columns: ColumnMeta[] = []): DateGrain | null {
+  if (item.displayAs && item.displayAs !== 'chart') return null;
+  const recipe = item.spec ? toChartSpec(item.spec, item.type) : item.sourceKey ? specFromSourceKey(item.sourceKey, columns) : null;
+  return recipe?.dimension && recipe.grain || null;
+}
+
+/** Map a whole dashboard onto the filtered dataset, preserving order. `cross`: every card but its source reads the rows narrowed by that selection. `drill`: per-card zoom into a date bucket, by item id. */
 export function deriveDashboardItems(
   items: DashboardItem[],
   suggestions: ChartSuggestion[],
   columns: ColumnMeta[],
   data: Record<string, any>[],
   t: TFn,
-  cross?: { itemId: string; filters: Filters }
+  cross?: { itemId: string; filters: Filters },
+  drill?: Record<string, DrillState>
 ): DashboardItem[] {
   const narrowed = cross ? applyFilters(data, cross.filters) : data;
-  return items.map(item => deriveDashboardItem(item, suggestions, columns, item.id === cross?.itemId ? data : narrowed, t));
+  return items.map(item => deriveDashboardItem(item, suggestions, columns, item.id === cross?.itemId ? data : narrowed, t, drill?.[item.id]));
 }
 
 /* ─── KPI cards ─── */
