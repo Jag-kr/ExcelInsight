@@ -17,14 +17,14 @@ const canon = (v: unknown): unknown =>
 export const canonSig = (v: unknown): string => JSON.stringify(canon(v)) ?? '';
 
 /** The spec the builder can actually express: grain only on a date axis, a legend only
-    with one measure, stacking only for stackable types, a whole non-negative limit. */
+    with one measure (and never on a combo, whose second measure is the line), stacking only for stackable types, a whole non-negative limit. */
 export function normalizeSpec(s: ChartSpec, type: ChartType, isDate: boolean): ChartSpec {
   return {
     v: 2,
     dimension: s.dimension,
     measures: s.measures,
     ...(isDate && s.grain ? { grain: s.grain } : {}),
-    ...(s.series && s.measures.length === 1 ? { series: s.series } : {}),
+    ...(s.series && s.measures.length === 1 && type !== 'combo' ? { series: s.series } : {}),
     ...(s.sort ? { sort: s.sort } : {}),
     ...(s.limit != null ? { limit: Math.max(0, Math.floor(s.limit)) } : {}),
     ...(s.stacked && STACKABLE.includes(type) ? { stacked: true } : {}),
