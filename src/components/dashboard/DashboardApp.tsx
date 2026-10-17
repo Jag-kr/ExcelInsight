@@ -417,7 +417,9 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
     const merged = mergeColumns(baseData, col1, col2, newName, separator);
     setBaseData(merged);
     setBaseColumns(analyzeColumns(merged));
-  }, [baseData, calcFields]);
+    setMergeOpen(false);
+    toast.success(`${d('fieldAdded')}: ${newName.trim()}`);
+  }, [baseData, calcFields, d]);
 
   // One undo entry; the values are derived from the stored definition.
   const handleAddCalculated = useCallback((name: string, formula: string): { ok: true } | { ok: false; error: string } => {
@@ -877,7 +879,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
 
               {/* Dashboard overflow menu */}
               {activeTab === 'dashboard' && (
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label={t('moreActions')}>
                       <MoreHorizontal className="h-4 w-4" />
@@ -1220,7 +1222,7 @@ export function DashboardApp({ initialUpload, onClearFile }: DashboardAppProps) 
             ))}
 
             {/* More: Merge columns + Filter + Clear file */}
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
