@@ -350,7 +350,11 @@ function deriveDashboardItem(
   t: TFn
 ): DashboardItem {
   if (item.displayAs === 'kpi') {
-    return { ...item, kpiValue: computeKpiValue(applyFilters(data, item.filters ?? {}), item.kpiSpec, item.format) };
+    const rows = applyFilters(data, item.filters ?? {});
+    const cmp = computeKpiCompare(rows, item.kpiSpec, item.format);
+    if (!cmp) return { ...item, kpiValue: computeKpiValue(rows, item.kpiSpec, item.format) };
+    const { value: kpiValue, delta } = cmp;
+    return { ...item, kpiValue, ...(delta && { kpiDelta: delta }) };
   }
 
   if (item.displayAs === 'insight') {
@@ -439,6 +443,8 @@ export type KpiAgg = 'count' | 'sum' | 'average' | 'min' | 'max' | 'median' | 'd
 export interface KpiSpec {
   column: string | null;
   agg: KpiAgg;
+  /** Show the latest period of `column` with a delta against the one before it. */
+  compare?: { column: string; grain: DateGrain };
 }
 
 const compactNumber = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 2 });
@@ -488,12 +494,43 @@ export function aggregateValues(values: unknown[], agg: KpiAgg): number | null {
  * render pass — same contract as a chart's `data`, never persisted.
  */
 export function computeKpiValue(data: Record<string, any>[], spec?: KpiSpec, format?: ChartFormat): string {
-  if (!spec) return '—';
-  const n = spec.column ? aggregateValues(data.map(r => r[spec.column!]), spec.agg) : data.length;
+  return spec ? formatKpi(kpiNumber(data, spec), format) : '—';
+}
+
+const kpiNumber = (data: Record<string, any>[], spec: KpiSpec) =>
+  spec.column ? aggregateValues(data.map(r => r[spec.column!]), spec.agg) : data.length;
+
+function formatKpi(n: number | null, format?: ChartFormat): string {
   if (n === null) return '—';
   /* No number/decimals set -> the shared compactNumber, so unformatted cards are unchanged. */
   if (format?.number === undefined && format?.decimals === undefined) return compactNumber.format(n);
   return numberFormatter({ ...format, number: format.number ?? 'compact' })(n);
+}
+
+/**
+ * "Compare to previous period": the KPI over the latest date bucket plus its %
+ * change from the bucket before. null = no compare set or no dated rows, so
+ * the card falls back to the all-rows value.
+ */
+export function computeKpiCompare(
+  data: Record<string, any>[], spec?: KpiSpec, format?: ChartFormat
+): { value: string; delta?: { pct: number; label: string } } | null {
+  const cmp = spec?.compare;
+  if (!spec || !cmp) return null;
+  const buckets = new Map<string, Record<string, any>[]>();
+  for (const row of data) {
+    const key = bucketDate(row[cmp.column], cmp.grain);
+    if (key === null) continue;
+    (buckets.get(key) ?? buckets.set(key, []).get(key)!).push(row);
+  }
+  // ponytail: previous = the prior bucket present in the data, a calendar gap is not a zero period.
+  const [latest, prevKey] = [...buckets.keys()].sort().reverse();
+  if (latest === undefined) return null;
+  const cur = kpiNumber(buckets.get(latest)!, spec);
+  const value = formatKpi(cur, format);
+  const prev = prevKey === undefined ? null : kpiNumber(buckets.get(prevKey)!, spec);
+  if (cur === null || !prev || !Number.isFinite(cur) || !Number.isFinite(prev)) return { value };
+  return { value, delta: { pct: (cur - prev) / Math.abs(prev) * 100, label: prevKey } };
 }
 
 /** Stable card id, so Quick Add can tell an already-placed metric from a new one. */

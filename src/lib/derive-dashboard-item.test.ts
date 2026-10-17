@@ -4,7 +4,7 @@ import { buildDefaultDashboard } from './build-default-dashboard';
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartFormat } from './format';
 import {
-  deriveDashboardItems, crossDimensionOf, computeKpiValue, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
+  deriveDashboardItems, crossDimensionOf, computeKpiValue, computeKpiCompare, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
   specForField, addFieldToSpec, specTitle, kpiTitle, kpiCardId, aggsForColumn, normalizeAgg,
   retargetKpi, retargetRepeat, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg, type KpiSpec,
 } from './derive-dashboard-item';
@@ -636,5 +636,62 @@ describe('cross-filtering', () => {
       expect(crossDimensionOf({ ...chart('a'), displayAs: 'table' })).toBeNull();
       expect(crossDimensionOf({ ...chart('a'), displayAs: 'insight' })).toBeNull();
     });
+  });
+});
+
+describe('computeKpiCompare', () => {
+  const rows = [
+    { d: '2025-07-03', v: 10 }, { d: '2025-08-02', v: 100 }, { d: '2025-08-20', v: 50 }, { d: '2025-09-05', v: 168.75 },
+  ];
+  const sum: KpiSpec = { column: 'v', agg: 'sum', compare: { column: 'd', grain: 'month' } };
+
+  it('is null without compare or without dated rows', () => {
+    expect(computeKpiCompare(rows, { column: 'v', agg: 'sum' })).toBeNull();
+    expect(computeKpiCompare([{ d: 'n/a', v: 1 }], sum)).toBeNull();
+  });
+  it('shows the latest month and its change from the one before', () => {
+    const r = computeKpiCompare(rows, sum)!;
+    expect(r.value).toBe(computeKpiValue([rows[3]], sum));
+    expect(r.delta!.label).toBe('2025-08');
+    expect(r.delta!.pct).toBeCloseTo(12.5);
+  });
+  it('counts rows when column is null', () => {
+    const r = computeKpiCompare(rows, { column: null, agg: 'count', compare: sum.compare })!;
+    expect(r.value).toBe('1');
+    expect(r.delta!.pct).toBe(-50);
+  });
+  it('divides by the absolute previous value', () => {
+    const r = computeKpiCompare([{ d: '2025-01-01', v: -100 }, { d: '2025-02-01', v: -50 }], sum)!;
+    expect(r.delta!.pct).toBe(50);
+  });
+  it('omits the delta with no previous bucket or a zero previous', () => {
+    expect(computeKpiCompare([rows[1], rows[2]], sum)).toEqual({ value: computeKpiValue([rows[1], rows[2]], sum) });
+    expect(computeKpiCompare([{ d: '2025-01-01', v: 0 }, { d: '2025-02-01', v: 5 }], sum)!.delta).toBeUndefined();
+  });
+  it('skips undated rows', () => {
+    const r = computeKpiCompare([...rows, { d: '', v: 1e6 }, { d: 'x', v: 1e6 }], sum)!;
+    expect(r.delta!.pct).toBeCloseTo(12.5);
+  });
+  it('applies the card format to the value', () => {
+    const f: ChartFormat = { number: 'currency', decimals: 0 };
+    expect(computeKpiCompare(rows, sum, f)!.value).toBe(computeKpiValue([rows[3]], sum, f));
+    expect(computeKpiCompare(rows, sum, f)!.value).not.toBe(computeKpiCompare(rows, sum)!.value);
+  });
+  it('picks the grain', () => {
+    const r = computeKpiCompare(rows, { ...sum, compare: { column: 'd', grain: 'year' } })!;
+    expect(r.delta).toBeUndefined();
+    expect(r.value).toBe(computeKpiValue(rows, sum));
+  });
+
+  const card = (kpiSpec: KpiSpec): DashboardItem => ({ id: 'k', title: 'k', type: 'bar', data: [], dataKeys: [], displayAs: 'kpi', kpiSpec });
+  it('deriveDashboardItems sets kpiDelta only when comparing', () => {
+    const [on, off] = deriveDashboardItems([card(sum), card({ column: 'v', agg: 'sum' })], [], [], rows, t);
+    expect(on.kpiValue).toBe(computeKpiValue([rows[3]], sum));
+    expect(on.kpiDelta!.label).toBe('2025-08');
+    expect(off.kpiValue).toBe(computeKpiValue(rows, sum));
+    expect('kpiDelta' in off).toBe(false);
+  });
+  it('does not change the card id', () => {
+    expect(kpiCardId(sum)).toBe(kpiCardId({ column: 'v', agg: 'sum' }));
   });
 });
