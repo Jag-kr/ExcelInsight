@@ -58,6 +58,7 @@ export interface DashboardItem {
   kpiValue?: string;
   /** Change vs the previous period when the KPI compares; derived with kpiValue, never stored. */
   kpiDelta?: { pct: number; label: string };
+  kpiTrend?: number[];
   pivotSpec?: PivotSpec;
   /** Derived from pivotSpec + the filtered rows on each render, like kpiValue; never stored. */
   pivot?: PivotResult;
@@ -279,8 +280,29 @@ export function kpiDeltaText(delta: NonNullable<DashboardItem['kpiDelta']>, vs: 
   return `${delta.pct === 0 ? '▬' : delta.pct > 0 ? '▲' : '▼'} ${Math.abs(delta.pct).toFixed(1)}% ${vs} ${delta.label}`;
 }
 
+/* Plain SVG (no recharts) so the PDF capture and the phone grid stay cheap. The last point gets a dot.
+   It shrinks away before the headline number ever truncates. */
+function Sparkline({ values, color }: { values: number[]; color: string }) {
+  const W = 64, H = 28, PAD = 3;
+  const min = Math.min(...values), span = Math.max(...values) - min;
+  const pts = values.map((v, i) => [
+    PAD + (i / (values.length - 1)) * (W - 2 * PAD),
+    span ? H - PAD - ((v - min) / span) * (H - 2 * PAD) : H / 2,
+  ]);
+  const [lx, ly] = pts[pts.length - 1];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-7 min-w-0 flex-1" style={{ color, maxWidth: W }} aria-hidden>
+      <polyline points={pts.map(p => p.join(',')).join(' ')} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={lx} cy={ly} r={2.25} fill="currentColor" />
+    </svg>
+  );
+}
+
 function DashboardKpiCard({ item, index, onRename, fill }: { item: DashboardItem; index: number; onRename: (v: string) => void; fill?: boolean }) {
   const d = useDashboardT();
+  const trend = item.kpiTrend && item.kpiTrend.length > 1 ? item.kpiTrend : null;
+  // Green = good news. The arrow stays in the text so the colour is never the only signal.
+  const good = item.kpiDelta && (item.kpiDelta.pct === 0 ? null : (item.kpiDelta.pct > 0) !== !!item.kpiSpec?.lowerIsBetter);
   return (
     <Card
       className={`dashboard-panel animate-fade-in h-full flex flex-col justify-center gap-1 p-3 sm:p-4 border-0${fill ? ' overflow-hidden' : ''}`}
@@ -289,12 +311,15 @@ function DashboardKpiCard({ item, index, onRename, fill }: { item: DashboardItem
       <div className="text-[11px] font-medium" style={{ color: getChartColor(index) }}>
         <EditableTitle value={item.title} onChange={onRename} />
       </div>
-      {/* Ellipsis, not a silent clip: a cut-off "$136,6" reads as a different number. */}
-      <p className="truncate text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none" title={item.kpiValue}>
-        {item.kpiValue ?? '—'}
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        {/* Ellipsis, not a silent clip: a cut-off "$136,6" reads as a different number. */}
+        <p className="max-w-full shrink-0 truncate text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none" title={item.kpiValue}>
+          {item.kpiValue ?? '—'}
+        </p>
+        {trend && <Sparkline values={trend} color={getChartColor(index)} />}
+      </div>
       {item.kpiDelta && (
-        <p className="truncate text-[11px] text-muted-foreground tabular-nums">
+        <p className={`truncate text-[11px] tabular-nums ${good === null ? 'text-muted-foreground' : good ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
           {kpiDeltaText(item.kpiDelta, d('vsPrevious'))}
         </p>
       )}

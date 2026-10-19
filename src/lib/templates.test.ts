@@ -46,17 +46,27 @@ describe('buildTemplate', () => {
   it('sales: header, KPIs, date chart, category charts, pivot', () => {
     const items = build('sales');
     expect(items.map(i => i.id)).toEqual(items.map((_, n) => `tpl:sales:${n}`));
-    expect(items.map(i => i.displayAs ?? 'chart')).toEqual(['text', 'kpi', 'kpi', 'kpi', 'chart', 'chart', 'chart', 'pivot']);
-    expect(items[0]).toMatchObject({ text: 'My board', title: 'My board', size: 'lg' });
-    expect(items.slice(1, 4).map(i => i.kpiSpec)).toEqual([
-      { column: 'Revenue', agg: 'sum' }, { column: 'Cost', agg: 'sum' }, { column: null, agg: 'count' },
-    ]);
-    expect(items.slice(1, 4).every(i => i.size === 'xs')).toBe(true);
-    expect(items[4]).toMatchObject({ type: 'combo', spec: { dimension: 'Date', grain: 'month', measures: [{ column: 'Revenue' }, { column: 'Cost' }] } });
+    expect(items.map(i => i.displayAs ?? 'chart')).toEqual(['text', 'kpi', 'kpi', 'kpi', 'chart', 'chart', 'chart', 'chart', 'pivot']);
+    expect(items[0]).toMatchObject({ title: 'My board', size: 'lg' });
+    expect(items[0].text).toMatch(/^My board\n60 rows · 6 columns · 2024-01-01 → 2024-12-/);
+    const kpis = items.slice(1, 4);
+    expect(kpis.map(i => [i.kpiSpec!.column, i.kpiSpec!.agg])).toEqual([['Revenue', 'sum'], ['Cost', 'sum'], [null, 'count']]);
+    // The headline stays the all-rows total; every tile carries a sparkline on the date column.
+    expect(kpis.every(i => i.kpiSpec!.spark?.column === 'Date' && !i.kpiSpec!.compare)).toBe(true);
+    expect(kpis.every(i => i.size === 'sm')).toBe(true);
+    expect(items[4]).toMatchObject({ type: 'combo', size: 'lg', spec: { dimension: 'Date', grain: 'month', measures: [{ column: 'Revenue' }, { column: 'Cost' }] } });
     expect(items[5]).toMatchObject({ type: 'horizontalBar', spec: { dimension: 'Region', sort: 'value-desc', limit: 10 } });
-    expect(items[6]).toMatchObject({ type: 'donut', spec: { dimension: 'Region', limit: 8 } });
-    expect(items[7].pivotSpec).toMatchObject({ rows: 'Region', cols: 'Channel', value: { column: 'Revenue', agg: 'sum' }, heat: true });
-    expect(items[7].size).toBe('md');
+    expect(items[6]).toMatchObject({ type: 'bar', spec: { dimension: 'Date', grain: 'month', series: 'Region', stacked: true } });
+    // Three half-width cards: the odd one out (Channel) goes full width.
+    expect(items[7]).toMatchObject({ type: 'horizontalBar', size: 'lg', spec: { dimension: 'Channel' } });
+    expect(items[8].pivotSpec).toMatchObject({ rows: 'Region', cols: 'Channel', value: { column: 'Revenue', agg: 'sum' }, heat: true });
+    expect(items[8].size).toBe('lg');
+  });
+
+  it('sales skips the stacked chart when the category has more than 8 values', () => {
+    const data = DATA.map((r, i) => ({ ...r, Region: `R${i % 12}` }));
+    const items = build('sales', analyzeColumns(data), data);
+    expect(items.some(i => i.spec && 'series' in i.spec && i.spec.series)).toBe(false);
   });
 
   it('sales with one measure and no date or categories is just header + KPIs', () => {

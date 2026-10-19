@@ -4,7 +4,7 @@ import { buildDefaultDashboard } from './build-default-dashboard';
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartFormat } from './format';
 import {
-  deriveDashboardItems, crossDimensionOf, drillBaseOf, computeKpiValue, computeKpiCompare, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
+  deriveDashboardItems, crossDimensionOf, drillBaseOf, computeKpiValue, computeKpiCompare, kpiSparkPoints, sparkGrain, aggregateChart, toChartSpec, specFromSourceKey, MAX_SERIES, MAX_MEASURES,
   specForField, addFieldToSpec, specTitle, kpiTitle, kpiCardId, aggsForColumn, normalizeAgg,
   retargetKpi, retargetRepeat, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg, type KpiSpec,
 } from './derive-dashboard-item';
@@ -29,7 +29,11 @@ function applyFilter(filters: Record<string, string>) {
 
 describe('dashboard cards follow the active filters', () => {
   const base = applyFilter({});
-  const { items } = buildDefaultDashboard(DATA, base.columns, base.suggestions, t);
+  // Suggestion cards (sourceKey recipes) are what a legacy session or the Add panel holds; the default board now starts from a template.
+  const suggestionCards: DashboardItem[] = base.suggestions.slice(0, 6).map(c => ({
+    id: c.id, title: c.title, type: c.type, data: c.data, dataKeys: c.dataKeys, xKey: c.xKey, sourceKey: c.key, size: 'md',
+  }));
+  const items = [...suggestionCards, ...buildDefaultDashboard(DATA, base.columns, base.suggestions, t).items.filter(i => i.displayAs === 'insight')];
 
   it('seeds every suggestion-derived card with a rebuildable recipe', () => {
     const charts = items.filter(i => !i.displayAs);
@@ -229,6 +233,22 @@ describe('KPI cards follow filters', () => {
     const north = applyFilter({ Region: 'North' });
     const narrowed = deriveDashboardItems(seeded, north.suggestions, north.columns, north.data, t);
     expect(narrowed.find(i => i.id === kpi!.id)?.kpiValue).toBe('2');
+  });
+});
+
+describe('default board', () => {
+  it('starts from the Sales template and keeps the insight tail', () => {
+    const { items } = buildDefaultDashboard(DATA, analyzeColumns(DATA), [], t);
+    expect(items.some(i => i.displayAs === 'text')).toBe(false); // the workspace banner is the header
+    expect(items.some(i => i.id.startsWith('tpl:sales:'))).toBe(true);
+    expect(items.find(i => i.insightType === 'stats')).toBeDefined();
+  });
+  it('falls back to suggestion charts with no usable category or date', () => {
+    const nums = Array.from({ length: 20 }, (_, i) => ({ A: i * 3.7, B: (i * 11) % 17 + 0.5 }));
+    const cols = analyzeColumns(nums);
+    const { items } = buildDefaultDashboard(nums, cols, generateChartSuggestions(nums, cols), t);
+    expect(items.some(i => i.id.startsWith('tpl:'))).toBe(false);
+    expect(items.some(i => i.displayAs === 'kpi')).toBe(true);
   });
 });
 
@@ -692,7 +712,7 @@ describe('computeKpiCompare', () => {
     expect(r.delta!.pct).toBe(50);
   });
   it('omits the delta with no previous bucket or a zero previous', () => {
-    expect(computeKpiCompare([rows[1], rows[2]], sum)).toEqual({ value: computeKpiValue([rows[1], rows[2]], sum) });
+    expect(computeKpiCompare([rows[1], rows[2]], sum)).toEqual({ value: computeKpiValue([rows[1], rows[2]], sum), trend: expect.any(Array) });
     expect(computeKpiCompare([{ d: '2025-01-01', v: 0 }, { d: '2025-02-01', v: 5 }], sum)!.delta).toBeUndefined();
   });
   it('skips undated rows', () => {
@@ -788,5 +808,35 @@ describe('drill-down on date-grain charts', () => {
     expect(drillBaseOf(chart('quarter'), columns)).toBe('quarter');
     expect(drillBaseOf({ ...chart('year'), spec: { v: 2, dimension: 'Region', measures: [{ column: null, agg: 'count' }] } }, columns)).toBeNull();
     expect(drillBaseOf({ ...chart('year'), displayAs: 'kpi' }, columns)).toBeNull();
+  });
+});
+
+describe('KPI sparkline', () => {
+  const months = Array.from({ length: 15 }, (_, i) => ({ d: `${2024 + Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}-10`, v: i + 1 }));
+  const sum: KpiSpec = { column: 'v', agg: 'sum' };
+  const spark = { column: 'd', grain: 'month' as DateGrain };
+
+  it('gives one point per period, oldest first, capped at the last 12', () => {
+    expect(kpiSparkPoints(months, sum, spark)).toEqual([4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+  });
+  it('skips undated rows and empty buckets instead of drawing zeros', () => {
+    const gap = [months[0], months[2], { d: '', v: 99 }];
+    expect(kpiSparkPoints(gap, sum, spark)).toEqual([1, 3]);
+  });
+  it('picks month, then week, then day by how many points each gives', () => {
+    expect(sparkGrain(months, 'd')).toBe('month');
+    const weeks = Array.from({ length: 10 }, (_, i) => ({ d: new Date(Date.UTC(2025, 2, 3 + i * 7)).toISOString().slice(0, 10), v: 1 }));
+    expect(sparkGrain(weeks, 'd')).toBe('week');
+    const days = Array.from({ length: 5 }, (_, i) => ({ d: `2025-03-0${i + 1}`, v: 1 }));
+    expect(sparkGrain(days, 'd')).toBe('day');
+  });
+  it('keeps the all-rows headline and follows filters', () => {
+    const item: DashboardItem = { id: 'k', title: 'k', type: 'bar', data: [], dataKeys: [], displayAs: 'kpi', kpiSpec: { ...sum, spark } };
+    const cols = analyzeColumns(months);
+    const [live] = deriveDashboardItems([item], [], cols, months, t);
+    expect(live.kpiValue).toBe(computeKpiValue(months, sum));
+    expect(live.kpiTrend).toHaveLength(12);
+    const [few] = deriveDashboardItems([{ ...item, filters: { d: { kind: 'date', from: '2024-01-01', to: '2024-03-31' } } as any }], [], cols, months, t);
+    expect(few.kpiTrend).toEqual([1, 2, 3]);
   });
 });
