@@ -366,9 +366,13 @@ function deriveDashboardItem(
   if (item.displayAs === 'kpi') {
     const rows = applyFilters(data, item.filters ?? {});
     const cmp = computeKpiCompare(rows, item.kpiSpec, item.format);
-    if (!cmp) return { ...item, kpiValue: computeKpiValue(rows, item.kpiSpec, item.format) };
-    const { value: kpiValue, delta } = cmp;
-    return { ...item, kpiValue, ...(delta && { kpiDelta: delta }) };
+    if (!cmp) {
+      const { spark } = item.kpiSpec ?? {};
+      const kpiTrend = spark && kpiSparkPoints(rows, item.kpiSpec!, spark);
+      return { ...item, kpiValue: computeKpiValue(rows, item.kpiSpec, item.format), ...(kpiTrend?.length && { kpiTrend }) };
+    }
+    const { value: kpiValue, delta, trend } = cmp;
+    return { ...item, kpiValue, ...(delta && { kpiDelta: delta }), ...(trend.length > 1 && { kpiTrend: trend }) };
   }
 
   if (item.displayAs === 'pivot') {
@@ -475,6 +479,10 @@ export interface KpiSpec {
   agg: KpiAgg;
   /** Show the latest period of `column` with a delta against the one before it. */
   compare?: { column: string; grain: DateGrain };
+  /** Draw a per-period sparkline under the headline (the headline itself stays the all-rows value). */
+  spark?: { column: string; grain: DateGrain };
+  /** A rise is bad news (returns, cost, churn): the delta colours flip. */
+  lowerIsBetter?: boolean;
 }
 
 const compactNumber = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 2 });
@@ -544,23 +552,48 @@ function formatKpi(n: number | null, format?: ChartFormat): string {
  */
 export function computeKpiCompare(
   data: Record<string, any>[], spec?: KpiSpec, format?: ChartFormat
-): { value: string; delta?: { pct: number; label: string } } | null {
+): { value: string; delta?: { pct: number; label: string }; trend: number[] } | null {
   const cmp = spec?.compare;
   if (!spec || !cmp) return null;
-  const buckets = new Map<string, Record<string, any>[]>();
-  for (const row of data) {
-    const key = bucketDate(row[cmp.column], cmp.grain);
-    if (key === null) continue;
-    (buckets.get(key) ?? buckets.set(key, []).get(key)!).push(row);
-  }
+  const buckets = bucketRowsByDate(data, cmp.column, cmp.grain);
   // ponytail: previous = the prior bucket present in the data, a calendar gap is not a zero period.
   const [latest, prevKey] = [...buckets.keys()].sort().reverse();
   if (latest === undefined) return null;
   const cur = kpiNumber(buckets.get(latest)!, spec);
   const value = formatKpi(cur, format);
+  const trend = trendOf(buckets, spec);
   const prev = prevKey === undefined ? null : kpiNumber(buckets.get(prevKey)!, spec);
-  if (cur === null || !prev || !Number.isFinite(cur) || !Number.isFinite(prev)) return { value };
-  return { value, delta: { pct: (cur - prev) / Math.abs(prev) * 100, label: prevKey } };
+  if (cur === null || !prev || !Number.isFinite(cur) || !Number.isFinite(prev)) return { value, trend };
+  return { value, trend, delta: { pct: (cur - prev) / Math.abs(prev) * 100, label: prevKey } };
+}
+
+function bucketRowsByDate(data: Row[], column: string, grain: DateGrain) {
+  const buckets = new Map<string, Row[]>();
+  for (const row of data) {
+    const key = bucketDate(row[column], grain);
+    if (key === null) continue;
+    (buckets.get(key) ?? buckets.set(key, []).get(key)!).push(row);
+  }
+  return buckets;
+}
+
+const SPARK_POINTS = 12;
+
+/** The KPI per date bucket, oldest first, last 12 (empty buckets are skipped, not drawn as zero). */
+const trendOf = (buckets: Map<string, Row[]>, spec: KpiSpec) =>
+  [...buckets.keys()].sort().slice(-SPARK_POINTS)
+    .map(k => kpiNumber(buckets.get(k)!, spec))
+    .filter((n): n is number => n !== null && Number.isFinite(n));
+
+/** Sparkline points for a KPI card; the card's own `compare` is not involved. */
+export function kpiSparkPoints(data: Row[], spec: KpiSpec, spark: NonNullable<KpiSpec['spark']>): number[] {
+  return trendOf(bucketRowsByDate(data, spark.column, spark.grain), spec);
+}
+
+/** Finest grain that still gives a readable line: month, else week, else day. ponytail: fixed thresholds, no user control. */
+export function sparkGrain(data: Row[], column: string): DateGrain {
+  const distinct = (g: DateGrain) => bucketRowsByDate(data, column, g).size;
+  return distinct('month') >= 6 ? 'month' : distinct('week') >= 6 ? 'week' : 'day';
 }
 
 /** Stable card id, so Quick Add can tell an already-placed metric from a new one. */

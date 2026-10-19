@@ -1,9 +1,10 @@
-import type { ColumnMeta } from '@/lib/data-analyzer';
+import { bucketDate, type ColumnMeta } from '@/lib/data-analyzer';
+import type { CardSize } from '@/lib/layout';
 import type { DashboardItem } from '@/components/DashboardGrid';
 import type { ChartType } from '@/lib/chart-themes';
 import type { PivotSpec } from '@/lib/pivot';
 import {
-  computeNumericInsights, computeRepeatingColumns, computeDataQuality, kpiTitle, specTitle,
+  computeNumericInsights, computeRepeatingColumns, computeDataQuality, kpiTitle, specTitle, sparkGrain,
   type ChartSpec, type KpiSpec, type TFn,
 } from '@/lib/derive-dashboard-item';
 
@@ -33,38 +34,56 @@ export function buildTemplate(id: TemplateId, cols: ColumnMeta[], data: Record<s
   const [m1, m2] = measures;
   const items: DashboardItem[] = [];
   const base = { data: [], dataKeys: [], xKey: '' };
-  const header = () => items.push({ id: '', title, type: 'bar', ...base, displayAs: 'text', text: title, size: 'lg' });
-  const kpi = (spec: KpiSpec) => items.push({ id: '', title: kpiTitle(spec, t), type: 'bar', ...base, displayAs: 'kpi', kpiSpec: spec, size: 'xs' });
-  const chart = (type: ChartType, spec: Omit<ChartSpec, 'v'>) =>
+  // Title line + a facts line (a snapshot at build time: it is an ordinary editable text card).
+  const header = () => {
+    const days = date ? data.map(r => bucketDate(r[date.name], 'day')).filter((d): d is string => !!d).sort() : [];
+    const facts = [`${data.length.toLocaleString()} ${t('rows')}`, `${cols.length} ${t('columns').toLowerCase()}`, days.length && `${days[0]} → ${days[days.length - 1]}`].filter(Boolean).join(' · ');
+    items.push({ id: '', title, type: 'bar', ...base, displayAs: 'text', text: `${title}\n${facts}`, size: 'lg' });
+  };
+  // A KPI row fills the 12 columns: 4 tiles of 3, or 3 of 4.
+  const kpis = (specs: KpiSpec[]) => specs.forEach(spec =>
+    items.push({ id: '', title: kpiTitle(spec, t), type: 'bar', ...base, displayAs: 'kpi', kpiSpec: spec, size: specs.length === 3 ? 'sm' : 'xs' }));
+  const chart = (type: ChartType, spec: Omit<ChartSpec, 'v'>, size: CardSize = 'md') =>
     // No xKey: like every recipe chart, it falls back to 'name' (an empty one blanks the category axis).
-    items.push({ id: '', title: specTitle(spec, t), type, data: [], dataKeys: [], spec: { v: 2, ...spec }, size: 'md' });
+    items.push({ id: '', title: specTitle(spec, t), type, data: [], dataKeys: [], spec: { v: 2, ...spec }, size });
   // The pivot title word lives in the dashboard dictionary, which this t cannot reach: title it like a chart.
-  const pivot = (pivotSpec: PivotSpec) => items.push({ id: '', title: specTitle({ measures: [pivotSpec.value], dimension: pivotSpec.rows }, t), type: 'bar', ...base, displayAs: 'pivot', pivotSpec, size: 'md' });
+  const pivot = (pivotSpec: PivotSpec, size: CardSize = 'md') => items.push({ id: '', title: specTitle({ measures: [pivotSpec.value], dimension: pivotSpec.rows }, t), type: 'bar', ...base, displayAs: 'pivot', pivotSpec, size });
   // Sum where adding up makes sense, otherwise the average.
   const agg = (c: ColumnMeta) => (c.stats?.isSummable ? 'sum' : 'average') as 'sum' | 'average';
   const rows = { column: null, agg: 'count' } as const;
 
   if (id === 'sales') {
     header();
-    [m1, m2].forEach(m => m && kpi({ column: m.name, agg: agg(m) }));
-    kpi(rows);
+    // The headline stays the all-rows total; the sparkline shows how it got there.
+    const spark = date && { column: date.name, grain: sparkGrain(data, date.name) };
+    kpis([...measures.slice(0, 3).map((m): KpiSpec => ({ column: m.name, agg: agg(m), ...(spark && { spark }) })), { ...rows, ...(spark && { spark }) }].slice(0, 4));
+    const [c0, c1, c2] = cats;
+    const m = { column: m1.name, agg: agg(m1) };
+    const top = (c: ColumnMeta): [ChartType, Omit<ChartSpec, 'v'>] => ['horizontalBar', { dimension: c.name, measures: [m], sort: 'value-desc', limit: 10 }];
     if (date) {
-      chart(m2 ? 'combo' : 'area', { dimension: date.name, grain: 'month', measures: [m1, m2].filter(Boolean).map(m => ({ column: m.name, agg: agg(m) })) });
+      chart(m2 ? 'combo' : 'area', { dimension: date.name, grain: 'month', measures: [m1, m2].filter(Boolean).map(x => ({ column: x.name, agg: agg(x) })) }, 'lg');
     }
-    if (cats[0]) {
-      chart('horizontalBar', { dimension: cats[0].name, measures: [{ column: m1.name, agg: agg(m1) }], sort: 'value-desc', limit: 10 });
-      chart('donut', { dimension: cats[0].name, measures: [{ column: m1.name, agg: agg(m1) }], sort: 'value-desc', limit: 8 });
+    // Half-width cards in pairs; a lone last one goes full width. A lone first one gets a donut (the share view) beside it.
+    const cards: [ChartType, Omit<ChartSpec, 'v'>][] = [];
+    if (c0) {
+      cards.push(top(c0));
+      // One series per category, so only when they all fit the legend (MAX_SERIES).
+      if (date && c0.uniqueCount <= 8) cards.push(['bar', { dimension: date.name, grain: 'month', measures: [m], series: c0.name, stacked: true }]);
     }
-    if (cats[1]) pivot({ rows: cats[0].name, cols: cats[1].name, value: { column: m1.name, agg: agg(m1) }, heat: true });
+    if (c1) cards.push(top(c1));
+    if (c2) cards.push(['donut', { dimension: c2.name, measures: [m], sort: 'value-desc', limit: 8 }]);
+    if (cards.length === 1) cards.push(['donut', { dimension: c0.name, measures: [m], sort: 'value-desc', limit: 8 }]);
+    cards.forEach(([type, spec], n) => chart(type, spec, cards.length % 2 && n === cards.length - 1 ? 'lg' : 'md'));
+    if (c1) pivot({ rows: c0.name, cols: c1.name, value: m, heat: true }, 'lg');
   } else if (id === 'trends') {
     header();
-    measures.slice(0, 3).forEach(m => kpi({ column: m.name, agg: agg(m), compare: { column: date!.name, grain: 'month' } }));
+    kpis(measures.slice(0, 3).map((m): KpiSpec => ({ column: m.name, agg: agg(m), compare: { column: date!.name, grain: 'month' } })));
     measures.slice(0, 2).forEach(m => chart('area', { dimension: date!.name, grain: 'month', measures: [{ column: m.name, agg: agg(m) }] }));
     chart('bar', { dimension: date!.name, grain: 'quarter', measures: [rows] });
     // ponytail: pivot row dates are bucketed by month with no cap beyond PIVOT_MAX_ROWS; long histories show the first 50 months
-    if (cats[0]) pivot({ rows: date!.name, rowGrain: 'month', cols: cats[0].name, value: { column: m1.name, agg: agg(m1) }, heat: true });
+    if (cats[0]) pivot({ rows: date!.name, rowGrain: 'month', cols: cats[0].name, value: { column: m1.name, agg: agg(m1) }, heat: true }, 'lg');
   } else {
-    kpi(rows);
+    kpis([rows]);
     cols.filter(c => c.type === 'categorical' || c.type === 'range').slice(0, 4)
       .forEach(c => chart('bar', { dimension: c.name, measures: [rows], limit: 15 }));
     const numeric = computeNumericInsights(cols);

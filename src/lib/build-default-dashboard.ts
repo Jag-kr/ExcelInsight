@@ -1,11 +1,13 @@
 import type { ColumnMeta, ChartSuggestion } from '@/lib/data-analyzer';
 import type { DashboardItem } from '@/components/DashboardGrid';
+import { buildTemplate, templateIssue, templateRoles } from '@/lib/templates';
 import { computeRepeatingColumns, computeNumericInsights, computeDataQuality, kpiCardId, kpiTitle, type KpiSpec } from '@/lib/derive-dashboard-item';
 
 /**
- * Seeds the dashboard the user lands on straight after an upload: the first
- * few suggested charts, then stats / repeating-value / data-quality insight
- * cards where the columns support them.
+ * Seeds the dashboard the user lands on straight after an upload: the Sales
+ * starter board when the columns fit it (else the first few suggested charts),
+ * then stats / repeating-value / data-quality insight cards where the columns
+ * support them.
  *
  * Lives here rather than in the page so the landing bundle doesn't have to
  * carry it — it pulls in data-analyzer's types and runs only post-upload.
@@ -15,47 +17,51 @@ export function buildDefaultDashboard(
   cols: ColumnMeta[],
   charts: ChartSuggestion[],
   t: (key: any) => string
-): { items: DashboardItem[]; usedChartIds: Set<string> } {
-  // usedChartIds holds ChartSuggestion.key, not .id.
+): { items: DashboardItem[] } {
   const items: DashboardItem[] = [];
-  const usedChartIds = new Set<string>();
 
-  /* Headline tiles lead the board. They are ordinary cards — the user can
-     rename, resize, duplicate or delete any of them. */
   const numericCols = computeNumericInsights(cols);
-  const kpiSpecs: KpiSpec[] = [
-    { column: null, agg: 'count' },
-    ...numericCols.slice(0, 3).map((c): KpiSpec => ({
-      column: c.name,
-      agg: c.stats!.isSummable ? 'sum' : 'average',
-    })),
-  ];
-  kpiSpecs.forEach(spec => {
-    items.push({
-      id: kpiCardId(spec),
-      title: kpiTitle(spec, t),
-      type: 'bar', data: [], dataKeys: [], xKey: '',
-      displayAs: 'kpi', kpiSpec: spec, size: 'xs',
-    });
-  });
+  const { date, cats } = templateRoles(cols);
 
-  charts.slice(0, 6).forEach(c => {
-    items.push({
-      id: c.id,
-      title: c.title,
-      description: c.description,
-      /* The suggestion's own type, not a rotation: data-analyzer already knows
-         a distribution is bars and a breakdown is a donut, and rotating over
-         that was drawing category counts as lines. */
-      type: c.type,
-      data: c.data,
-      dataKeys: c.dataKeys,
-      xKey: c.xKey,
-      sourceKey: c.key,
-      size: 'md',
+  if (templateIssue('sales', cols) === null && (date || cats.length)) {
+    // The workspace banner above the board already names the file and counts its rows: no header card.
+    items.push(...buildTemplate('sales', cols, newData, '', t).filter(i => i.displayAs !== 'text'));
+  } else {
+    /* Headline tiles lead the board. They are ordinary cards — the user can
+       rename, resize, duplicate or delete any of them. */
+    const kpiSpecs: KpiSpec[] = [
+      { column: null, agg: 'count' },
+      ...numericCols.slice(0, 3).map((c): KpiSpec => ({
+        column: c.name,
+        agg: c.stats!.isSummable ? 'sum' : 'average',
+      })),
+    ];
+    kpiSpecs.forEach(spec => {
+      items.push({
+        id: kpiCardId(spec),
+        title: kpiTitle(spec, t),
+        type: 'bar', data: [], dataKeys: [], xKey: '',
+        displayAs: 'kpi', kpiSpec: spec, size: 'xs',
+      });
     });
-    usedChartIds.add(c.key);
-  });
+
+    charts.slice(0, 6).forEach(c => {
+      items.push({
+        id: c.id,
+        title: c.title,
+        description: c.description,
+        /* The suggestion's own type, not a rotation: data-analyzer already knows
+           a distribution is bars and a breakdown is a donut, and rotating over
+           that was drawing category counts as lines. */
+        type: c.type,
+        data: c.data,
+        dataKeys: c.dataKeys,
+        xKey: c.xKey,
+        sourceKey: c.key,
+        size: 'md',
+      });
+    });
+  }
 
   if (numericCols.length > 0) {
     items.push({
@@ -86,5 +92,5 @@ export function buildDefaultDashboard(
     });
   }
 
-  return { items, usedChartIds };
+  return { items };
 }

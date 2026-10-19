@@ -1,6 +1,6 @@
 import { useId, useMemo, useState } from 'react';
 import type { ColumnMeta } from '@/lib/data-analyzer';
-import { aggKey, aggregateChart, aggsForColumn, normalizeAgg, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg, type KpiSpec } from '@/lib/derive-dashboard-item';
+import { aggKey, aggregateChart, aggsForColumn, normalizeAgg, sparkGrain, repeatColumnOf, type ChartSpec, type DateGrain, type KpiAgg, type KpiSpec } from '@/lib/derive-dashboard-item';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { ChartFormat } from '@/lib/format';
@@ -59,6 +59,8 @@ export function CardSettings({ columns, data, selected, size, onChange, onChange
   const kpi = item.displayAs === 'kpi' ? item.kpiSpec : undefined;
   const pivot = item.displayAs === 'pivot' ? item.pivotSpec : undefined;
   const compareId = useId();
+  const sparkId = useId();
+  const lowerId = useId();
   const heatId = useId();
   const dateCols = columns.filter(c => c.type === 'date');
   const repeatCol = repeatColumnOf(item);
@@ -183,6 +185,37 @@ export function CardSettings({ columns, data, selected, size, onChange, onChange
                 />
                 <label htmlFor={compareId} className="text-xs text-foreground">{d('compareLabel')}</label>
               </div>
+              {/* A compare KPI always draws its sparkline: the box is only for plain tiles. */}
+              {!kpi.compare && (
+                <div className="flex items-center gap-2">
+                  <input
+                    id={sparkId}
+                    type="checkbox"
+                    checked={!!kpi.spark}
+                    onChange={e => {
+                      const { spark: _, ...rest } = kpi;
+                      onChangeKpi(e.target.checked ? { ...rest, spark: { column: dateCols[0].name, grain: sparkGrain(data, dateCols[0].name) } } : rest);
+                    }}
+                    className="h-4 w-4 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <label htmlFor={sparkId} className="text-xs text-foreground">{d('sparkLabel')}</label>
+                </div>
+              )}
+              {kpi.compare && (
+                <div className="flex items-center gap-2">
+                  <input
+                    id={lowerId}
+                    type="checkbox"
+                    checked={!!kpi.lowerIsBetter}
+                    onChange={e => {
+                      const { lowerIsBetter: _, ...rest } = kpi;
+                      onChangeKpi(e.target.checked ? { ...rest, lowerIsBetter: true } : rest);
+                    }}
+                    className="h-4 w-4 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <label htmlFor={lowerId} className="text-xs text-foreground">{d('lowerIsBetterLabel')}</label>
+                </div>
+              )}
               {kpi.compare && (
                 <>
                   <div>
